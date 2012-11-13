@@ -8,7 +8,7 @@ Hostname 54.245.103.115
 User git
 IdentityFile ~/.ssh/id_rsa_key
 
-Host redx3
+Host seph
 Hostname chance.dyndns.tv
 User chance
 IdentityFile ~/.ssh/id_rsa_key
