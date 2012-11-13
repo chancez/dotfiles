@@ -1,0 +1,13 @@
+[user]
+	name = Chance Zibolsk
+	email = chance.zibolski@gmail.com
+[github]
+	user = ecnahc515
+[color]
+    ui = true
+[core]
+	editor = vim
+	excludesfile = /home/chance/.gitignore
+[merge]
+    tool = vimdiff
+    log = true
