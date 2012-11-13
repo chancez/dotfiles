@@ -126,7 +126,7 @@ extract () {
 }
 
 #eval `keychain --quiet --nogui --eval --agents ssh `
-eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/tidus_x220_key)
+eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
 
 #source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 

@@ -1,0 +1,30 @@
+Host *github.com
+#Hostname github.com
+User git
+IdentityFile ~/.ssh/id_rsa_key
+
+Host tradr
+Hostname 54.245.103.115
+User git
+IdentityFile ~/.ssh/id_rsa_key
+
+Host redx3
+Hostname chance.dyndns.tv
+User chance
+IdentityFile ~/.ssh/id_rsa_key
+
+Host flip
+Hostname flip1.engr.oregonstate.edu
+user zibolskc
+IdentityFile ~/.ssh/id_rsa_key
+
+Host onid
+Hostname shell.onid.oregonstate.edu
+user zibolskc
+IdentityFile ~/.ssh/id_rsa_key
+
+Host cloud
+#Hostname 66.175.216.126
+Hostname chancez.net
+user chance
+IdentityFile ~/.ssh/id_rsa_key
