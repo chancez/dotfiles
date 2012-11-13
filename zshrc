@@ -1,11 +1,17 @@
 HISTFILE=~/.histfile
-HISTSIZE=1000
-SAVEHIST=1000
-setopt appendhistory nomatch notify
+HISTSIZE=10000
+SAVEHIST=10000
+setopt appendhistory
+setopt nomatch
+setopt notify
 setopt incappendhistory
 setopt sharehistory
 setopt extendedhistory
-unsetopt autocd beep extendedglob
+setopt hist_ignore_dups     # Ignore same command run twice+
+setopt nobeep
+setopt extendedglob
+setopt autocd               #dont need cd to change dir
+
 export EDITOR="vim"
 PATH=$PATH:$HOME/bin
 
@@ -66,11 +72,6 @@ setopt completealiases
 # more extensive tab completion
 setopt completeinword
 
-# Stuff to make my life easier
-
-# auto change directories
-setopt autocd
-
 
 # allow approximate
 zstyle ':completion:*' completer _complete _match _approximate
@@ -102,8 +103,7 @@ backward-delete-to-slash () {
     }
     zle -N backward-delete-to-slash
 
-
-#uberj's extract function from his bashrc
+#extract
 extract () {
     if [ -f $1 ] ; then
         case $1 in
@@ -132,6 +132,7 @@ eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/tidus_x220_key)
 
 # Include various sub-.zshrc files
 # but don't include vim .swp files
+# files sourced need to end in .zsh
 for file in $(ls $HOME/dotfiles/zshrc.d/*.zsh | grep -ve ".swp$" | grep -ve ".bak$")
 do
     source $file
