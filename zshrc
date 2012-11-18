@@ -10,7 +10,7 @@ setopt extendedhistory
 setopt hist_ignore_dups     # Ignore same command run twice+
 setopt nobeep
 setopt extendedglob
-setopt autocd               #dont need cd to change dir
+unsetopt autocd
 
 export EDITOR="vim"
 PATH=$PATH:$HOME/bin
@@ -42,11 +42,9 @@ alias ducks='du -cksh * | sort -rn|head -11'
 alias chat="mosh cloud -- tmux attach -d -t chat"
 
 #rdesktop aliases
-alias cn-workshop="rdesktop -T cn-workshop -d cn -u czibolsk cn-workshop.tss.oregonstate.edu </dev/null &>/dev/null & disown"
 alias umbrella="rdesktop -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
 
 #mount aliases
-alias mnt-cn-share="sudo mount -t cifs -o username=zibolskc,domain=CN //cn-share.tss.oregonstate.edu/G0/ /media/cn-share"
 alias mnt-onid="sudo mount -t cifs -o username=zibolskc,domain=ONID //ONID-FS.onid.orst.edu/zibolskc /media/ONID"
 
 #grep aliases:

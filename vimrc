@@ -8,26 +8,15 @@ call vundle#rc()
 Bundle 'gmarik/vundle'
 Bundle 'MarcWeber/vim-addon-mw-utils'
 Bundle 'tomtom/tlib_vim'
-Bundle 'mileszs/ack.vim'
 Bundle 'altercation/vim-colors-solarized'
 Bundle 'scrooloose/nerdtree'
 Bundle 'scrooloose/syntastic'
-Bundle 'sjl/gundo.vim'
-Bundle 'matchit.zip'
 Bundle 'tpope/vim-surround'
 Bundle 'motemen/git-vim'
 Bundle 'tpope/vim-fugitive'
-Bundle 'xolox/vim-notes'
-Bundle 'reinh/vim-makegreen'
-Bundle 'vim-scripts/WhatsMissing.vim'
 Bundle 'fholgado/minibufexpl.vim'
-Bundle 'vim-scripts/c.vim'
 Bundle 'HTML-AutoCloseTag'
-Bundle 'garbas/vim-snipmate'
-Bundle 'spf13/snipmate-snippets'
 Bundle 'Shougo/neocomplcache'
-Bundle 'Shougo/neocomplcache-snippets-complete'
-Bundle 'godlygeek/tabular'
 Bundle 'majutsushi/tagbar'
 Bundle 'kien/ctrlp.vim'
 Bundle 'mattn/webapi-vim'
@@ -48,7 +37,6 @@ map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
 map <leader>e :NERDTreeFind<CR>
 nmap <leader>nt :NERDTreeFind<CR>
 
-map <leader>g :GundoToggle<CR>
 map <leader>m :MiniBufExplorer<CR>
 nnoremap <silent> <leader>tt :TagbarToggle<CR>
 
@@ -227,43 +215,13 @@ let g:neocomplcache_enable_at_startup = 1
 
  " }
 
-    " Tabularize
-        if exists(":Tabularize")
-          nmap <Leader>a= :Tabularize /=<CR>
-          vmap <Leader>a= :Tabularize /=<CR>
-          nmap <Leader>a: :Tabularize /:<CR>
-          vmap <Leader>a: :Tabularize /:<CR>
-          nmap <Leader>a:: :Tabularize /:\zs<CR>
-          vmap <Leader>a:: :Tabularize /:\zs<CR>
-          nmap <Leader>a, :Tabularize /,<CR>
-          vmap <Leader>a, :Tabularize /,<CR>
-          nmap <Leader>a<Bar> :Tabularize /<Bar><CR>
-          vmap <Leader>a<Bar> :Tabularize /<Bar><CR>
-
-          " The following function automatically aligns when typing a
-          " supported character
-          inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
-
-          function! s:align()
-              let p = '^\s*|\s.*\s|\s*$'
-              if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
-                  let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
-                  let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
-                  Tabularize/|/l1
-                  normal! 0
-                  call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
-              endif
-          endfunction
-
-        endif
-
     " CtrlP options
         let g:ctrlp_working_path_mode = 2
         nnoremap <silent> <D-t> :CtrlP<CR>
         nnoremap <silent> <D-r> :CtrlPMRU<CR>
         let g:ctrlp_custom_ignore = {
             \ 'dir':  '\.git$\|\.hg$\|\.svn$',
-            \ 'file': '\.exe$\|\.so$\|\.dll$' }
+            \ 'file': '\.exe$\|\.so$\|\.dll$|\.tar*$' }
 
     " Fugitive options
         nnoremap <silent> <leader>gs :Gstatus<CR>
@@ -286,22 +244,9 @@ let g:neocomplcache_enable_at_startup = 1
     endif
 
 
-" C plugin Options
-let g:C_Ctrl_j   = 'off'
-
-" Sets the tag locations
-set tags=./tags;/,~/.vimtags
-
 " MiniBufExplorer Options
 let g:miniBufExplMapWindowNavArrows = 1
 let g:miniBufExplMapCTabSwitchBufs = 1
-
-" Vim-Notes Options
-let g:notes_directory = '~/classes/notes/'
-let g:notes_suffix = '.txt'
-
-" Sets the snippet author to me.
-let g:snips_author = 'Chance Zibolski <zibolskc@onid.orst.edu>'
 
 " Coffee Lint Setting
 let coffee_linter = '/usr/local/bin/coffeelint'
@@ -315,7 +260,6 @@ let NERDTreeShowHidden=1
 let NERDTreeKeepTreeInNewTab=1
 
 " Autocmd Section
-autocmd FileType c,cpp,java,php,javascript,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
 
 " If you prefer the Omni-Completion tip window to close when a selection is
 " made, these lines close it on movement in insert mode or when leaving
@@ -326,7 +270,6 @@ autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 " Python
 autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 au FileType python setlocal expandtab textwidth=79 shiftwidth=4 tabstop=8 softtabstop=4 smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class,with
-"au BufRead *.py set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
 
 " HTML Specifics
 au BufRead,BufNewFile *.html setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0

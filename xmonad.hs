@@ -96,8 +96,11 @@ myManageHook = (composeAll . concat $
         name      = stringProperty "WM_NAME"
 
         -- classnames
-        myFloats  = ["MPlayer","Zenity","VirtualBox","Xmessage","Save As...","XFontSel","Downloads","Nm-connection-editor","Add to Panel","gvbam","Gvbam","nautilus","Nautilus","desmume","Desmume","Places","Update","Thunar","skype", "Skype"]
-        myWebs    = ["Navigator","Shiretoko","Firefox","Uzbl","uzbl","Uzbl-core","uzbl-core","firefox","Chromium","Shredder","Chrome"]
+        myFloats  = ["MPlayer","Zenity","VirtualBox","Xmessage","Save As...","XFontSel","Downloads",
+        "Nm-connection-editor","Add to Panel","gvbam","Gvbam","nautilus","Nautilus","desmume","Desmume",
+        "Places","Update","Thunar","skype", "Skype"]
+
+        myWebs    = ["Navigator","Shiretoko","Firefox","Uzbl","uzbl","Uzbl-core","uzbl-core","firefox","Shredder"]
         myMail    = ["Thunderbird","Mail","Calendar"]
         myExt     = ["Remmina","rdesktop"]
         myGfxs    = ["Inkscape", "Gimp", "vlc", "Vlc"]
@@ -106,9 +109,11 @@ myManageHook = (composeAll . concat $
         myHoN     = ["Heroes of Newerth"]
 
         -- resources
-        myIgnores = ["desktop","desktop_window","notify-osd","stalonetray","trayer"]
+        myIgnores = ["desktop","desktop_window","notify-osd","stalonetray","trayer","xfce4-notifyd","Xfce4-notifyd"]
        -- names
-        myNames   = ["bashrun","Google Chrome Options","Chromium Options","gmrun","Library","DownThemAll! - Make Your Selection","Software Update"]
+        myNames   = ["bashrun","Google Chrome Options","Chromium Options","gmrun","Library",
+        "DownThemAll! - Make Your Selection","Software Update","Applications Menu"]
+
         --roles
         myRoles   = ["EventDialog","Preferences","Msgcompose","Manager","EventSummaryDialog","About","Wizard"]
 
@@ -128,13 +133,13 @@ main = do
            , manageHook = myManageHook <+> fullscreenManageHook <+> manageHook xfceConfig
            , layoutHook = myLayoutHook ||| layoutHook xfceConfig
            } `additionalKeysP`
-             [ ("M-S-t", spawn "~/firefox/firefox")
+             [ ("M-S-t", spawn "nightly")
              , ("M-S-m", spawn "thunderbird")
              , ("M-p", spawn dmenu_opts) -- %! Launch dmenu
              , ("<XF86AudioLowerVolume>", spawn "amixer -q set Master 2%- & amixer -q set Master unmute") -- decrease volume
              , ("<XF86AudioRaiseVolume>", spawn "amixer -q set Master 2%+ & amixer -q set Master unmute") -- raise volume
              , ("<XF86AudioMute>", spawn "amixer -q set Master toggle") -- toggle mute
-             , ("<Print>", spawn "~/bin/shoot") -- Runs shooter, a script located in ~/bin/
+             --, ("<Print>", spawn "~/bin/shoot") -- Runs shooter, a script located in ~/bin/
              , ("M-S-q", spawn "xfce4-session-logout")
              ]
 
