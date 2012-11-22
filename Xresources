@@ -83,7 +83,7 @@ URxvt.scrollBar: off
 !!URxvt.font: xft:inconsolata:medium:size=11:antialias=true
 !!URxvt.font: xft:dina-font:medium:size=9
 !!URxvt.font: xft:Bitstream-Vera-Sans-Mono:size=9
-URxvt*font: xft:Bitstream Vera Sans Mono:size=10
+URxvt.font: xft:DejaVu Sans Mono:size=10
 
 !xterm*font: xft:Bitstream Vera Sans Mono:size=10
 !xterm.imLocale: en_US.UTF-8

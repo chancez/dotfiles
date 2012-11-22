@@ -25,7 +25,7 @@ Bundle 'kchmck/vim-coffee-script'
 Bundle 'LaTeX-Box-Team/LaTeX-Box'
 
 " Comment below to turn off the mouse
-" set mouse=a
+set mouse=a
 
 " Remap leader to comma
 let mapleader=","
