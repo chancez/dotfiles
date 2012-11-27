@@ -13,7 +13,7 @@ setopt extendedglob
 unsetopt autocd
 
 export EDITOR="vim"
-PATH=$PATH:$HOME/bin
+PATH=$PATH:$HOME/bin:$HOME/.gem/ruby/1.9.1/bin
 
 #locale
 export LANG=en_US.UTF-8
@@ -42,10 +42,11 @@ alias ducks='du -cksh * | sort -rn|head -11'
 alias chat="mosh cloud -- tmux attach -d -t chat"
 
 #rdesktop aliases
-alias umbrella="rdesktop -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
+#alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
+alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu"
 
 #mount aliases
-alias mnt-onid="sudo mount -t cifs -o username=zibolskc,domain=ONID //ONID-FS.onid.orst.edu/zibolskc /media/ONID"
+alias mnt-onid="sudo mount -t cifs -o username=zibolskc,domain=ONID //ONID-FS.onid.orst.edu/zibolskc /mnt/ONID"
 
 #grep aliases:
 alias grep='grep --color=auto' 
@@ -131,7 +132,7 @@ eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
 # Include various sub-.zshrc files
 # but don't include vim .swp files
 # files sourced need to end in .zsh
-for file in $(ls $HOME/dotfiles/zshrc.d/*.zsh | grep -ve ".swp$" | grep -ve ".bak$")
+for file in $(ls ~chancez/dotfiles/zshrc.d/*.zsh | grep -ve ".swp$" | grep -ve ".bak$")
 do
     source $file
 done
