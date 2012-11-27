@@ -132,7 +132,7 @@ eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
 # Include various sub-.zshrc files
 # but don't include vim .swp files
 # files sourced need to end in .zsh
-for file in $(ls ~chancez/dotfiles/zshrc.d/*.zsh | grep -ve ".swp$" | grep -ve ".bak$")
+for file in $(ls $HOME/.zshrc.d/*.zsh | grep -ve ".swp$" | grep -ve ".bak$")
 do
     source $file
 done
