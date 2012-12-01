@@ -23,7 +23,9 @@ Bundle 'mattn/webapi-vim'
 Bundle 'mattn/gist-vim'
 Bundle 'kchmck/vim-coffee-script'
 Bundle 'LaTeX-Box-Team/LaTeX-Box'
+" Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
 
+filetype plugin on
 " Comment below to turn off the mouse
 set mouse=a
 
@@ -296,6 +298,7 @@ au BufRead,BufNewFile *.txt setlocal textwidth=0 wrap
 let g:LatexBox_latexmk_options = "-pvc"
 let g:LatexBox_output_type = "pdf"
 let g:LatexBox_viewer = "evince"
+let g:tex_flavor='latex'
 
 " Show trailing whitespace and spaces.
 :highlight ExtraWhiteSpace ctermbg=red guibg=red

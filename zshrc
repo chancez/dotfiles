@@ -13,7 +13,7 @@ setopt extendedglob
 unsetopt autocd
 
 export EDITOR="vim"
-PATH=$PATH:$HOME/bin:$HOME/.gem/ruby/1.9.1/bin
+PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
 
 #locale
 export LANG=en_US.UTF-8
