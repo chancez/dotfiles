@@ -55,8 +55,8 @@ myLayoutColor = "#ebac54"
 myUrgentColor = "#2b9ac8"
 myFont = "xftfont Bitstream Vera Sans Mono:size=9"
 
-myTerminal = "urxvt"
---myTerminal = "terminator"
+--myTerminal = "urxvt"
+myTerminal = "terminator"
 myBorderWidth = 1
 myStartupHook = setWMName "LG3D"
 

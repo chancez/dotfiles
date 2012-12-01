@@ -27,11 +27,13 @@ DISABLE_AUTO_TITLE="false"
 # aliases!
 
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
+alias hc='herbstclient'
 
 #list aliases
 alias ls='ls -F --color=auto' 
 alias ll='ls -lh'
 alias la='ls -a'
+alias lla='ls -la'
 alias lg='ls | grep'
 alias sl=ls # Anti typo
 

@@ -20,12 +20,6 @@ precmd_prompt () {
 
 add-zsh-hook precmd precmd_prompt 
 
-#TMOUT=1
-#TRAPALRM () {
-#    precmd_prompt
-#    zle && zle reset-prompt
-#}
-
 function zle-line-init zle-keymap-select {
     VI_STATUS="${${KEYMAP/vicmd/c}/(main|viins)/i}"
     if [ "$VI_STATUS" = "i" ]; then
@@ -33,7 +27,7 @@ function zle-line-init zle-keymap-select {
     else
         arrow="%F{red}%(!.#.>)%f"
     fi
-    #zle reset-prompt
+    zle reset-prompt
 }
 zle -N zle-line-init
 zle -N zle-keymap-select
