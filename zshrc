@@ -12,11 +12,15 @@ setopt nobeep
 setopt extendedglob
 unsetopt autocd
 
+# locale
+export LANG=en_US.UTF-8
+# other stuff
 export EDITOR="vim"
+export DE=herbstluftwm
+
+# set path
 PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
 
-#locale
-export LANG=en_US.UTF-8
 
 # Vim keybindings
 bindkey -v
@@ -29,7 +33,7 @@ DISABLE_AUTO_TITLE="false"
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 alias hc='herbstclient'
 
-#list aliases
+# list aliases
 alias ls='ls -F --color=auto' 
 alias ll='ls -lh'
 alias la='ls -a'
@@ -37,20 +41,20 @@ alias lla='ls -la'
 alias lg='ls | grep'
 alias sl=ls # Anti typo
 
-#List folders, and sizes
+# List folders, and sizes
 alias ducks='du -cksh * | sort -rn|head -11'
 
-#ssh aliases
+# ssh aliases
 alias chat="mosh cloud -- tmux attach -d -t chat"
 
-#rdesktop aliases
-#alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
+# rdesktop aliases
+# alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
 alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu"
 
-#mount aliases
+# mount aliases
 alias mnt-onid="sudo mount -t cifs -o username=zibolskc,domain=ONID //ONID-FS.onid.orst.edu/zibolskc /mnt/ONID"
 
-#grep aliases:
+# grep aliases:
 alias grep='grep --color=auto' 
 alias -g G="| grep"
 alias -g L="| less"
@@ -64,7 +68,7 @@ alias pyclean='find . -type f -name "*.py[co]" -exec rm -f \{\} \;'
 # Serves the current directory
 alias serve='twistd -n web --path .'
 
-#Auto Completion
+# Auto Completion
 autoload -Uz compinit promptinit
 compinit -i
 zstyle ':completion:*' menu select
@@ -104,7 +108,7 @@ backward-delete-to-slash () {
     }
     zle -N backward-delete-to-slash
 
-#extract
+# extract
 extract () {
     if [ -f $1 ] ; then
         case $1 in
@@ -126,10 +130,10 @@ extract () {
     fi
 }
 
-#eval `keychain --quiet --nogui --eval --agents ssh `
+# eval `keychain --quiet --nogui --eval --agents ssh `
 eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
 
-#source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # Include various sub-.zshrc files
 # but don't include vim .swp files

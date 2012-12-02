@@ -1,5 +1,6 @@
 #!/bin/bash
 
+        # Layouting
 ########## ARGS ##########
 monitor=${1:-0}
 
@@ -87,6 +88,19 @@ net_widget() {
     echo -n "W $ip ($ssid)"
 }
 
+volume_widget() {
+    dzen_icons="/home/chancez/Pictures/dzen_icons"
+    curr_volume=$(echo $volume | cut -d " " -f2)
+    if [ "$1" == "toggle" ] && [ "$curr_volume" != "Mute" ]; then
+        volume="Mute"
+        vol_icon="$dzen_icons/volume_off.xbm"
+    else
+        volume=$(amixer get Master | grep -Po '\d+\%' | head -1)
+        vol_icon="$dzen_icons/volume_on.xbm"
+    fi
+    echo "^i($vol_icon) $volume"
+}
+
 
 ########## Go! ##########
 herbstclient pad $monitor $panel_height
@@ -116,6 +130,7 @@ herbstclient pad $monitor $panel_height
     windowtitle=""
     acpi=$(acpi_widget)
     ip=$(ip_widget)
+    volume=$(volume_widget)
 
     while true ; do
         # draw tags
@@ -151,12 +166,14 @@ herbstclient pad $monitor $panel_height
         echo -n "$sep"
         echo -n "^bg()^fg() ${windowtitle//^/^^}"
 
+        # Layouting
         # small adjustments
-        right="$acpi $sep^fg() $ip $sep^bg() $date"
+        right="$volume $sep^fg() $acpi $sep^fg() $ip $sep^bg() $date"
         right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
         # get width of right aligned text.. and add some space..
         width=$($textwidth "$font" "$right_text_only")
-        echo -n "^pa($(($panel_width - $width)))$right"
+        offset=14 #14 for the one icon im using that isnt counted
+        echo -n "^pa($(($panel_width - $width - $offset)))$right"
 
         # Finish output
         echo
@@ -179,6 +196,14 @@ herbstclient pad $monitor $panel_height
                 echo "Got heartbeat!" >&2
                 ip=$(net_widget)
                 acpi=$(acpi_widget)
+                ;;
+            volume)
+                echo "Got volume update!" >&2
+                volume=$(volume_widget)
+                ;;
+            volume_toggle)
+                echo "Got volume update!" >&2
+                volume=$(volume_widget toggle)
                 ;;
             quit_panel)
                 exit

@@ -2,11 +2,6 @@
 
 xrdb -merge ~/.Xresources
 
-export DE=herbstluftwm
-export EDITOR="vim"
-export TERM="terminator"
-#export TERMINAL="urxvt"
-#export TERMINAL="terminator"
 xcompmgr -C &
 
 $DEFAULT_SESSION=herbstluftwm

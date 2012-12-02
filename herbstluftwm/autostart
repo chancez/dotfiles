@@ -11,11 +11,11 @@ feh --bg-scale ~/Pictures/arch_linux_wallpaper.jpg
 
 
 # colors
-hc set frame_border_active_color '#1793d1'
+hc set frame_border_active_color '#6c71c4'
 hc set frame_border_normal_color '#101010'
 hc set frame_bg_normal_color '#000000'
 hc set frame_bg_active_color '#222222'
-hc set frame_border_width 2
+hc set frame_border_width 3
 hc set frame_inner_border_width 1
 hc set frame_active_opacity 60
 hc set frame_normal_opacity 10
@@ -52,11 +52,15 @@ hc keybind $Mod-Shift-m spawn thunderbird
 hc keybind $Mod-Shift-Escape spawn xscreensaver-command --lock
 hc keybind $Mod-p spawn dmenu_run \
 -i -nb "#000000" -nf white -sb "#1793D1" -sf white
-hc keybind XF86AudioLowerVolume spawn amixer -q set Master 2%- unmute
-hc keybind XF86AudioRaiseVolume spawn amixer -q set Master 2%+ unmute
-hc keybind XF86AudioMute spawn amixer -q set Master toggle
+hc keybind XF86AudioLowerVolume spawn ~/.config/herbstluftwm/volume.sh down
+hc keybind XF86AudioRaiseVolume spawn ~/.config/herbstluftwm/volume.sh up
+hc keybind XF86AudioMute spawn ~/.config/herbstluftwm/volume.sh mute
 hc keybind Print spawn ~/bin/shoot
 hc keybind $Mod-m set_layout max
+
+hc keybind $Mod-semicolon spawn ~/.config/herbstluftwm/swap.sh auto
+hc keybind $Mod-period spawn ~/.config/herbstluftwm/swap.sh terminator
+hc keybind $Mod-slash spawn ~/.config/herbstluftwm/swap.sh close
 
 # tags
 hc rename default 1 || true
@@ -119,8 +123,8 @@ hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK)' manage=off
 hc rule windowtype~'_NET_WM_STATE_FULLSCREEN' fullscreen=on
 
-hc rule class~'(Firefox.*|Vimperator.*|Nightly.*)' tag=2 set_layout=2
-hc rule instance~'(Mail.*)' tag=5
+hc rule class~'(Firefox.*|Vimperator.*|Nightly.*)' tag=2
+hc rule instance~'(Mail.*)' tag=4
 hc rule class=vlc tag=7 pseudotile=on
 
 # unlock, just to be sure
