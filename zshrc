@@ -21,7 +21,6 @@ export DE=herbstluftwm
 # set path
 PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
 
-
 # Vim keybindings
 bindkey -v
 bindkey '^[[Z' reverse-menu-complete
@@ -32,6 +31,9 @@ DISABLE_AUTO_TITLE="false"
 
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 alias hc='herbstclient'
+
+alias pacman='pacman-color'
+alias hc="herbstclient"
 
 # list aliases
 alias ls='ls -F --color=auto' 
@@ -76,7 +78,6 @@ setopt completealiases
 
 # more extensive tab completion
 setopt completeinword
-
 
 # allow approximate
 zstyle ':completion:*' completer _complete _match _approximate

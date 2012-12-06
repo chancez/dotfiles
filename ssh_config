@@ -28,3 +28,8 @@ Host cloud
 Hostname chancez.net
 user chance
 IdentityFile ~/.ssh/id_rsa_key
+
+Host xbmc
+Hostname 192.168.1.7
+user xmbc
+IdentityFile ~/.ssh/id_rsa
