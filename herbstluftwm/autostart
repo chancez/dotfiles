@@ -6,8 +6,9 @@ function hc() {
 
 hc emit_hook reload
 
+xscreensaver -no-splash &
 xsetroot -solid black
-feh --bg-scale ~/Pictures/arch_linux_wallpaper.jpg
+~/.config/herbstluftwm/wallpaper.sh &
 
 
 # colors
@@ -125,10 +126,11 @@ hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK)' manage=off
 hc rule windowtype~'_NET_WM_STATE_FULLSCREEN' fullscreen=on
 
 hc rule class~'(Firefox.*|Vimperator.*|Nightly.*|Browser)' tag=2
+hc rule title='Nightly Updater' tag=2
 hc rule instance~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class='rdesktop' tag=6 floating=on
-hc rule class=vlc tag=7 pseudotile=on
+hc rule class='vlc' tag=7 pseudotile=on
 
 # unlock, just to be sure
 hc unlock
@@ -136,12 +138,32 @@ hc unlock
 herbstclient set tree_style '╾│ ├└╼─┐'
 
 # do multi monitor setup here, e.g.:
-# hc remove_monitor 1
-# hc move_monitor 0 1366x768+0+0
-# hc add_monitor 1920x1080+1366+0
-hc auto_detect_monitors 1
+#hc remove_monitor 1
+#hc move_monitor 0 1366x768+0+0
+#hc add_monitor 1920x1080+1366+0
+#hc auto_detect_monitors 1
 hc keybind $Mod-w focus_monitor 0
 hc keybind $Mod-e focus_monitor 1
+
+# do multi monitor setup here, e.g.:
+for i in {1..9}; do
+    hc remove_monitor $i
+done
+
+# tags
+NUM_MONS=$(xrandr --current | grep "^\w.* connected" | wc -l)
+MON_RES=( $(xrandr --current | grep "^\w.* connected" | awk '{print $3}') )
+MON_NUMS=$( python2 -c "for i in range(${NUM_MONS}): print i" )
+
+for i in ${MON_NUMS[@]} ; do
+    echo "${i}"
+    if [[ $i == '0' ]]; then
+        hc move_monitor $i ${MON_RES[$i]};
+    else
+        hc add_monitor ${MON_RES[$i]};
+    fi
+done
+
 
 # find the panel
 panel=~/.config/herbstluftwm/panel.sh

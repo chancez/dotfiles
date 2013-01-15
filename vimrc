@@ -23,6 +23,7 @@ Bundle 'mattn/webapi-vim'
 Bundle 'mattn/gist-vim'
 Bundle 'kchmck/vim-coffee-script'
 Bundle 'LaTeX-Box-Team/LaTeX-Box'
+Bundle 'vim-scripts/mips.vim'
 " Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
 
 filetype plugin on

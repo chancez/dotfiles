@@ -47,7 +47,7 @@ alias sl=ls # Anti typo
 alias ducks='du -cksh * | sort -rn|head -11'
 
 # ssh aliases
-alias chat="mosh cloud -- tmux attach -d -t chat"
+alias chat="ssh cloud -t 'tmux attach -d -t chat'"
 
 # rdesktop aliases
 # alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"
@@ -93,8 +93,8 @@ zstyle ':completion:*:cd:*' ignore-parents parent pwd
 
 # Key bindings
 # Incremental search is elite!
-bindkey -M vicmd "/" history-incremental-search-backward
-bindkey -M vicmd "?" history-incremental-search-forward
+bindkey -M vicmd "^r" history-incremental-search-backward
+bindkey -M vicmd "^s" history-incremental-search-forward
 
 # Search based on what you typed in already
 bindkey -M vicmd "//" history-beginning-search-backward
