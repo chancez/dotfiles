@@ -21,5 +21,3 @@
     dlc = diff --cached HEAD^
     la = "!git config -l | grep alias | cut -c 7-"
 
-[push]
-	default = simple

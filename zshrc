@@ -30,10 +30,9 @@ DISABLE_AUTO_TITLE="false"
 # aliases!
 
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
-alias hc='herbstclient'
 
 alias pacman='pacman-color'
-alias hc="herbstclient"
+alias hc='herbstclient'
 
 # list aliases
 alias ls='ls -F --color=auto' 
@@ -47,7 +46,8 @@ alias sl=ls # Anti typo
 alias ducks='du -cksh * | sort -rn|head -11'
 
 # ssh aliases
-alias chat="mosh cloud -- tmux attach -d -t chat"
+alias chat="ssh cloud -t 'tmux attach -d -t chat'"
+alias ash="ssh ash -t tmux att -d -t ash"
 
 # rdesktop aliases
 # alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.scf.oregonstate.edu </dev/null &>/dev/null & disown"

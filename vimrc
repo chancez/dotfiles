@@ -10,7 +10,7 @@ Bundle 'MarcWeber/vim-addon-mw-utils'
 Bundle 'tomtom/tlib_vim'
 Bundle 'altercation/vim-colors-solarized'
 Bundle 'scrooloose/nerdtree'
-Bundle 'scrooloose/syntastic'
+" Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-surround'
 Bundle 'motemen/git-vim'
 Bundle 'tpope/vim-fugitive'
@@ -33,6 +33,8 @@ set mouse=a
 let mapleader=","
 " Fast saving
 nmap <leader>w :w!<cr>
+" Making paste work with indenting"
+set pastetoggle=<F2>
 
 " Vim plugin keys
 map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
@@ -78,7 +80,6 @@ map <C-l> <C-W>l
 
 " Theme stuff
 set background=dark
-
 colorscheme solarized
 let g:solarized_termcolors=16
 "let g:solarized_termcolors=256
@@ -86,8 +87,6 @@ let g:solarized_contrast="normal"
 let g:solarized_termtrans=1
 let g:solarized_contrast="high"
 let g:solarized_visibility="high"
-
-
 set gfn=xft:inconsolata:medium:size=12:antialias=true
 set go=
 
@@ -95,10 +94,10 @@ set go=
 syntax enable
 set hidden
 set novisualbell		" Turn on the visual bell
-set title		" Adjust title bar accordingly
-set scrolloff=5	" Begin scrolling when cursor is at 5 from the edge
-"set colorcolumn=80	" Highlight the 80th char column
-set autoread		" Read a file if detect to have been changed outside of vim
+set title		        " Adjust title bar accordingly
+set scrolloff=5	        " Begin scrolling when cursor is at 5 from the edge
+set colorcolumn=79	    " Highlight the 80th char column
+set autoread    " Read a file if detect to have been changed outside of vim
 set browsedir=current           " which directory to use for the file browser
 
 " Searching options
@@ -107,11 +106,12 @@ set ignorecase		" Ignore case when searching.
 set smartcase		" If case seems to matter, use it
 set hlsearch		" Highlight as you search.
 set showmatch		" Show all matches.
-set magic		" " :help magic
+set magic		    " :help magic
 
-set number		" Show Line numbers
-set ttyfast		" Speed option
-set spell		" Spell checking on.
+" Other Stuff
+set number		    " Show Line numbers
+set ttyfast		    " Speed option
+set spell		    " Spell checking on.
 set showmode		" Shows what mode your on at the bottom left
 set backspace=eol,start,indent		" Allow backspace in insertmode
 set whichwrap+=<,>,h,l	" Allows you to wrap to a previous line with h  and l
@@ -136,13 +136,13 @@ set backup
 set wildmenu
 set wildmode=list:longest,full
 set wildignore+=*.pyc
-set completeopt=menuone,longest ",preview
-set pumheight=6             " Keep a small completion window
+set completeopt=menuone,longest " completion window
+set pumheight=6                 " Keep a small completion window
 
 
 " Indentation and wrapping
 set autoindent		" Auto indentation stuff
-set smartindent	" Indent based on file type.
+set smartindent	    " Indent based on file type.
 set tabstop=4
 set shiftwidth=4
 set expandtab
@@ -150,20 +150,22 @@ set linebreak		" Wraps lines instead of inserting an EOL
 set textwidth=79	" How many char to allow before inserting a newline
 set wrap		    " Allows wrapping on display.
 
-" Making paste work with indenting"
-set pastetoggle=<F2>
-
-set ruler                                           " show the ruler
-set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%)  " a ruler on steroids
-set showcmd			                                " show partial commands in status line and
-
 " Status Line Options
-set statusline=%<%f\    " Filename
-set statusline+=%w%h%m%r " Options
+set showcmd         " show partial commands in status line and
+" jamessan's status line
+set laststatus=2    " Always show status line
+set statusline=     " clear the statusline for when vimrc is reloaded
+set statusline+=%-3.3n\                      " buffer number
+set statusline+=\ [%{getcwd()}]              " current dir
+set statusline+=%f\                          " file name
+set statusline+=%h%m%r%w                     " flags
+set statusline+=[%{strlen(&ft)?&ft:'none'},  " filetype
+set statusline+=%{strlen(&fenc)?&fenc:&enc}, " encoding
+set statusline+=%{&fileformat}]              " file format
+set statusline+=%=                           " right align
 set statusline+=%{fugitive#statusline()} " Git Hotness
-set statusline+=\ [%{&ff}/%Y]            " filetype
-set statusline+=\ [%{getcwd()}]          " current dir
-set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
+set statusline+=%{synIDattr(synID(line('.'),col('.'),1),'name')}\  " highlight
+set statusline+=%-14.(%l,%c%V%)\ %<%P        " offset
 
  " neocomplcache {
 
@@ -277,7 +279,7 @@ au FileType python setlocal expandtab textwidth=79 shiftwidth=4 tabstop=8 softta
 au BufRead,BufNewFile *.html setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
 au BufRead,BufNewFile *.mkd setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=79
 au BufRead,BufNewFile *.jade setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
-au FileType html,markdown set omnifunc=htmlcomplete#Complete
+" au FileType html,markdown set omnifunc=htmlcomplete#Complete
 
 " CSS
 au BufRead,BufNewFile *.css setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
