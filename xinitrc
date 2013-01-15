@@ -1,5 +1,6 @@
 #!/bin/sh
 
+/usr/bin/xscreensaver -no-splash &
 xrdb -merge ~/.Xresources
 
 xcompmgr -C &
@@ -20,4 +21,3 @@ herbstluftwm)
     ;;
 esac
 
-/usr/bin/xscreensaver -no-splash &

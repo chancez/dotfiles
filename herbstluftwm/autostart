@@ -10,7 +10,6 @@ xscreensaver -no-splash &
 xsetroot -solid black
 ~/.config/herbstluftwm/wallpaper.sh &
 
-
 # colors
 hc set frame_border_active_color '#6c71c4'
 hc set frame_border_normal_color '#101010'
@@ -48,7 +47,7 @@ hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
 hc keybind $Mod-Shift-Return spawn terminator
-hc keybind $Mod-Shift-t spawn nightly
+hc keybind $Mod-Shift-t spawn ~/nightly/firefox
 hc keybind $Mod-Shift-m spawn thunderbird
 hc keybind $Mod-Shift-Escape spawn xscreensaver-command --lock
 hc keybind $Mod-p spawn dmenu_run \
@@ -138,14 +137,10 @@ hc unlock
 herbstclient set tree_style '╾│ ├└╼─┐'
 
 # do multi monitor setup here, e.g.:
-#hc remove_monitor 1
-#hc move_monitor 0 1366x768+0+0
-#hc add_monitor 1920x1080+1366+0
 #hc auto_detect_monitors 1
-hc keybind $Mod-w focus_monitor 0
-hc keybind $Mod-e focus_monitor 1
+#hc keybind $Mod-w focus_monitor 0
+#hc keybind $Mod-e focus_monitor 1
 
-# do multi monitor setup here, e.g.:
 for i in {1..9}; do
     hc remove_monitor $i
 done
@@ -153,7 +148,7 @@ done
 # tags
 NUM_MONS=$(xrandr --current | grep "^\w.* connected" | wc -l)
 MON_RES=( $(xrandr --current | grep "^\w.* connected" | awk '{print $3}') )
-MON_NUMS=$( python2 -c "for i in range(${NUM_MONS}): print i" )
+MON_NUMS=$( python -c "for i in range(${NUM_MONS}): print i" )
 
 for i in ${MON_NUMS[@]} ; do
     echo "${i}"
