@@ -47,7 +47,7 @@ hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
 hc keybind $Mod-Shift-Return spawn terminator
-hc keybind $Mod-Shift-t spawn ~/nightly/firefox
+hc keybind $Mod-Shift-t spawn nightly
 hc keybind $Mod-Shift-m spawn thunderbird
 hc keybind $Mod-Shift-Escape spawn xscreensaver-command --lock
 hc keybind $Mod-p spawn dmenu_run \
@@ -128,7 +128,7 @@ hc rule class~'(Firefox.*|Vimperator.*|Nightly.*|Browser)' tag=2
 hc rule title='Nightly Updater' tag=2
 hc rule instance~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class~'(Mail.*|Thunderbird.*)' tag=4
-hc rule class='rdesktop' tag=6 floating=on
+hc rule class='rdesktop' tag=6
 hc rule class='vlc' tag=7 pseudotile=on
 
 # unlock, just to be sure
@@ -141,9 +141,9 @@ herbstclient set tree_style '╾│ ├└╼─┐'
 #hc keybind $Mod-w focus_monitor 0
 #hc keybind $Mod-e focus_monitor 1
 
-for i in {1..9}; do
-    hc remove_monitor $i
-done
+#for i in {1..9}; do
+#    hc remove_monitor $i
+#done
 
 # tags
 NUM_MONS=$(xrandr --current | grep "^\w.* connected" | wc -l)
@@ -151,14 +151,12 @@ MON_RES=( $(xrandr --current | grep "^\w.* connected" | awk '{print $3}') )
 MON_NUMS=$( python -c "for i in range(${NUM_MONS}): print i" )
 
 for i in ${MON_NUMS[@]} ; do
-    echo "${i}"
     if [[ $i == '0' ]]; then
         hc move_monitor $i ${MON_RES[$i]};
     else
         hc add_monitor ${MON_RES[$i]};
     fi
 done
-
 
 # find the panel
 panel=~/.config/herbstluftwm/panel.sh
