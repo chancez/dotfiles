@@ -8,6 +8,7 @@ hc emit_hook reload
 
 xscreensaver -no-splash &
 xsetroot -solid black
+xcompmgr -C &
 ~/.config/herbstluftwm/wallpaper.sh &
 
 # colors
@@ -47,7 +48,7 @@ hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
 hc keybind $Mod-Shift-Return spawn terminator
-hc keybind $Mod-Shift-t spawn nightly
+hc keybind $Mod-Shift-t spawn firefox
 hc keybind $Mod-Shift-m spawn thunderbird
 hc keybind $Mod-Shift-Escape spawn xscreensaver-command --lock
 hc keybind $Mod-p spawn dmenu_run \
@@ -124,8 +125,8 @@ hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK)' manage=off
 hc rule windowtype~'_NET_WM_STATE_FULLSCREEN' fullscreen=on
 
-hc rule class~'(Firefox.*|Vimperator.*|Nightly.*|Browser)' tag=2
-hc rule title='Nightly Updater' tag=2
+#hc rule class~'(Firefox.*|Vimperator.*|Nightly.*|Browser)' tag=2
+#hc rule title='Nightly Updater' tag=2
 hc rule instance~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class='rdesktop' tag=6
@@ -141,9 +142,9 @@ herbstclient set tree_style '╾│ ├└╼─┐'
 #hc keybind $Mod-w focus_monitor 0
 #hc keybind $Mod-e focus_monitor 1
 
-#for i in {1..9}; do
-#    hc remove_monitor $i
-#done
+for i in {1..9}; do
+    hc remove_monitor $i
+done
 
 # tags
 NUM_MONS=$(xrandr --current | grep "^\w.* connected" | wc -l)

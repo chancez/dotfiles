@@ -131,6 +131,7 @@ extract () {
     fi
 }
 
+
 # eval `keychain --quiet --nogui --eval --agents ssh `
 eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
 
@@ -144,3 +145,5 @@ do
     source $file
 done
 
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
