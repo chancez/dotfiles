@@ -7,7 +7,7 @@
     ui = true
 [core]
 	editor = vim
-	excludesfile = /home/chance/.gitignore
+	excludesfile = ~/.gitignore
 [merge]
     tool = vimdiff
     log = true

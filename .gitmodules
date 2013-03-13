@@ -1,0 +1,3 @@
+[submodule "git-tools"]
+	path = git-tools
+	url = git@github.com:davedash/git-tools.git
