@@ -12,14 +12,14 @@ setopt nobeep
 setopt extendedglob
 unsetopt autocd
 
-# locale
+## locale
 export LANG=en_US.UTF-8
 # other stuff
 export EDITOR="vim"
 export DE=herbstluftwm
 
 # set path
-PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
+export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
 
 # Vim keybindings
 bindkey -v
@@ -47,6 +47,7 @@ alias ducks='du -cksh * | sort -rn|head -11'
 
 # ssh aliases
 alias chat="ssh cloud -t 'tmux attach -d -t chat'"
+alias chatm="mosh cloud -- tmux attach -d -t chat"
 alias ash="ssh ash -t tmux att -d"
 
 # rdesktop aliases
