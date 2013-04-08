@@ -1,0 +1,27 @@
+{
+	"installed_packages":
+	[
+		"Alignment",
+		"BufferScroll",
+		"ChangeQuotes",
+		"Djaneiro",
+		"FuzzyFileNav",
+		"Gist",
+		"Git",
+		"GitGutter",
+		"Github Tools",
+		"Handlebars",
+		"HTML5",
+		"jQuery",
+		"Origami",
+		"Package Control",
+		"SideBarEnhancements",
+		"SublimeBlockCursor",
+		"SublimeCodeIntel",
+		"SublimeLinter",
+		"Tag",
+		"Theme - Soda",
+		"Tomorrow Color Schemes",
+		"Vintage-Origami"
+	]
+}

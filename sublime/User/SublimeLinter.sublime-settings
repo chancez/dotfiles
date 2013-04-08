@@ -1,0 +1,5 @@
+{
+    "sublimelinter_mark_style": "outline",
+    "sublimelinter_gutter_marks": true,
+    "javascript_liner": "jslint"
+}
