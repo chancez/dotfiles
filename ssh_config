@@ -38,6 +38,10 @@ Host yellow
 Hostname yellow.workstation.osuosl.org
 user chance
 
+Host silver
+Hostname silver.workstation.osuosl.org
+user chance
+
 Host ash
 Hostname ash.osuosl.org
 user chance

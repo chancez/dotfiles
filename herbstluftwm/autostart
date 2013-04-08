@@ -42,7 +42,7 @@ hc set raise_on_focus 0
 hc keyunbind --all
 
 # keybindings
-Mod=Mod1
+Mod=Mod4
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
@@ -69,6 +69,26 @@ for i in {1..9}; do
         hc keybind "$Mod-$i" use "$i"
         hc keybind "$Mod-Shift-$i" move "$i"
 done
+
+# GIMP
+# ensure there is a gimp tag
+hc add gimp
+hc load gimp '
+(split horizontal:0.850000:0
+  (split horizontal:0.200000:1
+    (clients vertical:0)
+    (clients grid:0))
+  (clients vertical:0))
+'               # load predefined layout
+# center all other gimp windows on gimp tag
+hc rule class=Gimp tag=gimp index=01 pseudotile=on
+hc rule class=Gimp windowrole~'gimp-(image-window|toolbox|dock)' \
+    pseudotile=off
+hc rule class=Gimp windowrole=gimp-toolbox focus=off index=00
+hc rule class=Gimp windowrole=gimp-dock focus=off index=1
+
+hc keybind $Mod-g use gimp
+hc keybind $Mod-Shift-g move gimp
 
 # cycle through tags
 hc keybind $Mod-Shift-n use_index +1 --skip-visible
@@ -141,16 +161,18 @@ herbstclient set tree_style '╾│ ├└╼─┐'
 #hc keybind $Mod-w focus_monitor 0
 #hc keybind $Mod-e focus_monitor 1
 
-#for i in {1..9}; do
-#    hc remove_monitor $i
-#done
+# Set up multi monitors
+while [[ $(hc list_monitors | wc -l) -gt 1 ]]; do
+    hc remove_monitor 1
+done
 
 # tags
 NUM_MONS=$(xrandr --current | grep "^\w.* connected" | wc -l)
 MON_RES=( $(xrandr --current | grep "^\w.* connected" | awk '{print $3}') )
-MON_NUMS=$( python -c "for i in range(${NUM_MONS}): print i" )
+MON_NUMS=$( python2 -c "for i in range(${NUM_MONS}): print i" )
 
 for i in ${MON_NUMS[@]} ; do
+    echo "${i}"
     if [[ $i == '0' ]]; then
         hc move_monitor $i ${MON_RES[$i]};
     else
@@ -158,6 +180,22 @@ for i in ${MON_NUMS[@]} ; do
     fi
 done
 
+#if [[ ${NUM_MONS} > 1 ]]; then
+#    hc move_monitor 0 1366x768+0+0
+#    hc add_monitor 1920x1080+1366+0
+#else
+#    hc move_monitor 0 1366x768+0+0
+#fi
+
+#for i in ${MON_NUMS[@]} ; do
+#    if [[ $i == '0' ]]; then
+#        hc move_monitor $i ${MON_RES[$i]};
+#    else
+#        hc add_monitor ${MON_RES[$i]};
+#    fi
+#done
+
+killall panel.sh
 # find the panel
 panel=~/.config/herbstluftwm/panel.sh
 [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
@@ -165,5 +203,4 @@ for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
     # start it on each monitor
     $panel $monitor &
 done
-
 
