@@ -8,7 +8,12 @@
         "command": "fuzzy_toggle_hidden",
         "context": [{"key": "fuzzy_toggle_hidden"}]
     },
-
+    // Better ctrl tab
+    { "keys": ["ctrl+tab"], "command": "next_view" },
+    { "keys": ["ctrl+shift+tab"], "command": "prev_view" },
+    // multi cursor ctrl+d replacement
+    { "keys": ["alt+d"], "command": "find_under_expand" },
+    { "keys": ["alt+k", "ctrl+d"], "command": "find_under_expand_skip" },
     // jj escapes insert mode
     { "keys": ["j", "j"], "command": "exit_insert_mode",
         "context":
@@ -52,8 +57,4 @@
     { "keys": ["ctrl-shift+h"], "command": "carry_file_to_pane",
         "args": {"direction": "left"}
     }
-
-    //multi cursor
-    //{ "keys": ["ctrl+e"], "command": "select_lines", "args": {"forward": true} },
-    //{ "keys": ["ctrl+shift+e"], "command": "select_lines", "args": {"forward": false} }
 ]
