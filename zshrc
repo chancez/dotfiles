@@ -94,12 +94,9 @@ zstyle ':completion:*:cd:*' ignore-parents parent pwd
 
 # Key bindings
 # Incremental search is elite!
-bindkey -M vicmd "^r" history-incremental-search-backward
-bindkey -M vicmd "^s" history-incremental-search-forward
+bindkey "^r" history-incremental-search-backward
+bindkey "^s" history-incremental-search-forward
 
-# Search based on what you typed in already
-bindkey -M vicmd "//" history-beginning-search-backward
-bindkey -M vicmd "??" history-beginning-search-forward
 
 # Functions!
 
