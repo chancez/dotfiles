@@ -19,7 +19,7 @@ export EDITOR="vim"
 export DE=herbstluftwm
 
 # set path
-export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/1.9.1/bin
+export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin
 
 # Vim keybindings
 bindkey -v
@@ -146,5 +146,7 @@ do
     source $file
 done
 
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/projects
+source /usr/bin/virtualenvwrapper.sh
 
-PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting

@@ -42,6 +42,10 @@ Host silver
 Hostname silver.workstation.osuosl.org
 user chance
 
+Host orange
+Hostname orange.workstation.osuosl.org
+user chance
+
 Host ash
 Hostname ash.osuosl.org
 user chance
