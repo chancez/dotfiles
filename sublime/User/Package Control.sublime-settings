@@ -13,8 +13,11 @@
 		"Handlebars",
 		"HTML5",
 		"jQuery",
+		"JSLint",
+		"LaTeXTools",
 		"Origami",
 		"Package Control",
+		"SFTP",
 		"SideBarEnhancements",
 		"SublimeBlockCursor",
 		"SublimeCodeIntel",
@@ -23,6 +26,9 @@
 		"Tag",
 		"Theme - Soda",
 		"Tomorrow Color Schemes",
+		"Vagrant",
 		"Vintage Surround"
+		"View In Browser",
+		"Vintage-Origami"
 	]
 }

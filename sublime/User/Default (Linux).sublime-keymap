@@ -1,7 +1,7 @@
 [
     // fuzzy file nav
-    { "keys": ["ctrl+o"], "command": "fuzzy_start_from_file" },
-    { "keys": ["ctrl+shift+o"], "command": "fuzzy_bookmarks_load" },
+    { "keys": ["ctrl+e"], "command": "fuzzy_start_from_file" },
+    { "keys": ["ctrl+shift+e"], "command": "fuzzy_bookmarks_load" },
     // toggle showing hidden files in fuzzy file nav
     {
         "keys": ["ctrl+."],
@@ -14,6 +14,10 @@
     // multi cursor ctrl+d replacement
     { "keys": ["alt+d"], "command": "find_under_expand" },
     { "keys": ["alt+k", "ctrl+d"], "command": "find_under_expand_skip" },
+    // toggle sidebar
+    { "keys": ["ctrl+b"], "command": "toggle_side_bar" },
+    // save all keybind
+    { "keys": ["ctrl+shift+s"], "command": "save_all" },
     // jj escapes insert mode
     { "keys": ["j", "j"], "command": "exit_insert_mode",
         "context":
