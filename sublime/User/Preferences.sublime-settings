@@ -1,4 +1,5 @@
 {
+	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
 	"ignored_packages":
 	[
 	],
@@ -7,6 +8,7 @@
 		80
 	],
 	"soda_classic_tabs": true,
+	"soda_folder_icons": true,
 	"tab_size": 4,
 	"theme": "Soda Dark.sublime-theme",
 	"translate_tabs_to_spaces": true,
