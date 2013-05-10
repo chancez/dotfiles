@@ -9,6 +9,7 @@ hc emit_hook reload
 xscreensaver -no-splash &
 xsetroot -solid black
 xcompmgr -C &
+killall wallpaper.sh
 ~/.config/herbstluftwm/wallpaper.sh &
 
 # colors
