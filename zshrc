@@ -19,7 +19,7 @@ export EDITOR="vim"
 export DE=herbstluftwm
 
 # set path
-export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin
+export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin
 
 # Vim keybindings
 bindkey -v
@@ -31,7 +31,7 @@ DISABLE_AUTO_TITLE="false"
 
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 
-alias pacman='pacman-color'
+#alias pacman='pacman-color'
 alias hc='herbstclient'
 
 # list aliases
@@ -58,7 +58,9 @@ alias umbrella="rdesktop -g 1280x720 -T umbrella -d ONID -u zibolskc umbrella.sc
 alias mnt-onid="sudo mount -t cifs -o username=zibolskc,domain=ONID //ONID-FS.onid.orst.edu/zibolskc /mnt/ONID"
 
 # grep aliases:
-alias grep='grep --color=auto' 
+alias grep='grep --color=auto'
+alias grpe='grep --color=auto'
+alias gerp='grep --color=auto'
 alias -g G="| grep"
 alias -g L="| less"
 alias gaux='ps aux | grep'

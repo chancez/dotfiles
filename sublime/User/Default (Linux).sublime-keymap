@@ -37,6 +37,12 @@
     // flake 8
     { "keys": ["ctrl+alt+8"], "command": "flake8_lint" },
 
+    { "keys": ["ctrl+alt+f"], "command": "js_format",
+      "context": [{
+        "key": "selector", "operator": "equal",
+        "operand": "source.js,source.json"
+      }]
+    },
 
     // set origami key to ctrl + w (same as vim)
     { "keys": ["ctrl+w", "k"], "command": "travel_to_pane",

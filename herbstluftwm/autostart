@@ -107,7 +107,7 @@ hc keybind $Mod-f fullscreen toggle
 hc keybind $Mod-t pseudotile toggle
 
 # resizing
-RESIZESTEP=0.01
+RESIZESTEP=0.02
 hc keybind $Mod-Control-h resize left +$RESIZESTEP
 hc keybind $Mod-Control-j resize down +$RESIZESTEP
 hc keybind $Mod-Control-k resize up +$RESIZESTEP
@@ -205,3 +205,7 @@ for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
     $panel $monitor &
 done
 
+killall stalonetray
+stalonetray &
+killall nm-applet
+nm-applet &
