@@ -1,8 +1,13 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
+	"font_size": 10,
 	"ignored_packages":
 	[
-		"SublimeCodeIntel"
+		"JSLint",
+		"LaTeX",
+		"Vagrant",
+		"SublimeCodeIntel",
+		"GitGutter"
 	],
 	"rulers":
 	[
@@ -11,7 +16,7 @@
 	"soda_classic_tabs": true,
 	"soda_folder_icons": true,
 	"tab_size": 4,
-	"theme": "Soda Dark.sublime-theme",
+	"theme": "Soda Light.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"trim_trailing_white_space_on_save": true,
 	"vintage_ctrl_keys": true,

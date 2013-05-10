@@ -13,7 +13,7 @@
     { "keys": ["ctrl+shift+tab"], "command": "prev_view" },
     // multi cursor ctrl+d replacement
     { "keys": ["alt+d"], "command": "find_under_expand" },
-    { "keys": ["alt+k", "ctrl+d"], "command": "find_under_expand_skip" },
+    { "keys": ["alt+k", "alt+d"], "command": "find_under_expand_skip" },
     // toggle sidebar
     { "keys": ["ctrl+b"], "command": "toggle_side_bar" },
     // save all keybind
@@ -33,6 +33,10 @@
     },
     // find and replace
     { "keys": ["ctrl+b"], "command": "toggle_side_bar" },
+
+    // flake 8
+    { "keys": ["ctrl+alt+8"], "command": "flake8_lint" },
+
 
     // set origami key to ctrl + w (same as vim)
     { "keys": ["ctrl+w", "k"], "command": "travel_to_pane",
