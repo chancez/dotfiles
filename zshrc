@@ -151,6 +151,6 @@ export GEM_HOME=~/.gem/ruby/2.0.0
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
 
-[[ -s "~/.local/bin/virtualenvwrapper.sh" ]] && source ~/.local/bin/virtualenvwrapper.sh
-[[ -s "/usr/bin/virtualenvwrapper.sh" ]] && source /usr/bin/virtualenvwrapper.sh
+[[ -e "$HOME/.local/bin/virtualenvwrapper.sh" ]] && source "$HOME/.local/bin/virtualenvwrapper.sh"
+[[ -e "/usr/bin/virtualenvwrapper.sh" ]] && source "/usr/bin/virtualenvwrapper.sh"
 
