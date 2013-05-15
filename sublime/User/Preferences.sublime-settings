@@ -10,7 +10,9 @@
 		".bundle",
 		".git",
 		".sass-cache",
-		"tmp"
+		".tmp",
+		"tmp",
+		"node_modules"
 	],
 	"font_size": 10,
 	"ignored_packages":
