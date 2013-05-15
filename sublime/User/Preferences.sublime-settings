@@ -1,6 +1,5 @@
 {
 	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
-	"font_size": 10,
 	"file_exclude_patterns":
 	[
 		".DS_Store"
@@ -11,15 +10,18 @@
 		".bundle",
 		".git",
 		".sass-cache",
-		"tmp"
+		".tmp",
+		"tmp",
+		"node_modules"
 	],
+	"font_size": 10,
 	"ignored_packages":
 	[
 		"JSLint",
 		"LaTeX",
 		"Vagrant",
-		"SublimeCodeIntel",
-		"GitGutter"
+		"GitGutter",
+		"SublimeCodeIntel"
 	],
 	"rulers":
 	[
