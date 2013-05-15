@@ -20,8 +20,11 @@
 		"JSLint",
 		"LaTeX",
 		"Vagrant",
+		"SublimeCodeIntel",
 		"GitGutter",
-		"SublimeCodeIntel"
+		"LaTeXTools",
+		"SublimeHaskell",
+		"Haskell"
 	],
 	"rulers":
 	[
