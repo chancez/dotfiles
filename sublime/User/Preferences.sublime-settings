@@ -15,14 +15,14 @@
 	"font_size": 10,
 	"ignored_packages":
 	[
-		"JSLint",
 		"LaTeX",
-		"Vagrant",
 		"SublimeCodeIntel",
 		"GitGutter",
-		"LaTeXTools",
+		"Vagrant",
+		"JSLint",
+		"Haskell",
 		"SublimeHaskell",
-		"Haskell"
+		"LaTeXTools"
 	],
 	"rulers":
 	[

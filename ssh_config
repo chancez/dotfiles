@@ -50,6 +50,10 @@ Host neon
 Hostname neon.workstation.osuosl.org
 user chance
 
+Host emerald
+Hostname emerald.workstation.osuosl.org
+user chance
+
 Host ash
 Hostname ash.osuosl.org
 user chance

@@ -19,7 +19,7 @@ export EDITOR="vim"
 export DE=herbstluftwm
 
 # set path
-export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin
+export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin:$HOME/.local/bin
 
 # Vim keybindings
 bindkey -v
@@ -147,5 +147,4 @@ done
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
-source /usr/bin/virtualenvwrapper.sh
-
+source ~/.local/bin/virtualenvwrapper.sh
