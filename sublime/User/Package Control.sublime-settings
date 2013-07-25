@@ -1,4 +1,5 @@
 {
+	"auto_upgrade_last_run": null,
 	"installed_packages":
 	[
 		"Alignment",
@@ -14,6 +15,7 @@
 		"Git",
 		"GitGutter",
 		"Github Tools",
+		"GoSublime",
 		"Handlebars",
 		"HTML5",
 		"jQuery",
@@ -33,6 +35,7 @@
 		"SublimeCodeIntel",
 		"SublimeHaskell",
 		"SublimeLinter",
+		"SublimeRope",
 		"Surround",
 		"Tag",
 		"Theme - Soda",

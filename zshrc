@@ -21,6 +21,15 @@ export DE=herbstluftwm
 # set path
 export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin:$HOME/.local/bin
 
+# add node path
+export PATH=$PATH:/usr/local/share/npm/bin
+
+# macports
+export PATH=$PATH:/opt/local/bin
+export MANPATH=$MANPATH:/opt/local/man
+export INFOPATH=$INFOPATH:/opt/local/share/info
+export GOPATH=$HOME/go
+
 # Vim keybindings
 bindkey -v
 bindkey '^[[Z' reverse-menu-complete
@@ -35,7 +44,7 @@ if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 alias hc='herbstclient'
 
 # list aliases
-alias ls='ls -F --color=auto' 
+#alias ls='ls -F --color=auto' 
 alias ll='ls -lh'
 alias la='ls -a'
 alias lla='ls -la'
@@ -152,5 +161,6 @@ export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
 
 [[ -e "$HOME/.local/bin/virtualenvwrapper.sh" ]] && source "$HOME/.local/bin/virtualenvwrapper.sh"
+[[ -e "/usr/local/bin/virtualenvwrapper.sh" ]] && source "/usr/local/bin/virtualenvwrapper.sh"
 [[ -e "/usr/bin/virtualenvwrapper.sh" ]] && source "/usr/bin/virtualenvwrapper.sh"
 

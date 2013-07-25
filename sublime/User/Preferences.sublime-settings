@@ -14,7 +14,7 @@
 		"tmp",
 		"node_modules"
 	],
-	"font_size": 10,
+	"font_size": 13.0,
 	"ignored_packages":
 	[
 		"LaTeX",
