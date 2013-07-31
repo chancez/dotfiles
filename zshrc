@@ -18,8 +18,11 @@ export LANG=en_US.UTF-8
 export EDITOR="vim"
 export DE=herbstluftwm
 
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
 # set path
-export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin:$HOME/.local/bin
+export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin:$HOME/.local/bin:/usr/local/go/bin
 
 # Vim keybindings
 bindkey -v
@@ -131,10 +134,6 @@ extract () {
     fi
 }
 
-
-# eval `keychain --quiet --nogui --eval --agents ssh `
-eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa)
-
 # source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # Include various sub-.zshrc files
@@ -153,4 +152,10 @@ export PROJECT_HOME=$HOME/projects
 
 [[ -e "$HOME/.local/bin/virtualenvwrapper.sh" ]] && source "$HOME/.local/bin/virtualenvwrapper.sh"
 [[ -e "/usr/bin/virtualenvwrapper.sh" ]] && source "/usr/bin/virtualenvwrapper.sh"
+
+function fsh () {
+        ssh -t fir "sudo bash -i -c \"ssh $@\""
+}
+
+eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa ~/.ssh/id_rsa_fir)
 

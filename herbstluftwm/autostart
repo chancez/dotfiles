@@ -152,6 +152,7 @@ hc rule instance~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class~'(Mail.*|Thunderbird.*)' tag=4
 hc rule class='rdesktop' tag=6
 hc rule class='vlc' tag=7 pseudotile=on
+hc rule instance~'(.*X11-XDialogPeer.*)' pseudotile=on
 
 # unlock, just to be sure
 hc unlock

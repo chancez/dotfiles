@@ -1,4 +1,5 @@
 {
+	"auto_upgrade_last_run": null,
 	"installed_packages":
 	[
 		"Alignment",
@@ -14,6 +15,7 @@
 		"Git",
 		"GitGutter",
 		"Github Tools",
+		"GoSublime",
 		"Handlebars",
 		"HTML5",
 		"jQuery",
@@ -26,6 +28,7 @@
 		"Puppet",
 		"Puppet Syntax checking",
 		"Python Flake8 Lint",
+		"Restructured Text (RST) Snippets",
 		"SFTP",
 		"SideBarEnhancements",
 		"Simple Ember.js Navigator",
@@ -33,6 +36,7 @@
 		"SublimeCodeIntel",
 		"SublimeHaskell",
 		"SublimeLinter",
+		"SublimeREPL",
 		"Surround",
 		"Tag",
 		"Theme - Soda",

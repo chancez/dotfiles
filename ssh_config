@@ -24,37 +24,16 @@ user zibolskc
 IdentityFile ~/.ssh/id_rsa
 
 Host cloud
-#Hostname 66.175.216.126
 Hostname chancez.net
 user chance
 IdentityFile ~/.ssh/id_rsa
-
-Host xbmc
-Hostname 192.168.1.7
-user xmbc
-IdentityFile ~/.ssh/id_rsa
-
-Host yellow
-Hostname yellow.workstation.osuosl.org
-user chance
-
-Host silver
-Hostname silver.workstation.osuosl.org
-user chance
-
-Host orange
-Hostname orange.workstation.osuosl.org
-user chance
-
-Host neon
-Hostname neon.workstation.osuosl.org
-user chance
-
-Host emerald
-Hostname emerald.workstation.osuosl.org
-user chance
 
 Host ash
 Hostname ash.osuosl.org
 user chance
 IdentityFile ~/.ssh/id_rsa
+
+Host fir
+Hostname fir.osuosl.org
+user chance
+IdentityFile ~/.ssh/id_rsa_fir
