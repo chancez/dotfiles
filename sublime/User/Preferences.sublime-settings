@@ -2,7 +2,18 @@
 	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
 	"file_exclude_patterns":
 	[
-		".DS_Store"
+		"*.pyc",
+		"*.pyo",
+		"*.exe",
+		"*.dll",
+		"*.obj",
+		"*.o",
+		"*.a",
+		"*.lib",
+		"*.so",
+		"*.pdb",
+		"*.db",
+		"*.DS_Store"
 	],
 	"folder_exclude_patterns":
 	[
@@ -24,7 +35,9 @@
 		"JSLint",
 		"Haskell",
 		"SublimeHaskell",
-		"LaTeXTools"
+		"LaTeXTools",
+		"SublimeREPL",
+		"SublimeRope"
 	],
 	"rulers":
 	[

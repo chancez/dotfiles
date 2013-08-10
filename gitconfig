@@ -20,6 +20,9 @@
     l = "!git ll -1"
     dlc = diff --cached HEAD^
     la = "!git config -l | grep alias | cut -c 7-"
+    amend = commit --amend -C HEAD
+    undo = reset --soft HEAD^
+    count = shortlog -sn
 
 [push]
 	default = current
