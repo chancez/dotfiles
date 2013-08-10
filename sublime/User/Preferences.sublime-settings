@@ -35,9 +35,9 @@
 		"JSLint",
 		"Haskell",
 		"SublimeHaskell",
-		"LaTeXTools",
 		"SublimeREPL",
-		"SublimeRope"
+		"SublimeRope",
+		"LaTeXTools"
 	],
 	"rulers":
 	[

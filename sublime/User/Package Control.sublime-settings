@@ -4,7 +4,6 @@
 	[
 		"Alignment",
 		"BufferScroll",
-		"ChangeQuotes",
 		"Chef",
 		"Djaneiro",
 		"DocBlockr",
@@ -35,7 +34,6 @@
 		"SublimeCodeIntel",
 		"SublimeHaskell",
 		"SublimeLinter",
-		"SublimeREPL",
 		"SublimeRope",
 		"Surround",
 		"Tag",
