@@ -43,6 +43,9 @@ DISABLE_AUTO_TITLE="false"
 
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 
+# Use hub if it exists.
+if [ -e ~/bin/hub ]; then alias git='hub'; fi
+
 #alias pacman='pacman-color'
 alias hc='herbstclient'
 
