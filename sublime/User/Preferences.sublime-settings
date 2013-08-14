@@ -29,14 +29,10 @@
 	"ignored_packages":
 	[
 		"LaTeX",
-		"SublimeCodeIntel",
-		"Vagrant",
 		"GitGutter",
 		"JSLint",
 		"Haskell",
-		"SublimeHaskell",
-		"SublimeREPL",
-		"SublimeRope",
+		"Vintage-Origami",
 		"LaTeXTools"
 	],
 	"rulers":
