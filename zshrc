@@ -17,21 +17,38 @@ export LANG=en_US.UTF-8
 # other stuff
 export EDITOR="vim"
 export DE=herbstluftwm
+export BROWSER="google-chrome"
 
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    platform='osx'
+fi
+
+# set home path
+export PATH=$PATH:$HOME/bin:$HOME/.local/bin
+
+# set cabal
+export PATH=$PATH:$HOME/.cabal/bin
+
+# add Go paths
 export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 
-# set path
-export PATH=$HOME/bin:$PATH:$HOME/.gem/ruby/2.0.0/bin:$HOME/.rvm/bin:$HOME/.cabal/bin:$HOME/.local/bin:/usr/local/go/bin
-
-# add node path
+# add Node path
 export PATH=$PATH:/usr/local/share/npm/bin
 
+# add Rvm path
+export PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
 # macports
-export PATH=$PATH:/opt/local/bin
-export MANPATH=$MANPATH:/opt/local/man
-export INFOPATH=$INFOPATH:/opt/local/share/info
-export GOPATH=$HOME/go
+if [[ $platform == 'osx' ]]; then
+    export PATH=$PATH:/opt/local/bin
+    export MANPATH=$MANPATH:/opt/local/man
+    export INFOPATH=$INFOPATH:/opt/local/share/info
+fi
 
 # Vim keybindings
 bindkey -v
@@ -44,13 +61,14 @@ DISABLE_AUTO_TITLE="false"
 if [ -e /usr/bin/vimx ]; then alias vim='/usr/bin/vimx'; fi
 
 # Use hub if it exists.
-if [ -e ~/bin/hub ]; then alias git='hub'; fi
+#if [ -e ~/bin/hub ]; then alias git='hub'; fi
+eval "$(hub alias -s)"
 
 #alias pacman='pacman-color'
 alias hc='herbstclient'
 
 # list aliases
-#alias ls='ls -F --color=auto' 
+alias ls='ls -F --color=auto'
 alias ll='ls -lh'
 alias la='ls -a'
 alias lla='ls -la'
@@ -156,8 +174,6 @@ do
     source $file
 done
 
-export GEM_HOME=~/.gem/ruby/2.0.0
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
@@ -165,10 +181,15 @@ export PROJECT_HOME=$HOME/projects
 [[ -e "$HOME/.local/bin/virtualenvwrapper.sh" ]] && source "$HOME/.local/bin/virtualenvwrapper.sh"
 [[ -e "/usr/local/bin/virtualenvwrapper.sh" ]] && source "/usr/local/bin/virtualenvwrapper.sh"
 [[ -e "/usr/bin/virtualenvwrapper.sh" ]] && source "/usr/bin/virtualenvwrapper.sh"
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 function fsh () {
         ssh -t fir "sudo bash -i -c \"ssh $@\""
 }
 
+# Add ssh keys
 eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa ~/.ssh/id_rsa_fir)
+
+### Added by the Heroku Toolbelt
+export PATH="/usr/local/heroku/bin:$PATH"
 
