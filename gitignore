@@ -71,3 +71,5 @@ doc/
 .project
 .idea
 .secret
+
+bundler_stubs/
