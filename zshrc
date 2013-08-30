@@ -68,7 +68,6 @@ eval "$(hub alias -s)"
 alias hc='herbstclient'
 
 # list aliases
-alias ls='ls -F --color=auto'
 alias ll='ls -lh'
 alias la='ls -a'
 alias lla='ls -la'
