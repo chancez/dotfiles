@@ -3,8 +3,6 @@
 	email = chance.zibolski@gmail.com
 [github]
 	user = ecnahc515
-[help]
-    autocorrect = 1
 [color]
     ui = true
 [core]
