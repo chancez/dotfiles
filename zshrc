@@ -193,3 +193,13 @@ eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa ~/.ssh/id_rsa_fir)
 export PATH="/usr/local/heroku/bin:$PATH"
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+
+# Store VMS on localdisk if at work
+if [[ `hostname` == *osuosl* ]]; then
+    local vm_base_path="/data/virtualbox-vms/$USER"
+    if [[ -e "$vm_base_path" ]]; then
+        export VAGRANT_HOME="$vm_base_path/vagrant"
+    else
+        mkdir -p "$vm_base_path"
+    fi
+fi
