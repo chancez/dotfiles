@@ -1,35 +1,39 @@
 Host *github.com
 #Hostname github.com
 User git
-IdentityFile ~/.ssh/id_rsa_key
+IdentityFile ~/.ssh/id_rsa
 
 Host tradr
 Hostname 54.245.103.115
 User git
-IdentityFile ~/.ssh/id_rsa_key
+IdentityFile ~/.ssh/id_rsa
 
 Host seph
 Hostname chance.dyndns.tv
 User chance
-IdentityFile ~/.ssh/id_rsa_key
+IdentityFile ~/.ssh/id_rsa
 
 Host flip
 Hostname flip1.engr.oregonstate.edu
 user zibolskc
-IdentityFile ~/.ssh/id_rsa_key
+IdentityFile ~/.ssh/id_rsa
 
 Host onid
 Hostname shell.onid.oregonstate.edu
 user zibolskc
-IdentityFile ~/.ssh/id_rsa_key
+IdentityFile ~/.ssh/id_rsa
 
 Host cloud
-#Hostname 66.175.216.126
 Hostname chancez.net
 user chance
-IdentityFile ~/.ssh/id_rsa_key
-
-Host xbmc
-Hostname 192.168.1.7
-user xmbc
 IdentityFile ~/.ssh/id_rsa
+
+Host ash
+Hostname ash.osuosl.org
+user chance
+IdentityFile ~/.ssh/id_rsa
+
+Host fir
+Hostname fir.osuosl.org
+user chance
+IdentityFile ~/.ssh/id_rsa_fir

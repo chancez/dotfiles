@@ -12,6 +12,7 @@ selbg=$(herbstclient get window_border_active_color)
 selfg='#101010'
 bordercolor="#26221C"
 sep="^bg()^fg($selbg)|"
+host=$(hostname)
 
 net_dev="wlan0"
 
@@ -24,7 +25,11 @@ fi
 # geometry has the format: WxH+X+Y
 x=${geometry[0]}
 y=${geometry[1]}
-panel_width=${geometry[2]}
+if [[ 0 -eq $monitor ]] && [ $host == "tidus" ]; then
+    panel_width=1270
+else
+    panel_width=${geometry[2]}
+fi
 
 # Try to find textwidth binary.
 # In e.g. Ubuntu, this is named dzen2-textwidth.

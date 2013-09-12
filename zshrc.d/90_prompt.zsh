@@ -12,7 +12,7 @@ add-zsh-hook preexec preexec_prompt
 # Called right before drawing a prompt.
 precmd_prompt () {
     pspath="%F{green}%~%f"
-    pshost="%F{$(hash_color $(hostname))}%m%f"
+    pshost="%F{cyan}%m%f"
     psuser="%F{red}%n"
 
 }

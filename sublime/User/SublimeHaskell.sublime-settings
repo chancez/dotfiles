@@ -1,0 +1,7 @@
+{
+	"add_to_PATH":
+	[
+		"/home/chancez/.cabal/bin"
+	],
+	"enable_hdevtools": false
+}

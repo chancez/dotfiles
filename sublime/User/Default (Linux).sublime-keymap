@@ -1,0 +1,125 @@
+[
+    // fuzzy file nav
+    { "keys": ["ctrl+e"], "command": "fuzzy_start_from_file" },
+    { "keys": ["ctrl+shift+e"], "command": "fuzzy_bookmarks_load" },
+    // toggle showing hidden files in fuzzy file nav
+    {
+        "keys": ["ctrl+."],
+        "command": "fuzzy_toggle_hidden",
+        "context": [{"key": "fuzzy_toggle_hidden"}]
+    },
+    // Better ctrl tab
+    { "keys": ["ctrl+tab"], "command": "next_view" },
+    { "keys": ["ctrl+shift+tab"], "command": "prev_view" },
+    // multi cursor ctrl+d replacement
+    { "keys": ["alt+d"], "command": "find_under_expand" },
+    { "keys": ["alt+k", "alt+d"], "command": "find_under_expand_skip" },
+    // toggle sidebar
+    { "keys": ["ctrl+b"], "command": "toggle_side_bar" },
+    // save all keybind
+    { "keys": ["ctrl+shift+s"], "command": "save_all" },
+    // jj escapes insert mode
+    { "keys": ["j", "j"], "command": "exit_insert_mode",
+        "context":
+        [
+            { "key": "setting.command_mode", "operand": false },
+            { "key": "setting.is_widget", "operand": false }
+        ]
+    },
+    // ; opens overlay
+    { "keys": [";"], "command": "show_overlay",
+        "args": {"overlay": "command_palette", "text": ":"},
+        "context": [{"key": "setting.command_mode"}]
+    },
+    // find and replace
+    { "keys": ["ctrl+b"], "command": "toggle_side_bar" },
+
+    // flake 8
+    { "keys": ["ctrl+alt+8"], "command": "flake8_lint" },
+
+    { "keys": ["ctrl+alt+f"], "command": "js_format",
+      "context": [{
+        "key": "selector", "operator": "equal",
+        "operand": "source.js,source.json"
+      }]
+    },
+
+    // set origami key to ctrl + w (same as vim)
+    { "keys": ["ctrl+w", "k"], "command": "travel_to_pane",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "l"], "command": "travel_to_pane",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "j"], "command": "travel_to_pane",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "h"], "command": "travel_to_pane",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    },
+
+    { "keys": ["ctrl+w", "K"], "command": "carry_file_to_pane",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "L"], "command": "carry_file_to_pane",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "J"], "command": "carry_file_to_pane",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "H"], "command": "carry_file_to_pane",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    },
+
+    { "keys": ["ctrl+w", "alt+k"], "command": "clone_file_to_pane",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "alt+l"], "command": "clone_file_to_pane",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "alt+j"], "command": "clone_file_to_pane",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "alt+h"], "command": "clone_file_to_pane",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    },
+
+    { "keys": ["ctrl+w", "ctrl+k"], "command": "create_pane",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+l"], "command": "create_pane",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+j"], "command": "create_pane",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+h"], "command": "create_pane",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    },
+
+    { "keys": ["ctrl+w", "ctrl+shift+k"], "command": "destroy_pane",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+shift+l"], "command": "destroy_pane",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+shift+j"], "command": "destroy_pane",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+shift+h"], "command": "destroy_pane",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    },
+
+    { "keys": ["ctrl+w", "ctrl+alt+k"], "command": "create_pane_with_file",
+      "args": {"direction": "up"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+alt+l"], "command": "create_pane_with_file",
+      "args": {"direction": "right"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+alt+j"], "command": "create_pane_with_file",
+      "args": {"direction": "down"}, "context": [{"key": "setting.command_mode"}]
+    },
+    { "keys": ["ctrl+w", "ctrl+alt+h"], "command": "create_pane_with_file",
+      "args": {"direction": "left"}, "context": [{"key": "setting.command_mode"}]
+    }
+]

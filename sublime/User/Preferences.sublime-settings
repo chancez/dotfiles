@@ -1,0 +1,55 @@
+{
+	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
+	"file_exclude_patterns":
+	[
+		"*.pyc",
+		"*.pyo",
+		"*.exe",
+		"*.dll",
+		"*.obj",
+		"*.o",
+		"*.a",
+		"*.lib",
+		"*.so",
+		"*.pdb",
+		"*.db",
+		"*.DS_Store"
+	],
+	"folder_exclude_patterns":
+	[
+		"bin",
+		".bundle",
+		".git",
+		".sass-cache",
+		".tmp",
+		"tmp",
+		"node_modules"
+	],
+	"font_size": 10.0,
+	"ignored_packages":
+	[
+		"LaTeX",
+		"GitGutter",
+		"JSLint",
+		"Haskell",
+		"Vintage-Origami",
+		"SublimeCodeIntel",
+		"SublimeREPL",
+		"JSLint",
+		"Haskell",
+		"GitGutter",
+		"LaTeXTools"
+	],
+	"rulers":
+	[
+		80
+	],
+	"soda_classic_tabs": true,
+	"soda_folder_icons": true,
+	"tab_size": 4,
+	"theme": "Soda Light.sublime-theme",
+	"translate_tabs_to_spaces": true,
+	"trim_trailing_white_space_on_save": true,
+	"vintage_ctrl_keys": true,
+	"vintage_start_in_command_mode": true
+}

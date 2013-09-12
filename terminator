@@ -2,9 +2,12 @@
   title_transmit_bg_color = "#073642"
   focus = system
 [keybindings]
+  next_tab = <Shift><Super>braceright
+  full_screen = <Shift>F11
+  prev_tab = <Shift><Super>braceleft
 [profiles]
   [[default]]
-    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
+    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#1c1c1c:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
     background_darkness = 0.8
     scrollbar_position = hidden
     cursor_color = "#eee8d5"
@@ -15,21 +18,18 @@
     background_color = "#002b36"
     scrollback_infinite = True
   [[solarized-dark]]
-    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
-    background_darkness = 0.78
-    scrollback_lines = 10000
     scrollbar_position = hidden
+    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#1c1c1c:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
+    font = Inconsolata Medium 12
+    background_darkness = 0.8
+    use_system_font = False
     cursor_color = "#eee8d5"
     foreground_color = "#eee8d5"
     icon_bell = False
     show_titlebar = False
     copy_on_selection = True
     background_color = "#002b36"
-  [[solarized-light]]
-    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
-    background_color = "#eee8d5"
-    cursor_color = "#002b36"
-    foreground_color = "#002b36"
+    scrollback_infinite = True
 [layouts]
   [[default]]
     [[[child1]]]

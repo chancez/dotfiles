@@ -1,8 +1,11 @@
 #!/bin/sh
 
+/usr/bin/xscreensaver -no-splash &
 xrdb -merge ~/.Xresources
 
 xcompmgr -C &
+xrandr --output VGA1 --off
+xrandr --output VGA1 --auto --right-of LVDS1
 
 $DEFAULT_SESSION=herbstluftwm
 
@@ -18,4 +21,3 @@ herbstluftwm)
     ;;
 esac
 
-/usr/bin/xscreensaver -no-splash &

@@ -46,7 +46,10 @@
 
 !! black dark/light
 *color0:                S_base02
-*color8:                S_base03
+!!*color8:                S_base03
+#define hack_color #1c1c1c
+*color8: hack_color
+
 
 !! red dark/light
 *color1:                S_red
