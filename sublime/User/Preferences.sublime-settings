@@ -29,6 +29,7 @@
 	"ignored_packages":
 	[
 		"LaTeX",
+		"SublimeREPL",
 		"GitGutter",
 		"JSLint",
 		"Haskell",
