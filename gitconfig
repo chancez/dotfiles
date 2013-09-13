@@ -23,7 +23,6 @@
     amend = commit --amend -C HEAD
     undo = reset --soft HEAD^
     count = shortlog -sn
-
 [push]
 	default = current
 [help]

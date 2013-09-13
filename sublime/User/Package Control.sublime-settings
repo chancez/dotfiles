@@ -4,6 +4,7 @@
 	[
 		"AdvancedNewFile",
 		"Alignment",
+		"ApacheConf.tmLanguage",
 		"BufferScroll",
 		"ChangeQuotes",
 		"Chef",
@@ -15,6 +16,7 @@
 		"Git",
 		"GitGutter",
 		"Github Tools",
+		"Google Spell Check",
 		"Handlebars",
 		"HTML5",
 		"jQuery",
@@ -32,6 +34,7 @@
 		"Simple Rails Navigator",
 		"SublimeBlockCursor",
 		"SublimeLinter",
+		"SublimeReStructuredText",
 		"Surround",
 		"Tag",
 		"Theme - Soda",
