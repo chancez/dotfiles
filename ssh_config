@@ -37,3 +37,7 @@ Host fir
 Hostname fir.osuosl.org
 user chance
 IdentityFile ~/.ssh/id_rsa_fir
+
+Hostname *.workstation.osuosl.bak
+user chance
+IdentityFile ~/.ssh/id_rsa
