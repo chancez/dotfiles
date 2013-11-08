@@ -37,3 +37,8 @@ Host fir
 Hostname fir.osuosl.org
 user chance
 IdentityFile ~/.ssh/id_rsa_fir
+
+Host os-class
+hostname os-class.engr.oregonstate.edu
+user zibolskc
+IdentityFile ~/.ssh/id_rsa
