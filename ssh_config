@@ -42,3 +42,7 @@ Host os-class
 hostname os-class.engr.oregonstate.edu
 user zibolskc
 IdentityFile ~/.ssh/id_rsa
+
+Hostname *.workstation.osuosl.bak
+user chance
+IdentityFile ~/.ssh/id_rsa

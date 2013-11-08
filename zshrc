@@ -195,6 +195,7 @@ export PATH="/usr/local/heroku/bin:$PATH"
 
 # Store VMS on localdisk if at work
 if [[ `hostname -f` == *osuosl* ]]; then
+    vboxmanage setproperty machinefolder "/data/virtualbox-vms/$USER/vbox/"
     local vm_base_path="/data/virtualbox-vms/$USER"
     if [[ ! -e $vm_base_path ]]; then
         mkdir -p $vm_base_path
