@@ -22,13 +22,12 @@ Bundle 'kien/ctrlp.vim'
 Bundle 'mattn/webapi-vim'
 Bundle 'mattn/gist-vim'
 Bundle 'kchmck/vim-coffee-script'
-Bundle 'LaTeX-Box-Team/LaTeX-Box'
 Bundle 'vim-scripts/mips.vim'
-" Bundle 'git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex'
 
 filetype plugin on
 " Comment below to turn off the mouse
 set mouse=a
+
 
 " Remap leader to comma
 let mapleader=","
@@ -46,6 +45,7 @@ map <leader>m :MiniBufExplorer<CR>
 nnoremap <silent> <leader>tt :TagbarToggle<CR>
 
 call togglebg#map("<F6>")
+" map <F6> :set background=light<CR>:let solarized_termtrans=0<CR>:colorscheme solarized<CR>
 :nnoremap <F5> :buffers<CR>:buffer<Space>
 
 " This lets w!! sudo the write.
@@ -80,14 +80,13 @@ map <C-h> <C-W>h
 map <C-l> <C-W>l
 
 " Theme stuff
+set t_Co=16
 set background=dark
-colorscheme solarized
-let g:solarized_termcolors=16
-"let g:solarized_termcolors=256
-let g:solarized_contrast="normal"
-let g:solarized_termtrans=1
+" let g:solarized_termcolors=256
 let g:solarized_contrast="high"
 let g:solarized_visibility="high"
+let g:solarized_termtrans=1
+colorscheme solarized
 set gfn=xft:inconsolata:medium:size=12:antialias=true
 set go=
 
@@ -296,12 +295,6 @@ au BufNewFile,BufReadPost *.coffee setlocal foldmethod=indent nofoldenable
 
 " Text files
 au BufRead,BufNewFile *.txt setlocal textwidth=0 wrap
-
-" LatexBox
-let g:LatexBox_latexmk_options = "-pvc"
-let g:LatexBox_output_type = "pdf"
-let g:LatexBox_viewer = "evince"
-let g:tex_flavor='latex'
 
 " Show trailing whitespace and spaces.
 :highlight ExtraWhiteSpace ctermbg=red guibg=red
