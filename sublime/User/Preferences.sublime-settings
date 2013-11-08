@@ -28,8 +28,8 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
-		"LaTeX",
 		"SublimeREPL",
+		"RestructuredText",
 		"GitGutter",
 		"JSLint",
 		"Haskell",
