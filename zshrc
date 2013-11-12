@@ -38,6 +38,9 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
+
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
+
 plugins=(git celery extract golang pip rvm sublime tmux virtualenvwrapper zsh-syntax-highlighting history-substring-search)
 
 export ZSH_TMUX_AUTOSTART_ONCE=true
