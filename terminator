@@ -16,6 +16,7 @@
     show_titlebar = False
     copy_on_selection = True
     background_color = "#002b36"
+    cursor_blink = False
     scrollback_infinite = True
   [[solarized-dark]]
     scrollbar_position = hidden
