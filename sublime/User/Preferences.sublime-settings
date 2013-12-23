@@ -33,9 +33,10 @@
 		"RestructuredText",
 		"GitGutter",
 		"Python Flake8 Lint",
+		"RubyTest",
 		"Haskell",
 		"Vintage-Origami",
-		"RubyTest",
+		"Restructured Text (RST) Snippets",
 		"LaTeXTools"
 	],
 	"rulers":
