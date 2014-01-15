@@ -43,6 +43,7 @@ hostname os-class.engr.oregonstate.edu
 user zibolskc
 IdentityFile ~/.ssh/id_rsa
 
-Hostname *.workstation.osuosl.bak
+Host aqua blue cyan diamond emerald green honey lilac neon orange pink red silver taupe violet xray yellow
+HostName %h.workstation.osuosl.bak
 user chance
 IdentityFile ~/.ssh/id_rsa
