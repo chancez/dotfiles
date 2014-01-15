@@ -1,5 +1,5 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
+	"color_scheme": "Packages/User/Solarized (Light) (SL).tmTheme",
 	"file_exclude_patterns":
 	[
 		"*.pyc",
@@ -37,7 +37,6 @@
 		"Haskell",
 		"Markdown Preview",
 		"Vintage-Origami",
-		"Restructured Text (RST) Snippets",
 		"LaTeXTools"
 	],
 	"rulers":
