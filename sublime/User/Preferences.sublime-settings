@@ -28,13 +28,14 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
-		"JSLint",
+		"Handlebars",
 		"SublimeREPL",
 		"RestructuredText",
 		"GitGutter",
 		"Python Flake8 Lint",
 		"RubyTest",
 		"Haskell",
+		"Markdown Preview",
 		"Vintage-Origami",
 		"Restructured Text (RST) Snippets",
 		"LaTeXTools"
