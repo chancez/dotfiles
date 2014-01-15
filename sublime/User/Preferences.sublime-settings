@@ -1,5 +1,5 @@
 {
-	"color_scheme": "Packages/Color Scheme - Default/Solarized (Light).tmTheme",
+	"color_scheme": "Packages/User/Solarized (Light) (SL).tmTheme",
 	"file_exclude_patterns":
 	[
 		"*.pyc",
@@ -28,14 +28,15 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
-		"JSLint",
+		"Handlebars",
 		"SublimeREPL",
 		"RestructuredText",
 		"GitGutter",
 		"Python Flake8 Lint",
-		"Haskell",
-		"Vintage-Origami",
 		"RubyTest",
+		"Haskell",
+		"Markdown Preview",
+		"Vintage-Origami",
 		"LaTeXTools"
 	],
 	"rulers":
