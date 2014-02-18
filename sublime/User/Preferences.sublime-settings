@@ -37,7 +37,9 @@
 		"Haskell",
 		"Markdown Preview",
 		"Vintage-Origami",
-		"LaTeXTools"
+		"LaTeXTools",
+		"Floobits",
+		"SublimeLinter"
 	],
 	"rulers":
 	[
