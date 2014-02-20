@@ -34,18 +34,12 @@
 		"Handlebars",
 		"Floobits",
 		"SublimeREPL",
-		"Python Flake8 Lint",
-		"SublimeLinter",
+		"RestructuredText",
+		"GitGutter",
+		"RubyTest",
 		"Haskell",
 		"GitGutter",
-		"Markdown Preview",
-		"RestructuredText",
 		"AdvancedNewFile",
-		"Ember.js Snippets",
-		"Git",
-		"nginx",
-		"BufferScroll",
-		"GoSublime"
 	],
 	"rulers":
 	[

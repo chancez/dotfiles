@@ -7,7 +7,7 @@ xcompmgr -C &
 xrandr --output VGA1 --off
 xrandr --output VGA1 --auto --right-of LVDS1
 
-export PATH=$PATH:~/bin
+export PATH=~/bin:$PATH
 
 $DEFAULT_SESSION=herbstluftwm
 
