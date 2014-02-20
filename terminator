@@ -3,9 +3,9 @@
   title_transmit_bg_color = "#073642"
   focus = system
 [keybindings]
-  next_tab = <Primary>Tab
+  next_tab = <Ctrl>Tab
   full_screen = <Shift>F11
-  prev_tab = <Primary><Shift>Tab
+  prev_tab = <Ctrl><Shift>Tab
 [profiles]
   [[default]]
     scrollbar_position = hidden
