@@ -28,18 +28,24 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
-		"Handlebars",
-		"SublimeREPL",
-		"RestructuredText",
-		"GitGutter",
-		"Python Flake8 Lint",
-		"RubyTest",
-		"Haskell",
-		"Markdown Preview",
-		"Vintage-Origami",
 		"LaTeXTools",
+		"Vintage-Origami",
+		"RubyTest",
+		"Handlebars",
 		"Floobits",
-		"SublimeLinter"
+		"SublimeREPL",
+		"Python Flake8 Lint",
+		"SublimeLinter",
+		"Haskell",
+		"GitGutter",
+		"Markdown Preview",
+		"RestructuredText",
+		"AdvancedNewFile",
+		"Ember.js Snippets",
+		"Git",
+		"nginx",
+		"BufferScroll",
+		"GoSublime"
 	],
 	"rulers":
 	[

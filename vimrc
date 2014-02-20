@@ -23,6 +23,7 @@ Bundle 'mattn/webapi-vim'
 Bundle 'mattn/gist-vim'
 Bundle 'kchmck/vim-coffee-script'
 Bundle 'vim-scripts/mips.vim'
+Bundle "ekalinin/Dockerfile.vim"
 
 filetype plugin on
 " Comment below to turn off the mouse

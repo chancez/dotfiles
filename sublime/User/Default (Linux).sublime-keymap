@@ -1,4 +1,9 @@
 [
+    { "keys": ["g", "q"], "command": "wrap_lines_plus" },
+    {"keys": ["ctrl+u"], "command": "scroll_lines",
+      "args": {"amount": 40.0},
+      "context": [{ "key": "setting.command_mode" }]},
+
     // fuzzy file nav
     { "keys": ["ctrl+e"], "command": "fuzzy_start_from_file" },
     { "keys": ["ctrl+shift+e"], "command": "fuzzy_bookmarks_load" },
