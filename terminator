@@ -3,9 +3,13 @@
   title_transmit_bg_color = "#073642"
   focus = system
 [keybindings]
+  go_up = <Alt>k
   next_tab = <Ctrl>Tab
   full_screen = <Shift>F11
   prev_tab = <Ctrl><Shift>Tab
+  go_down = <Alt>j
+  go_right = <Alt>l
+  go_left = <Alt>h
 [profiles]
   [[default]]
     scrollbar_position = hidden
