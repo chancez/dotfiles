@@ -28,18 +28,15 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
-		"LaTeXTools",
-		"Vintage-Origami",
-		"RubyTest",
-		"Handlebars",
 		"Floobits",
+		"Tag",
 		"SublimeREPL",
 		"RestructuredText",
 		"GitGutter",
-		"RubyTest",
 		"Haskell",
-		"GitGutter",
-		"AdvancedNewFile"
+		"View In Browser",
+		"RubyTest",
+		"LaTeXTools"
 	],
 	"rulers":
 	[
