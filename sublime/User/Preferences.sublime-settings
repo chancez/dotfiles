@@ -37,6 +37,16 @@
 		"View In Browser",
 		"RubyTest",
 		"LaTeXTools"
+		"RubyTest",
+		"Origami",
+		"GoSublime",
+		"SublimeLinter",
+		"Haskell",
+		"SublimeREPL",
+		"Markdown Preview",
+		"GitGutter",
+		"nginx",
+		"Vintage-Origami"
 	],
 	"rulers":
 	[

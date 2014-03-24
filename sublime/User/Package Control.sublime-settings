@@ -4,6 +4,7 @@
 	[
 		"AdvancedNewFile",
 		"Alignment",
+		"AngularJS",
 		"ApacheConf.tmLanguage",
 		"BufferScroll",
 		"ChangeQuotes",
@@ -23,6 +24,7 @@
 		"GoSublime",
 		"Handlebars",
 		"HTML5",
+		"Jinja2",
 		"jQuery",
 		"JsFormat",
 		"JSLint",

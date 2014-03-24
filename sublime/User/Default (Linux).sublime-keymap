@@ -1,6 +1,9 @@
 [
+    { "keys": ["="], "command": "reindent",
+        "context": [{"key": "setting.command_mode"}]
+    },
     { "keys": ["g", "q"], "command": "wrap_lines_plus" },
-    {"keys": ["ctrl+u"], "command": "scroll_lines",
+    { "keys": ["ctrl+u"], "command": "scroll_lines",
       "args": {"amount": 40.0},
       "context": [{ "key": "setting.command_mode" }]},
 
@@ -25,8 +28,7 @@
     { "keys": ["ctrl+shift+s"], "command": "save_all" },
     // jj escapes insert mode
     { "keys": ["j", "j"], "command": "exit_insert_mode",
-        "context":
-        [
+        "context": [
             { "key": "setting.command_mode", "operand": false },
             { "key": "setting.is_widget", "operand": false }
         ]

@@ -24,10 +24,17 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 
 # add Node path
-export PATH=$PATH:/usr/local/share/npm/bin:$HOME/.npm/
+export PATH=$HOME/.node/bin:$PATH
 
 # add Rvm path
 export PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
+# Java
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+
+# apache ant
+export ANT_HOME=/opt/apache-ant-1.9.3
+export PATH=$PATH:$ANT_HOME/bin
 
 # add AndroidDev path
 export PATH=$PATH:/opt/android-sdk-linux_86/tools:/opt/android-sdk-linux_86/platform-tools
@@ -36,7 +43,7 @@ export PATH=$PATH:/opt/android-sdk-linux_86/tools:/opt/android-sdk-linux_86/plat
 export PATH=$PATH:/usr/local/heroku/bin
 
 # App engine
-export PATH=$PATH:/opt/go_appengine
+export PATH=$PATH:/opt/google_appengine
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
