@@ -29,3 +29,5 @@
     default = current
 [help]
 	autocorrect = 3
+[grep]
+    linenumber = true
