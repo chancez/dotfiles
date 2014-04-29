@@ -1,7 +1,7 @@
 {
     "sublimelinter_mark_style": "outline",
     "sublimelinter_gutter_marks": true,
-    "javascript_liner": "jslint",
+    "javascript_liner": "jshint",
     "sublimelinter_executable_map": {
         "ruby": "~/.rvm/bin/rvm-auto-ruby"
     }

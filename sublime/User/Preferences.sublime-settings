@@ -28,6 +28,20 @@
 	"font_size": 10.0,
 	"ignored_packages":
 	[
+		"Floobits",
+		"Tag",
+		"RubyTest",
+		"SublimeREPL",
+		"RestructuredText",
+		"GitGutter",
+		"Github Tools",
+		"nginx",
+		"Haskell",
+		"SublimeHaskell",
+		"View In Browser",
+		"Origami",
+		"Vintage-Origami",
+		"Markdown Preview"
 	],
 	"rulers":
 	[
