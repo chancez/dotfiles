@@ -1,6 +1,7 @@
 [global_config]
   enabled_plugins = LaunchpadCodeURLHandler, APTURLHandler, LaunchpadBugURLHandler
   title_transmit_bg_color = "#073642"
+  handle_size = 3
   focus = system
 [keybindings]
   go_up = <Alt>k
@@ -20,7 +21,6 @@
     cursor_color = "#eee8d5"
     foreground_color = "#eee8d5"
     icon_bell = False
-    show_titlebar = False
     copy_on_selection = True
     background_color = "#002b36"
     scrollback_infinite = True
@@ -33,7 +33,6 @@
     cursor_color = "#eee8d5"
     foreground_color = "#eee8d5"
     icon_bell = False
-    show_titlebar = False
     copy_on_selection = True
     background_color = "#002b36"
     scrollback_infinite = True
