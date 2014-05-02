@@ -66,12 +66,5 @@ if [[ $platform == 'osx' ]]; then
     export INFOPATH=$INFOPATH:/opt/local/share/info
 fi
 
-
-# Key bindings
-# Vim keybindings
-bindkey -v
-
-# Incremental search is elite!
-bindkey "^r" history-incremental-search-backward
-bindkey "^s" history-incremental-search-forward
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
