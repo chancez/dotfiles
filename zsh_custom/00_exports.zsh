@@ -1,3 +1,9 @@
+typeset -aU path
+
+if [[ -n $TMUX ]]; then
+    return
+fi
+
 ## locale
 export LANG=en_US.UTF-8
 # other stuff
@@ -14,48 +20,48 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 fi
 
 # set home path
-export PATH=$HOME/bin:$HOME/.local/bin:$PATH
+path=($HOME/bin $HOME/.local/bin $path)
 
 # set cabal
-export PATH=$PATH:$HOME/.cabal/bin
+path=($path $HOME/.cabal/bin)
 
 # add Go paths
 export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
+path=($path $GOPATH/bin /usr/local/go/bin)
 
 # add Node path
-export PATH=$HOME/.node/bin:$PATH
+path=($HOME/.node/bin $path)
 
 # add Rvm path
-export PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+path=($path $HOME/.rvm/bin)# Add RVM to PATH for scripting)
 
 # Java
 export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 
 # apache ant
 export ANT_HOME=/opt/apache-ant-1.9.3
-export PATH=$PATH:$ANT_HOME/bin
+path=($path $ANT_HOME/bin)
 
 # add AndroidDev path
-export PATH=$PATH:/opt/android-sdk-linux_86/tools:/opt/android-sdk-linux_86/platform-tools
+path=($path /opt/android-sdk-linux_86/tools:/opt/android-sdk-linux_86/platform-tools)
 
 # Heroku
-export PATH=$PATH:/usr/local/heroku/bin
+path=($path /usr/local/heroku/bin)
 
 # App engine
-export PATH=$PATH:/opt/google_appengine
+path=($path /opt/google_appengine)
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/projects
 
 # texlive
-export PATH=$PATH:/home/chance/texlive/2013/bin/x86_64-linux
+path=($path /home/chance/texlive/2013/bin/x86_64-linux)
 export INFOPATH=$INFOPATH:/home/chance/texlive/2013/texmf-dist/doc/info
 export MANPATH=$MANPATH:/home/chance/texlive/2013/texmf-dist/doc/man
 
 # macports
 if [[ $platform == 'osx' ]]; then
-    export PATH=$PATH:/opt/local/bin
+    path=($path /opt/local/bin)
     export MANPATH=$MANPATH:/opt/local/man
     export INFOPATH=$INFOPATH:/opt/local/share/info
 fi
@@ -68,3 +74,4 @@ bindkey -v
 # Incremental search is elite!
 bindkey "^r" history-incremental-search-backward
 bindkey "^s" history-incremental-search-forward
+
