@@ -59,12 +59,6 @@ path=($path /home/chance/texlive/2013/bin/x86_64-linux)
 export INFOPATH=$INFOPATH:/home/chance/texlive/2013/texmf-dist/doc/info
 export MANPATH=$MANPATH:/home/chance/texlive/2013/texmf-dist/doc/man
 
-# macports
-if [[ $platform == 'osx' ]]; then
-    path=($path /opt/local/bin)
-    export MANPATH=$MANPATH:/opt/local/man
-    export INFOPATH=$INFOPATH:/opt/local/share/info
-fi
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
