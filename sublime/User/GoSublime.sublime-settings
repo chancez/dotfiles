@@ -2,5 +2,6 @@
     "env": {
         "PATH": "$PATH:$HOME/go",
         "GOPATH": "$HOME/go"
-    }
+    },
+    "fmt_cmd": ["goimports"]
 }
