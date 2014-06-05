@@ -33,7 +33,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
 
-plugins=(git celery extract golang pip rvm sublime tmux virtualenv virtualenvwrapper zsh-syntax-highlighting history-substring-search)
+plugins=(git celery extract golang pip rvm tmux virtualenv virtualenvwrapper zsh-syntax-highlighting history-substring-search)
 
 export ZSH_TMUX_AUTOSTART_ONCE=true
 export ZSH_TMUX_AUTOCONNECT=true
