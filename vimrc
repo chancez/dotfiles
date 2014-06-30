@@ -2,28 +2,31 @@ set nocompatible               " be iMproved
 filetype off
 
 " Vundle, a vim bundle manager. Uses git.
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
 
-Bundle 'gmarik/vundle'
-Bundle 'MarcWeber/vim-addon-mw-utils'
-Bundle 'tomtom/tlib_vim'
-Bundle 'altercation/vim-colors-solarized'
-Bundle 'scrooloose/nerdtree'
-Bundle 'scrooloose/syntastic'
-Bundle 'tpope/vim-surround'
-Bundle 'tpope/vim-git'
-Bundle 'tpope/vim-fugitive'
-Bundle 'fholgado/minibufexpl.vim'
-Bundle 'HTML-AutoCloseTag'
-Bundle 'Shougo/neocomplcache'
-Bundle 'majutsushi/tagbar'
-Bundle 'kien/ctrlp.vim'
-Bundle 'mattn/webapi-vim'
-Bundle 'mattn/gist-vim'
-Bundle 'kchmck/vim-coffee-script'
-Bundle 'vim-scripts/mips.vim'
-Bundle "ekalinin/Dockerfile.vim"
+Plugin 'gmarik/vundle'
+Plugin 'MarcWeber/vim-addon-mw-utils'
+Plugin 'tomtom/tlib_vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/syntastic'
+Plugin 'tpope/vim-surround'
+Plugin 'tpope/vim-git'
+Plugin 'tpope/vim-fugitive'
+Plugin 'fholgado/minibufexpl.vim'
+Plugin 'HTML-AutoCloseTag'
+Plugin 'Shougo/neocomplcache'
+Plugin 'majutsushi/tagbar'
+Plugin 'kien/ctrlp.vim'
+Plugin 'mattn/webapi-vim'
+Plugin 'mattn/gist-vim'
+Plugin 'kchmck/vim-coffee-script'
+Plugin 'vim-scripts/mips.vim'
+Plugin 'ekalinin/Dockerfile.vim'
+
+call vundle#end()
+filetype plugin indent on
 
 filetype plugin on
 " Comment below to turn off the mouse
