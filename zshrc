@@ -33,7 +33,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
 
-plugins=(git celery extract golang pip rvm tmux virtualenv virtualenvwrapper zsh-syntax-highlighting history-substring-search)
+plugins=(git celery extract golang pip rvm tmux virtualenv zsh-syntax-highlighting history-substring-search)
 
 export ZSH_TMUX_AUTOSTART_ONCE=true
 export ZSH_TMUX_AUTOCONNECT=true
@@ -43,6 +43,4 @@ source $ZSH/oh-my-zsh.sh
 HISTFILE=~/.histfile
 HISTSIZE=10000
 SAVEHIST=10000
-
-eval $(keychain --eval --agents ssh -Q --quiet ~/.ssh/id_rsa ~/.ssh/id_rsa_fir)
 

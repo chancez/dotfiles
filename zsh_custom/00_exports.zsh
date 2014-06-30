@@ -11,16 +11,8 @@ export EDITOR="vim"
 export DE=herbstluftwm
 export BROWSER="google-chrome"
 
-platform='unknown'
-unamestr=`uname`
-if [[ "$unamestr" == 'Linux' ]]; then
-    platform='linux'
-elif [[ "$unamestr" == 'Darwin' ]]; then
-    platform='osx'
-fi
-
 # set home path
-path=($HOME/bin $HOME/.local/bin $path)
+path=($HOME/bin $HOME/.local/bin /usr/local/bin $path)
 
 # set cabal
 path=($path $HOME/.cabal/bin)
