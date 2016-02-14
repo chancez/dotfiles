@@ -1,12 +1,11 @@
 [user]
 	name = Chance Zibolski
-	email = chance.zibolski@gmail.com
+	email = chance@coreos.com
 [github]
 	user = ecnahc515
 [color]
     ui = true
 [core]
-	editor = vim
 	excludesfile = ~/.gitignore
 [merge]
     tool = vimdiff
@@ -23,6 +22,8 @@
     amend = commit --amend -C HEAD
     undo = reset --soft HEAD^
     count = shortlog -sn
+	commit = commit
+    #commit = commit -v
 [push]
 	default = current
 [pull]
@@ -31,3 +32,10 @@
 	autocorrect = 3
 [grep]
     linenumber = true
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
+# [url "ssh://git@github.com/"]
+# 	insteadOf = https://github.com/
+[hub]
+	protocol = ssh

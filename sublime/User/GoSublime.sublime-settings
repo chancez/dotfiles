@@ -1,7 +1,41 @@
 {
+    "build_systems":
+    [
+        {
+            "cmd":
+            [
+                "go build ."
+            ],
+            "env":
+            {
+                "GOPATH": "/Users/chance/go",
+                "PATH": "/usr/local/bin:/usr/local/opt/go/libexec/bin:$PATH"
+            },
+            "selector": "source.go",
+            "shell": true,
+        }
+    ],
     "env": {
-        "PATH": "$PATH:$HOME/go",
-        "GOPATH": "$HOME/go"
+        "PATH": "$PATH:/Users/chance/go",
+        "GOPATH": "/Users/chance/go",
+        "GOROOT": "/usr/local/opt/go/libexec"
     },
-    "fmt_cmd": ["goimports"]
+    // "shell": ["/bin/bash", "--login", "-c", "$CMD"],
+    "9o_show_end": true,
+    "fmt_cmd": ["gofmt"],
+    "fmt_cmd": ["goimports"],
+    "snippets": [
+        {
+            "match": {"local": true},
+            "snippets": [
+                // {"text": "print", "title": "print(...)", "value": "print($1)"}
+                // {
+                //     "text": "ifferr",
+                //     "title": "if err (...) {...}",
+                //     "value": "if $1 $2{\n\t$0\n}"
+                // }
+            ]
+        }
+    ],
+    "ipc_timeout": 5,
 }

@@ -1,5 +1,0 @@
-set complete=sl
-source! /home/chance/.vimperatorrc.local
-
-map <C-S-N> :tabm +1<CR>
-map <C-S-P> :tabm -1<CR>

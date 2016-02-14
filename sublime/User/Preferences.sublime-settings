@@ -1,5 +1,6 @@
 {
-	"color_scheme": "Packages/User/Solarized (Light) (SL).tmTheme",
+	"color_scheme": "Packages/User/Solarized (Light) (SL) (Flake8Lint).tmTheme",
+	"draw_white_space": "all",
 	"file_exclude_patterns":
 	[
 		"*.pyc",
@@ -13,7 +14,8 @@
 		"*.so",
 		"*.pdb",
 		"*.db",
-		"*.DS_Store"
+		"*.DS_Store",
+		"*.sublime-*"
 	],
 	"folder_exclude_patterns":
 	[
@@ -23,23 +25,37 @@
 		".sass-cache",
 		".tmp",
 		"tmp",
-		"node_modules"
+		"node_modules",
+		"Godeps/_workspace"
 	],
-	"font_size": 10.0,
+	"font_size": 11.0,
 	"ignored_packages":
 	[
-		"SublimeHaskell"
+		"ApacheConf.tmLanguage",
+		"Emmet",
+		"nginx",
+		"Rust",
+		"RustAutoComplete",
+		"Sourcegraph",
+		"SublimeLinter-flake8",
+		"Theme - Cobalt2",
+		"Vagrant"
+	],
+	"index_exclude_patterns":
+	[
+		"*.log"
 	],
 	"rulers":
 	[
 		80
 	],
+	"scroll_past_end": true,
 	"soda_classic_tabs": true,
-	"soda_folder_icons": true,
 	"tab_size": 4,
 	"theme": "Soda Light.sublime-theme",
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true,
+	"trim_trailing_white_space_on_save": false,
 	"vintage_ctrl_keys": true,
-	"vintage_start_in_command_mode": true
+	"vintage_start_in_command_mode": true,
+	"vintageous_use_ctrl_keys": true
 }

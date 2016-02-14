@@ -1,69 +1,102 @@
 set nocompatible               " be iMproved
 filetype off
+set shell=/usr/local/bin/zsh
 
-" Vundle, a vim bundle manager. Uses git.
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
+call plug#begin('~/.vim/plugged')
 
-Plugin 'gmarik/vundle'
-Plugin 'MarcWeber/vim-addon-mw-utils'
-Plugin 'tomtom/tlib_vim'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'scrooloose/nerdtree'
-Plugin 'scrooloose/syntastic'
-Plugin 'tpope/vim-surround'
-Plugin 'tpope/vim-git'
-Plugin 'tpope/vim-fugitive'
-Plugin 'fholgado/minibufexpl.vim'
-Plugin 'HTML-AutoCloseTag'
-Plugin 'Shougo/neocomplcache'
-Plugin 'majutsushi/tagbar'
-Plugin 'kien/ctrlp.vim'
-Plugin 'mattn/webapi-vim'
-Plugin 'mattn/gist-vim'
-Plugin 'kchmck/vim-coffee-script'
-Plugin 'vim-scripts/mips.vim'
-Plugin 'ekalinin/Dockerfile.vim'
+Plug 'MarcWeber/vim-addon-mw-utils'
+Plug 'tomtom/tlib_vim'
+Plug 'altercation/vim-colors-solarized'
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'jistr/vim-nerdtree-tabs'
+Plug 'scrooloose/syntastic'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-git'
+Plug 'tpope/vim-fugitive'
+Plug 'mattn/webapi-vim'
+Plug 'mattn/gist-vim'
+Plug 'ekalinin/Dockerfile.vim'
+Plug 'fatih/vim-go'
+Plug 'Matt-Deacalion/vim-systemd-syntax'
+Plug 'rizzatti/dash.vim'
+Plug 'terryma/vim-multiple-cursors'
+Plug 'rust-lang/rust.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'easymotion/vim-easymotion'
+Plug 'elzr/vim-json'
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-session'
+Plug 'jiangmiao/auto-pairs'
+Plug 'majutsushi/tagbar'
+Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-commentary'
+Plug 'exu/pgsql.vim'
 
-call vundle#end()
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --gocode-completer --tern-completer --racer-completer' }
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+
+call plug#end()
+
 filetype plugin indent on
 
-filetype plugin on
 " Comment below to turn off the mouse
 set mouse=a
+" Keybinds
 
 " Remap leader to comma
 let mapleader=","
 " Fast saving
 nmap <leader>w :w!<cr>
-" Making paste work with indenting"
+" Making paste work with indenting
 set pastetoggle=<F2>
 
-" Vim plugin keys
+" Nerdtree keys
+map <leader>n <plug>NERDTreeTabsToggle<CR>
 map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
 map <leader>e :NERDTreeFind<CR>
 nmap <leader>nt :NERDTreeFind<CR>
 
-map <leader>m :MiniBufExplorer<CR>
-nnoremap <silent> <leader>tt :TagbarToggle<CR>
+" Toggle tagbar
+nmap <silent> <leader>t :TagbarToggle<CR>
 
-call togglebg#map("<F6>")
-" map <F6> :set background=light<CR>:let solarized_termtrans=0<CR>:colorscheme solarized<CR>
-:nnoremap <F5> :buffers<CR>:buffer<Space>
 
-" This lets w!! sudo the write.
+" Toggle background color
+" call togglebg#map("<F6>")
+
+" Write the current file with sudo w!!
 cmap w!! %!sudo tee > /dev/null %
 
 " Get rid of annoying mistakes
 cmap WQ wq
 cmap wQ wq
-cmap Q q
-"cmap W w
-
-" Keybinds
+"cmap Q q
 nnoremap ; :
+" Escape insert by hitting jj
 inoremap jj <ESC>
+" Clear the current search highlights
 nmap <silent> <leader>/ :nohlsearch<CR>
+
+" edit vimrc/zshrc and load vimrc bindings
+nnoremap <leader>ev :vsp $MYVIMRC<CR>
+nnoremap <leader>ez :vsp ~/.zshrc<CR>
+nnoremap <leader>sv :source $MYVIMRC<CR>
+
+" save session
+nnoremap <leader>s :mksession<CR>
+
+if has('nvim')
+    " this maps leader + esc to exit terminal mode
+    tnoremap <leader><Esc> <C-\><C-n>
+    " This makes navigating windows the same no matter if they are displaying
+    " a normal buffer or a terminal buffer
+    tnoremap <A-h> <C-\><C-n><C-w>h
+    tnoremap <A-j> <C-\><C-n><C-w>j
+    tnoremap <A-k> <C-\><C-n><C-w>k
+    tnoremap <A-l> <C-\><C-n><C-w>l
+endif
 
 " Wrapped lines goes down/up to next row, rather than next line in file.
 nnoremap j gj    
@@ -77,23 +110,19 @@ vnoremap < <gv
 vnoremap > >gv
 
 " Move around windows
-map <C-j> <C-W>j
-map <C-k> <C-W>k
-map <C-h> <C-W>h
-map <C-l> <C-W>l
+map <A-j> <C-W>j
+map <A-k> <C-W>k
+map <A-h> <C-W>h
+map <A-l> <C-W>l
 
-" Theme stuff
+" Theme
 set t_Co=16
 set background=dark
-" let g:solarized_termcolors=256
 let g:solarized_contrast="high"
-let g:solarized_visibility="high"
-let g:solarized_termtrans=1
+let g:solarized_visibility="low"
 colorscheme solarized
-set gfn=xft:inconsolata:medium:size=12:antialias=true
-set go=
 
-" General Settings
+" UI
 syntax enable
 set hidden
 set novisualbell		" Turn on the visual bell
@@ -108,8 +137,17 @@ set incsearch		" Searches as you type.
 set ignorecase		" Ignore case when searching.
 set smartcase		" If case seems to matter, use it
 set hlsearch		" Highlight as you search.
-set showmatch		" Show all matches.
+set showmatch		" highlight matching [{()}]
 set magic		    " :help magic
+
+" Folding
+set foldenable      " Enable folding
+set foldlevelstart=10   " open most folds by default
+set foldnestmax=10      " 10 nested fold max
+" space open/closes folds
+nnoremap <space> za
+set foldmethod=indent   " fold based on indent level
+
 
 " Other Stuff
 set number		    " Show Line numbers
@@ -120,11 +158,10 @@ set backspace=eol,start,indent		" Allow backspace in insertmode
 set whichwrap+=<,>,h,l	" Allows you to wrap to a previous line with h  and l
 set linespace=0	" Number of pixels between chars
 
-autocmd BufEnter * if bufname("") !~ "^\[A-Za-z0-9\]*://" | lcd %:p:h | endif
-" always switch to the current file directory.
+" use the system clipboard
+set clipboard=unnamed
 
 " Allow undos and history to be persistant
-
 set undofile
 set undolevels=1000
 set history=1000
@@ -135,13 +172,14 @@ set backupdir=~/.vim/tmp/backup/
 set directory=~/.vim/tmp/swap/
 set backup
 
-" Auto complete stuff
+" Auto complete settings
 set wildmenu
 set wildmode=list:longest,full
 set wildignore+=*.pyc
 set completeopt=menuone,longest " completion window
+set completeopt+=noinsert
+set completeopt+=noselect
 set pumheight=6                 " Keep a small completion window
-
 
 " Indentation and wrapping
 set autoindent		" Auto indentation stuff
@@ -155,79 +193,69 @@ set wrap		    " Allows wrapping on display.
 
 " Status Line Options
 set showcmd         " show partial commands in status line and
-" jamessan's status line
 set laststatus=2    " Always show status line
-set statusline=     " clear the statusline for when vimrc is reloaded
-set statusline+=%-3.3n\                      " buffer number
-set statusline+=\ [%{getcwd()}]              " current dir
-set statusline+=%f\                          " file name
-set statusline+=%h%m%r%w                     " flags
-set statusline+=[%{strlen(&ft)?&ft:'none'},  " filetype
-set statusline+=%{strlen(&fenc)?&fenc:&enc}, " encoding
-set statusline+=%{&fileformat}]              " file format
-set statusline+=%=                           " right align
-set statusline+=%{fugitive#statusline()} " Git Hotness
-set statusline+=%{synIDattr(synID(line('.'),col('.'),1),'name')}\  " highlight
-set statusline+=%-14.(%l,%c%V%)\ %<%P        " offset
+let g:bufferline_echo = 0
 
- " neocomplcache {
+" airline
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffer_nr_show = 1
+let g:airline#extensions#branch#enabled = 0
 
-let g:neocomplcache_enable_at_startup = 1
-let g:neocomplcache_enable_camel_case_completion = 1
-let g:neocomplcache_enable_smart_case = 1
-let g:neocomplcache_enable_underbar_completion = 1
-let g:neocomplcache_min_syntax_length = 3
-let g:neocomplcache_enable_auto_delimiter = 1
+" multicursor
+" let g:multi_cursor_next_key='<C-n>'
+" let g:multi_cursor_prev_key='<C-p>'
+" let g:multi_cursor_skip_key='<C-x>'
 
-" AutoComplPop like behavior.
-let g:neocomplcache_enable_auto_select = 0
+" vim-go
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_interfaces = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+let g:go_fmt_command = "goimports"
+" Run tests in a new terminal
+let g:go_term_enabled = 1
 
-" SuperTab like snippets behavior.
-imap <expr><TAB> neocomplcache#sources#snippets_complete#expandable() ? "\<Plug>(neocomplcache_snippets_expand)" : pumvisible() ? "\<C-n>" : "\<TAB>"
+nmap <silent> <leader>T :TagbarOpen fj<CR>
+
+" sessions
+let g:session_autosave = 'no'
 
 " Plugin key-mappings.
-imap <C-k>     <Plug>(neocomplcache_snippets_expand)
-smap <C-k>     <Plug>(neocomplcache_snippets_expand)
-inoremap <expr><C-g>     neocomplcache#undo_completion()
-inoremap <expr><C-l>     neocomplcache#complete_common_string()
+nmap <silent> <C-h> <Plug>DashSearch
 
+let g:AutoPairsShortcutToggle = '<M-y>'
 
-" <CR>: close popup
-" <s-CR>: close popup and save indent.
-inoremap <expr><CR>  pumvisible() ? neocomplcache#close_popup() : "\<CR>"
-inoremap <expr><s-CR> pumvisible() ? neocomplcache#close_popup() "\<CR>" : "\<CR>"
-" <TAB>: completion.
-inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" fzf
+let g:find_home = 'find $HOME -path "*/\.*" -prune -o -path "*/Applications*" -prune -o -path "*/Library*" -prune -o -type d -print 2> /dev/null'
+command! FZFcd call fzf#run({
+\   'source':   g:find_home,
+\   'sink':     'cd',
+\   'down':     '20%',
+\   'options': '--prompt "cd> "'
+\ })
 
-" <C-h>, <BS>: close popup and delete backword char.
-inoremap <expr><C-h> neocomplcache#smart_close_popup()."\<C-h>"
-inoremap <expr><BS> neocomplcache#smart_close_popup()."\<C-h>"
-inoremap <expr><C-y>  neocomplcache#close_popup()
-inoremap <expr><C-e>  neocomplcache#cancel_popup()
+command! FZFGoImport call fzf#run({
+\   'source':   "cat $GOPATH/pkg_list.txt",
+\   'sink':     'GoImport',
+\   'down':     '20%',
+\   'options': '--prompt "GoImport> "'
+\ })
 
-" Enable heavy omni completion.
-if !exists('g:neocomplcache_omni_patterns')
-    let g:neocomplcache_omni_patterns = {}
-endif
-let g:neocomplcache_omni_patterns.ruby = '[^. *\t]\.\h\w*\|\h\w*::'
-"autocmd FileType ruby setlocal omnifunc=rubycomplete#Complete
-let g:neocomplcache_omni_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
-let g:neocomplcache_omni_patterns.c = '\%(\.\|->\)\h\w*'
-let g:neocomplcache_omni_patterns.cpp = '\h\w*\%(\.\|->\)\h\w*\|\h\w*::'
+nnoremap <silent> <M-o> :Buffers<cr>
+nnoremap <silent> <C-p> :FZF<CR>
+nnoremap <silent> <M-p> :Tags<CR>
+nnoremap <silent> <M-P> :BTags<CR>
 
-" For snippet_complete marker.
-if has('conceal')
-    set conceallevel=2 concealcursor=i
-endif
+nnoremap <silent> <M-c> :FZFcd<CR>
+nnoremap <silent> <M-i> :FZFGoImport<CR>
 
+let g:fzf_layout = { 'down': '~20%' }
 
-" CtrlP options
-let g:ctrlp_working_path_mode = 2
-nnoremap <silent> <D-t> :CtrlP<CR>
-nnoremap <silent> <D-r> :CtrlPMRU<CR>
-let g:ctrlp_custom_ignore = {
-\ 'dir':  '\.git$\|\.hg$\|\.svn$',
-\ 'file': '\.exe$\|\.so$\|\.dll$|\.tar*$' }
+" YouCompleteMe options
+let g:ycm_collect_identifiers_from_tags_files = 1
 
 " Fugitive options
 nnoremap <silent> <leader>gs :Gstatus<CR>
@@ -237,27 +265,50 @@ nnoremap <silent> <leader>gb :Gblame<CR>
 nnoremap <silent> <leader>gl :Glog<CR>
 nnoremap <silent> <leader>gp :Git push<CR>
 
+" Gist options
+let g:gist_show_privates = 1
 
-if has("gui_running")
-      if has("gui_gtk2")
-              set guifont=Inconsolata\ 12
-      endif
-endif
-
-" MiniBufExplorer Options
-let g:miniBufExplMapWindowNavArrows = 1
-let g:miniBufExplMapCTabSwitchBufs = 1
-
-" Coffee Lint Setting
-let coffee_linter = '/usr/local/bin/coffeelint'
+" Commentary options
+map <silent> <M-/> :Commentary<CR>
 
 " Nerd Tree Options
+let NERDTreeIgnore=['\.pyc', '\~$', '\.swo$', '\.swp$', '\.git', '\.hg', '\.svn', '\.bzr', 'Godeps', 'vendor']
 let NERDTreeShowBookmarks=1
-let NERDTreeIgnore=['\.pyc', '\~$', '\.swo$', '\.swp$', '\.git', '\.hg', '\.svn', '\.bzr']
-let NERDTreeChDirMode=0
-let NERDTreeQuitOnOpen=1
-let NERDTreeShowHidden=1
-let NERDTreeKeepTreeInNewTab=1
+"let NERDTreeChDirMode=0
+"let NERDTreeShowHidden=1
+let g:nerdtree_tabs_open_on_console_startup=1
+" On startup, focus NERDTree if opening a directory, focus file if opening a file. (When set to 2, always focus file window after startup).
+let g:nerdtree_tabs_smart_startup_focus=2
+
+
+" tagbar options for go
+let g:tagbar_type_go = {
+    \ 'ctagstype' : 'go',
+    \ 'kinds'     : [
+        \ 'p:package',
+        \ 'i:imports:1',
+        \ 'c:constants',
+        \ 'v:variables',
+        \ 't:types',
+        \ 'n:interfaces',
+        \ 'w:fields',
+        \ 'e:embedded',
+        \ 'm:methods',
+        \ 'r:constructor',
+        \ 'f:functions'
+    \ ],
+    \ 'sro' : '.',
+    \ 'kind2scope' : {
+        \ 't' : 'ctype',
+        \ 'n' : 'ntype'
+    \ },
+    \ 'scope2kind' : {
+        \ 'ctype' : 't',
+        \ 'ntype' : 'n'
+    \ },
+    \ 'ctagsbin'  : 'gotags',
+    \ 'ctagsargs' : '-sort -silent'
+\ }
 
 " Autocmd Section
 
@@ -282,7 +333,7 @@ au BufRead,BufNewFile *.css setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmarg
 au BufRead,BufNewFile *.styl setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
 au FileType css set omnifunc=csscomplete#Complete
 
-"JavaScript
+" JavaScript
 autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
 
 " CoffeeScript
@@ -292,10 +343,21 @@ au BufNewFile,BufReadPost *.coffee setlocal foldmethod=indent nofoldenable
 " Text files
 au BufRead,BufNewFile *.txt setlocal textwidth=0 wrap
 
+" Golang
+au FileType go setl tabstop=4
+au FileType go setl shiftwidth=4
+au FileType go setl noexpandtab
+" do not wrap generate go protobuf files
+autocmd BufNewFile,BufRead *.pb.go set nowrap
+
 " Show trailing whitespace and spaces.
 :highlight ExtraWhiteSpace ctermbg=red guibg=red
 autocmd Syntax * syn match ExtraWhiteSpace /\s\+$\| \+\ze\t/ containedin=ALL
 autocmd BufWinLeave * call clearmatches()
 
 " Removes trailing white spaces
-autocmd FileType asm,c,cpp,java,php,javascript,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+autocmd FileType asm,c,cpp,java,php,javascript,python,sql,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+
+au BufRead,BufNewFile user-data set filetype=yaml
+au FileType yaml setlocal shiftwidth=2 tabstop=2
+

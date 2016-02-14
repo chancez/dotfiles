@@ -3,16 +3,6 @@ Host *github.com
 User git
 IdentityFile ~/.ssh/id_rsa
 
-Host tradr
-Hostname 54.245.103.115
-User git
-IdentityFile ~/.ssh/id_rsa
-
-Host seph
-Hostname chance.dyndns.tv
-User chance
-IdentityFile ~/.ssh/id_rsa
-
 Host flip
 Hostname flip1.engr.oregonstate.edu
 user zibolskc
@@ -33,17 +23,11 @@ Hostname ash.osuosl.org
 user chance
 IdentityFile ~/.ssh/id_rsa
 
-Host fir
-Hostname fir.osuosl.org
-user chance
-IdentityFile ~/.ssh/id_rsa_fir
 
-Host os-class
-hostname os-class.engr.oregonstate.edu
-user zibolskc
-IdentityFile ~/.ssh/id_rsa
+Host citadel.coreos.systems
+  ProxyCommand none
+  ForwardAgent yes
 
-Host aqua blue cyan diamond emerald green honey lilac neon orange pink red silver taupe violet xray yellow
-HostName %h.workstation.osuosl.bak
-user chance
-IdentityFile ~/.ssh/id_rsa
+Host *.coreos.systems
+  ProxyCommand ssh -q citadel.coreos.systems -W %h:%p
+

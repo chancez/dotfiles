@@ -33,7 +33,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
 
-plugins=(git celery extract golang pip rvm tmux virtualenv zsh-syntax-highlighting history-substring-search)
+plugins=(git extract golang zsh-syntax-highlighting history-substring-search)
 
 export ZSH_TMUX_AUTOSTART_ONCE=true
 export ZSH_TMUX_AUTOCONNECT=true
@@ -43,4 +43,3 @@ source $ZSH/oh-my-zsh.sh
 HISTFILE=~/.histfile
 HISTSIZE=10000
 SAVEHIST=10000
-

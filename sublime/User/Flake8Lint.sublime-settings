@@ -1,3 +1,4 @@
 {
-    "lint_on_save": false
+    "lint_on_save": false,
+    "popup": false
 }
