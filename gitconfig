@@ -1,6 +1,6 @@
 [user]
 	name = Chance Zibolski
-	email = chance@coreos.com
+	email = chance.zibolski@coreos.com
 [github]
 	user = ecnahc515
 [color]
@@ -10,6 +10,8 @@
 [merge]
     tool = vimdiff
     log = true
+[diff]
+    compactionHeuristic = true
 [alias]
     ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
     ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
@@ -24,6 +26,7 @@
     count = shortlog -sn
 	commit = commit
     #commit = commit -v
+    conflicts = diff --name-only --diff-filter=U
 [push]
 	default = current
 [pull]
@@ -39,3 +42,5 @@
 # 	insteadOf = https://github.com/
 [hub]
 	protocol = ssh
+[fetch]
+	prune = true
