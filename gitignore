@@ -108,3 +108,12 @@ _mocks
 tags
 .ctags
 gotags
+
+.dexconfig/
+
+Session.vim
+
+.vimrc
+
+dev/coreupdate
+dev/quay-enterprise

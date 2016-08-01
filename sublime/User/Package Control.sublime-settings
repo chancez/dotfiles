@@ -3,6 +3,15 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
+		"ChangeQuotes",
+		"DashDoc",
+		"GoSublime",
+		"Origami",
+		"Protocol Buffer Syntax",
+		"Seti_UI",
+		"Seti_UX",
+		"SublimeLinter",
+		"TOML"
 	],
 	"installed_packages":
 	[

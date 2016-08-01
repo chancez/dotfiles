@@ -1,28 +1,26 @@
 Host *github.com
-#Hostname github.com
-User git
-IdentityFile ~/.ssh/id_rsa
+    User git
+    IdentityFile ~/.ssh/id_rsa
 
 Host flip
-Hostname flip1.engr.oregonstate.edu
-user zibolskc
-IdentityFile ~/.ssh/id_rsa
+    Hostname flip1.engr.oregonstate.edu
+    user zibolskc
+    IdentityFile ~/.ssh/id_rsa
 
 Host onid
-Hostname shell.onid.oregonstate.edu
-user zibolskc
-IdentityFile ~/.ssh/id_rsa
+    Hostname shell.onid.oregonstate.edu
+    user zibolskc
+    IdentityFile ~/.ssh/id_rsa
 
 Host cloud
-Hostname chancez.net
-user chance
-IdentityFile ~/.ssh/id_rsa
+    Hostname chancez.net
+    user chance
+    IdentityFile ~/.ssh/id_rsa
 
 Host ash
-Hostname ash.osuosl.org
-user chance
-IdentityFile ~/.ssh/id_rsa
-
+    Hostname ash.osuosl.org
+    user chance
+    IdentityFile ~/.ssh/id_rsa
 
 Host citadel.coreos.systems
   ProxyCommand none
@@ -31,3 +29,30 @@ Host citadel.coreos.systems
 Host *.coreos.systems
   ProxyCommand ssh -q citadel.coreos.systems -W %h:%p
 
+Host *.libcore.so
+  User czibolski
+  GSSAPIAuthentication yes
+  GSSAPIDelegateCredentials yes
+  GSSAPIKeyExchange yes
+  GSSAPITrustDNS no
+  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
+
+Host *.chancez.test
+  User core
+  Port 22
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile "/Users/chance/.ssh/id_rsa"
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host 172.17.0.*
+  User core
+  Port 22
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile "/Users/chance/.ssh/id_rsa"
+  IdentitiesOnly yes
+  LogLevel FATAL

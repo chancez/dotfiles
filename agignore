@@ -1,0 +1,6 @@
+Godeps
+cscope.*
+tags
+vendor
+bower_components
+node_modules
