@@ -32,10 +32,15 @@
 	"ignored_packages":
 	[
 		"ApacheConf.tmLanguage",
+		"Djaneiro",
 		"Emmet",
+		"HTML5",
+		"Jinja2",
+		"jQuery",
 		"nginx",
 		"Rust",
 		"RustAutoComplete",
+		"Sass",
 		"Sourcegraph",
 		"SublimeLinter-flake8",
 		"Theme - Cobalt2",
