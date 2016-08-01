@@ -32,13 +32,22 @@
 	"ignored_packages":
 	[
 		"ApacheConf.tmLanguage",
+		"ChangeQuotes",
+		"DashDoc",
 		"Emmet",
+		"GoSublime",
 		"nginx",
+		"Origami",
+		"Protocol Buffer Syntax",
 		"Rust",
 		"RustAutoComplete",
+		"Seti_UI",
+		"Seti_UX",
 		"Sourcegraph",
+		"SublimeLinter",
 		"SublimeLinter-flake8",
 		"Theme - Cobalt2",
+		"TOML",
 		"Vagrant"
 	],
 	"index_exclude_patterns":
