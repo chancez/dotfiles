@@ -7,21 +7,19 @@ call plug#begin('~/.vim/plugged')
 Plug 'MarcWeber/vim-addon-mw-utils'
 Plug 'tomtom/tlib_vim'
 Plug 'altercation/vim-colors-solarized'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'jistr/vim-nerdtree-tabs'
+Plug 'scrooloose/nerdtree' | Plug 'jistr/vim-nerdtree-tabs' | Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'scrooloose/syntastic'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-git'
 Plug 'tpope/vim-fugitive'
 Plug 'mattn/webapi-vim'
 Plug 'mattn/gist-vim'
-Plug 'ekalinin/Dockerfile.vim'
-Plug 'fatih/vim-go'
+Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
+Plug 'fatih/vim-go', { 'for': 'go' }
 Plug 'Matt-Deacalion/vim-systemd-syntax'
 Plug 'rizzatti/dash.vim'
 Plug 'terryma/vim-multiple-cursors'
-Plug 'rust-lang/rust.vim'
+Plug 'rust-lang/rust.vim', { 'for': 'rust' }
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'easymotion/vim-easymotion'
@@ -33,8 +31,9 @@ Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-commentary'
 Plug 'exu/pgsql.vim'
+Plug 'SirVer/ultisnips'
 
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --gocode-completer --tern-completer --racer-completer' }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --gocode-completer --tern-completer --racer-completer', 'for': ['go', 'rust', 'c', 'c++', 'javascript', 'python'] }
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
@@ -256,6 +255,11 @@ let g:fzf_layout = { 'down': '~20%' }
 
 " YouCompleteMe options
 let g:ycm_collect_identifiers_from_tags_files = 1
+
+" ultisnips options
+let g:UltiSnipsExpandTrigger="<c-space>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 
 " Fugitive options
 nnoremap <silent> <leader>gs :Gstatus<CR>
