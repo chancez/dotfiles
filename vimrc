@@ -16,6 +16,8 @@ Plug 'geoffharcourt/one-dark.vim'
 Plug 'jiangmiao/auto-pairs'
 Plug 'joshdick/airline-onedark.vim'
 Plug 'joshdick/onedark.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 Plug 'justinmk/vim-sneak'
 Plug 'majutsushi/tagbar'
 Plug 'mattn/gist-vim'
@@ -27,6 +29,7 @@ Plug 'scrooloose/nerdtree' | Plug 'jistr/vim-nerdtree-tabs' | Plug 'Xuyuanp/nerd
 Plug 'scrooloose/syntastic'
 Plug 'simeji/winresizer'
 Plug 'terryma/vim-multiple-cursors'
+Plug 'timonv/vim-cargo'
 Plug 'tomtom/tlib_vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
@@ -70,9 +73,6 @@ function! BuildComposer(info)
 endfunction
 
 Plug 'euclio/vim-markdown-composer', { 'do': function('BuildComposer') }
-
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
 
 call plug#end()
 
@@ -314,6 +314,9 @@ let g:go_term_mode = "split"
 au FileType go nmap <leader>b <Plug>(go-build)
 au FileType go nmap <leader>t <Plug>(go-test)
 
+" rust.vim
+let g:rustfmt_autosave = 1
+
 " markdown composer
 " dont start things by default
 let g:markdown_composer_open_browser = 0
@@ -364,11 +367,13 @@ command! -nargs=* -complete=file JQ call JQFun( '<f-args>' )
 
 " YouCompleteMe options
 let g:ycm_collect_identifiers_from_tags_files = 1
+let g:ycm_use_ultisnips_completer = 1
 
 " ultisnips options
-let g:UltiSnipsExpandTrigger="<c-space>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsExpandTrigger = "<c-l>"
+let g:UltiSnipsJumpForwardTrigger = "<c-j>"
+let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
+let g:UltiSnipsListSnippets = "<c-,>"
 
 " Fugitive options
 nnoremap <silent> <leader>gs :Gstatus<CR>
