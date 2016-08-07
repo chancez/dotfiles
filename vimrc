@@ -40,6 +40,7 @@ Plug 'justinmk/vim-sneak'
 Plug 'simeji/winresizer'
 Plug 'joshdick/onedark.vim'
 Plug 'joshdick/airline-onedark.vim'
+Plug 'timonv/vim-cargo'
 
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --gocode-completer --tern-completer --racer-completer', 'for': ['go', 'rust', 'c', 'c++', 'javascript', 'python'] }
 
@@ -295,6 +296,9 @@ let g:go_term_mode = "split"
 au FileType go nmap <leader>b <Plug>(go-build)
 au FileType go nmap <leader>t <Plug>(go-test)
 
+" rust.vim
+let g:rustfmt_autosave = 1
+
 " markdown composer
 " dont start things by default
 let g:markdown_composer_open_browser = 0
@@ -351,7 +355,7 @@ let g:ycm_use_ultisnips_completer = 1
 let g:UltiSnipsExpandTrigger = "<c-l>"
 let g:UltiSnipsJumpForwardTrigger = "<c-j>"
 let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
-let g:UltiSnipsListSnippets="<c-m>"
+let g:UltiSnipsListSnippets = "<c-,>"
 
 " Fugitive options
 nnoremap <silent> <leader>gs :Gstatus<CR>
