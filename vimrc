@@ -4,44 +4,63 @@ set shell=/usr/local/bin/zsh
 call plug#begin('~/.vim/plugged')
 
 Plug 'MarcWeber/vim-addon-mw-utils'
-Plug 'tomtom/tlib_vim'
+Plug 'Matt-Deacalion/vim-systemd-syntax'
+Plug 'SirVer/ultisnips'
 Plug 'altercation/vim-colors-solarized'
+Plug 'avakhov/vim-yaml'
+Plug 'benekastah/neomake'
+Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
+Plug 'elzr/vim-json'
+Plug 'exu/pgsql.vim'
+Plug 'geoffharcourt/one-dark.vim'
+Plug 'jiangmiao/auto-pairs'
+Plug 'joshdick/airline-onedark.vim'
+Plug 'joshdick/onedark.vim'
+Plug 'justinmk/vim-sneak'
+Plug 'majutsushi/tagbar'
+Plug 'mattn/gist-vim'
+Plug 'mattn/webapi-vim'
+Plug 'mtth/scratch.vim'
+Plug 'rizzatti/dash.vim'
+Plug 'rust-lang/rust.vim', { 'for': 'rust' }
 Plug 'scrooloose/nerdtree' | Plug 'jistr/vim-nerdtree-tabs' | Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'scrooloose/syntastic'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-git'
-Plug 'tpope/vim-fugitive'
-Plug 'mattn/webapi-vim'
-Plug 'mattn/gist-vim'
-Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
-Plug 'fatih/vim-go', { 'for': 'go' }
-Plug 'Matt-Deacalion/vim-systemd-syntax'
-Plug 'rizzatti/dash.vim'
+Plug 'simeji/winresizer'
 Plug 'terryma/vim-multiple-cursors'
-Plug 'rust-lang/rust.vim', { 'for': 'rust' }
+Plug 'tomtom/tlib_vim'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-git'
+Plug 'tpope/vim-surround'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'elzr/vim-json'
+Plug 'xolox/vim-easytags'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-session'
-Plug 'jiangmiao/auto-pairs'
-Plug 'majutsushi/tagbar'
-Plug 'tpope/vim-eunuch'
-Plug 'tpope/vim-commentary'
-Plug 'exu/pgsql.vim'
-Plug 'SirVer/ultisnips'
 
-Plug 'benekastah/neomake'
-Plug 'geoffharcourt/one-dark.vim'
-Plug 'xolox/vim-easytags'
-Plug 'mtth/scratch.vim'
-Plug 'avakhov/vim-yaml'
-Plug 'justinmk/vim-sneak'
-Plug 'simeji/winresizer'
-Plug 'joshdick/onedark.vim'
-Plug 'joshdick/airline-onedark.vim'
+function! InstallGoBins(info)
+  if a:info.status != 'unchanged' || a:info.force
+      if a:info.status == 'installed'
+          GoInstallBinaries
+      endif
+      if a:info.status == 'updated'
+          GoUpdateBinaries
+      endif
+    UpdateRemotePlugins
+  endif
+endfunction
 
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --gocode-completer --tern-completer --racer-completer', 'for': ['go', 'rust', 'c', 'c++', 'javascript', 'python'] }
+Plug 'fatih/vim-go', { 'for': 'go', 'do': function('InstallGoBins') }
+
+function! BuildYCM(info)
+  if a:info.status != 'unchanged' || a:info.force
+    !./install.py --clang-completer --gocode-completer --tern-completer --racer-completer
+    UpdateRemotePlugins
+  endif
+endfunction
+
+Plug 'Valloric/YouCompleteMe', { 'do': function('BuildYCM'), 'for': ['go', 'rust', 'c', 'c++', 'javascript', 'python'] }
 
 function! BuildComposer(info)
   if a:info.status != 'unchanged' || a:info.force
@@ -414,9 +433,11 @@ let g:tagbar_type_go = {
 
 " Set easytags options
 " let g:easytags_opts = ['--options=$HOME/.ctags']
-set tags=./tags,tags
+set tags=./tags;,tags;
 let g:easytags_dynamic_files = 2
 let g:easytags_events = ['BufWritePost']
+" let g:easytags_async = 1
+" When you set g:easytags_dynamic_files to 2 new tags files are created in the same directory as the file you're editing. If you want the tags files to be created in your working directory instead then change Vim's 'cpoptions' option to include the lowercase letter 'd'.
 set cpoptions=aAceFsBd
 
 " vim-sneak
