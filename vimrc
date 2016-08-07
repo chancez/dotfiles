@@ -345,11 +345,13 @@ command! -nargs=* -complete=file JQ call JQFun( '<f-args>' )
 
 " YouCompleteMe options
 let g:ycm_collect_identifiers_from_tags_files = 1
+let g:ycm_use_ultisnips_completer = 1
 
 " ultisnips options
-let g:UltiSnipsExpandTrigger="<c-space>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsExpandTrigger = "<c-l>"
+let g:UltiSnipsJumpForwardTrigger = "<c-j>"
+let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
+let g:UltiSnipsListSnippets="<c-m>"
 
 " Fugitive options
 nnoremap <silent> <leader>gs :Gstatus<CR>
