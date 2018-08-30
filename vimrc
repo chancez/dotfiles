@@ -3,44 +3,60 @@ set shell=/usr/local/bin/zsh
 
 call plug#begin('~/.vim/plugged')
 
+Plug 'AndrewRadev/splitjoin.vim'
 Plug 'MarcWeber/vim-addon-mw-utils'
 Plug 'Matt-Deacalion/vim-systemd-syntax'
 Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
 Plug 'altercation/vim-colors-solarized'
-Plug 'avakhov/vim-yaml'
-Plug 'benekastah/neomake'
+Plug 'avakhov/vim-yaml', { 'for': [ 'yaml', 'yaml.ansible' ] }
+Plug 'git@github.com:chancez/neomake.git', { 'branch': 'custom_tempfile_dir' }
+Plug 'burnettk/vim-angular', { 'for': 'javascript' }
+Plug 'chancez/groovy.vim', { 'for': 'groovy' }
 Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
-Plug 'elzr/vim-json'
+Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'exu/pgsql.vim'
 Plug 'geoffharcourt/one-dark.vim'
-Plug 'jiangmiao/auto-pairs'
-Plug 'joshdick/airline-onedark.vim'
 Plug 'joshdick/onedark.vim'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug '/usr/local/opt/fzf'
 Plug 'junegunn/fzf.vim'
+Plug 'junegunn/vim-easy-align'
 Plug 'justinmk/vim-sneak'
-Plug 'majutsushi/tagbar'
+Plug 'ludovicchabant/vim-gutentags'
+Plug 'majutsushi/tagbar', { 'on': ['TagbarToggle'] }
 Plug 'mattn/gist-vim'
 Plug 'mattn/webapi-vim'
 Plug 'mtth/scratch.vim'
+Plug 'mustache/vim-mustache-handlebars'
+Plug 'othree/html5.vim', { 'for': 'html' }
+Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
+Plug 'othree/yajs.vim', { 'for': 'javascript' }
 Plug 'rizzatti/dash.vim'
 Plug 'rust-lang/rust.vim', { 'for': 'rust' }
-Plug 'scrooloose/nerdtree' | Plug 'jistr/vim-nerdtree-tabs' | Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'scrooloose/syntastic'
+Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+Plug 'jistr/vim-nerdtree-tabs', { 'on': 'NERDTreeToggle' }
 Plug 'simeji/winresizer'
 Plug 'terryma/vim-multiple-cursors'
-Plug 'timonv/vim-cargo'
+Plug 'timonv/vim-cargo', { 'for': 'rust' }
 Plug 'tomtom/tlib_vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-git'
-Plug 'tpope/vim-surround'
+Plug 'machakann/vim-sandwich'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'xolox/vim-easytags'
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-session'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'zchee/deoplete-go', { 'for': 'go', 'do': 'make'}
+Plug 'ervandew/supertab'
+Plug 'hashivim/vim-terraform', { 'for': 'terraform' }
+Plug 'chr4/nginx.vim'
+Plug 'wesQ3/vim-windowswap'
+Plug 'google/vim-jsonnet', { 'for': 'jsonnet' }
+Plug 'pearofducks/ansible-vim'
+Plug 'wincent/terminus'
+Plug 'kassio/neoterm'
 
 function! InstallGoBins(info)
   if a:info.status != 'unchanged' || a:info.force
@@ -54,29 +70,10 @@ function! InstallGoBins(info)
   endif
 endfunction
 
-Plug 'fatih/vim-go', { 'for': 'go', 'do': function('InstallGoBins') }
-
-function! BuildYCM(info)
-  if a:info.status != 'unchanged' || a:info.force
-    !./install.py --clang-completer --gocode-completer --tern-completer --racer-completer
-    UpdateRemotePlugins
-  endif
-endfunction
-
-Plug 'Valloric/YouCompleteMe', { 'do': function('BuildYCM'), 'for': ['go', 'rust', 'c', 'c++', 'javascript', 'python'] }
-
-function! BuildComposer(info)
-  if a:info.status != 'unchanged' || a:info.force
-    !cargo build --release
-    UpdateRemotePlugins
-  endif
-endfunction
-
-Plug 'euclio/vim-markdown-composer', { 'do': function('BuildComposer') }
+Plug 'fatih/vim-go', { 'do': function('InstallGoBins') }
 
 call plug#end()
 
-autocmd! User YouCompleteMe if !has('vim_starting') | call youcompleteme#Enable() | endif
 
 " Theme
 let g:onedark_termcolors=16
@@ -97,9 +94,13 @@ if (empty($TMUX))
   endif
 endif
 
+if (has("nvim"))
+    set clipboard+=unnamedplus
+    set inccommand=nosplit
+endif
+
 syntax on
 colorscheme onedark
-let g:airline_theme='onedark'
 
 " Comment below to turn off the mouse
 set mouse=a
@@ -112,12 +113,16 @@ nmap <leader>w :w!<cr>
 " Making paste work with indenting
 set pastetoggle=<F2>
 
+" paste and discard overwritten contents, keeping existing paste buffer
+vnoremap <leader>p "_dP
+
 " Nerdtree keys
 map <leader>n <plug>NERDTreeTabsToggle<CR>
 map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
 map <leader>e :NERDTreeFind<CR>
 nmap <leader>nt :NERDTreeFind<CR>
 
+set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
 
 " Write the current file with sudo w!!
 cmap w!! %!sudo tee > /dev/null %
@@ -147,8 +152,7 @@ nnoremap <leader>ev :e $MYVIMRC<CR>
 nnoremap <leader>ez :e ~/.zshrc<CR>
 nnoremap <leader>sv :source $MYVIMRC<CR>
 
-" save session
-" nnoremap <leader>s :mksession<CR>
+nnoremap <leader>: @:<CR>
 
 if has('nvim')
     " this maps leader + esc to exit terminal mode
@@ -179,7 +183,6 @@ map <A-k> <C-W>k
 map <A-h> <C-W>h
 map <A-l> <C-W>l
 
-
 " UI
 set hidden
 set visualbell
@@ -205,7 +208,6 @@ set foldnestmax=10      " 10 nested fold max
 " space open/closes folds
 nnoremap <space> za
 set foldmethod=indent   " fold based on indent level
-
 
 " Other Stuff
 set number		    " Show Line numbers
@@ -260,70 +262,94 @@ set laststatus=2    " Always show status line
 let g:bufferline_echo = 0
 
 " My own commands
-command! TermBelow below 15new | execute 'terminal' | setlocal winfixheight
-command! TermBottom bo 15new | execute 'terminal' | setlocal winfixheight
+command! -nargs=* -complete=file TermBelow call TermFunc('below', 'new', '15', <f-args>)
+command! -nargs=* -complete=file TermBottom call TermFunc('bo', 'new', '15', <f-args>)
+command! -nargs=* -complete=file TermSizedBottom call TermFunc('bo', 'new', <f-args>)
+
+function! TermFunc(pos, direction, size, ...)
+    execute a:pos " " . a:size . a:direction . " "
+    execute 'terminal ' . join(a:000)
+    setlocal winfixheight
+endfunction
 
 " airline
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
+let g:airline_theme='onedark'
 let g:airline_symbols.space = "\ua0"
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline#extensions#branch#enabled = 0
-let g:airline#extensions#syntastic#enabled = 1
+let g:airline#extensions#fugitiveline#enabled = 0
+let g:airline#extensions#syntastic#enabled = 0
+let g:airline#extensions#tagbar#enabled = 0
 
-" neomake on every save
-" let g:neomake_go_gofmt_maker = {
-"     'exe': 'gofmt',
-"     'args': '-e',
-" }
-" autocmd! BufWritePost *.go Neomake
+" Neomake
+" When writing a buffer.
+call neomake#configure#automake('w')
+let g:neomake_tempfile_base_directory = '/Users/chance/.vim/tmp/neomake'
 
 " multicursor
 " let g:multi_cursor_next_key='<C-n>'
 " let g:multi_cursor_prev_key='<C-p>'
 " let g:multi_cursor_skip_key='<C-x>'
+let g:multi_cursor_exit_from_visual_mode = 0
+let g:multi_cursor_exit_from_insert_mode = 0
+
+function! Multiple_cursors_before()
+  let g:deoplete#disable_auto_complete = 1
+endfunction
+function! Multiple_cursors_after()
+  let g:deoplete#disable_auto_complete = 0
+endfunction
 
 " vim-go
 let g:go_highlight_functions = 1
 let g:go_highlight_methods = 1
 let g:go_highlight_structs = 1
 let g:go_highlight_interfaces = 1
-let g:go_highlight_operators = 1
+let g:go_highlight_operators = 0
 let g:go_highlight_build_constraints = 1
 let g:go_fmt_command = "goimports"
+let g:go_fmt_options = {
+    \ 'gofmt': '-s',
+    \ }
+
+" let g:go_auto_sameids = 1
+
+" Might fix folds being UN collapsed on fmt
+let g:go_fmt_experimental = 1
 " Shows type info in status bar for function under cursor
+" Disabled as it slows things down and hides errors.
 " let g:go_auto_type_info = 1
 " By default the testing commands run asynchronously in the background and
 " display results with go#jobcontrol#Statusline(). To make them run in a new
 " terminal
-" let g:go_term_enabled = 1
+let g:go_term_enabled = 1
 
 " By default new terminals are opened in a vertical split. To change it:
 let g:go_term_mode = "split"
 
-" don't show errors from the fmt command
-" let g:go_fmt_fail_silently = 1
-
+" don't run vet/lint with vim-go, it's done with Neomake
+let g:go_metalinter_autosave = 0
 " disable auto fmt on save:
 " let g:go_fmt_autosave = 0
 
 " vim-go keybindings
-au FileType go nmap <leader>b <Plug>(go-build)
-au FileType go nmap <leader>t <Plug>(go-test)
+au FileType go nmap <leader>gob <Plug>(go-build)
+au FileType go nmap <leader>got <Plug>(go-test)
+au FileType go nmap <leader>gotf <Plug>(go-test-func)
+au FileType go nmap <leader>gol <Plug>(go-lint)
+au FileType go nmap <leader>gov <Plug>(go-vet)
+au FileType go nmap <Leader>i <Plug>(go-info)
 
 " rust.vim
 let g:rustfmt_autosave = 1
 
-" markdown composer
-" dont start things by default
-let g:markdown_composer_open_browser = 0
-let g:markdown_composer_autostart = 0
-
-" sessions
-let g:session_autosave = 'no'
+" vim-terraform
+let g:terraform_fmt_on_save = 1
 
 " Plugin key-mappings.
 nmap <silent> <C-h> <Plug>DashSearch
@@ -332,8 +358,6 @@ let g:AutoPairsShortcutToggle = '<M-y>'
 
 " fzf
 let g:fzf_layout = { 'down': '~23%' }
-" attmept at fixing resizing of Terminal from 'TermBottom'
-" let g:fzf_layout = { 'down': '~23%', 'window': 'execute (tabpagenr()-1)."tabnew"' }
 let g:fzf_buffers_jump = 1
 
 let g:find_home = 'find $HOME -path "*/\.*" -prune -o -path "*/Applications*" -prune -o -path "*/Library*" -prune -o -type d -print 2> /dev/null'
@@ -345,11 +369,57 @@ command! FZFcd call fzf#run({
 \ })
 
 command! FZFGoImport call fzf#run({
-\   'source':   "cat $GOPATH/pkg_list.txt",
+\   'source':   'gopkgs -short | sort | uniq',
 \   'sink':     'GoImport',
 \   'down':     '20%',
 \   'options': '--prompt "GoImport> "'
 \ })
+
+command! FZFGoDoc call fzf#run({
+\   'source':   'gopkgs -short | sort | uniq',
+\   'sink':     'GoDoc',
+\   'down':     '20%',
+\   'options': '--prompt "GoDoc> "'
+\ })
+
+" Command for git grep
+" - fzf#vim#grep(command, with_column, [options], [fullscreen])
+command! -bang -nargs=* GGrep
+  \ call fzf#vim#grep(
+  \   'git grep --line-number '.shellescape(<q-args>), 0,
+  \   { 'dir': systemlist('git rev-parse --show-toplevel')[0] }, <bang>0)
+
+" Override Colors command. You can safely do this in your .vimrc as fzf.vim
+" will not override existing commands.
+command! -bang Colors
+  \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
+
+" Augmenting Ag command using fzf#vim#with_preview function
+"   * fzf#vim#with_preview([[options], preview window, [toggle keys...]])
+"     * For syntax-highlighting, Ruby and any of the following tools are required:
+"       - Highlight: http://www.andre-simon.de/doku/highlight/en/highlight.php
+"       - CodeRay: http://coderay.rubychan.de/
+"       - Rouge: https://github.com/jneen/rouge
+"
+"   :Ag  - Start fzf with hidden preview window that can be enabled with "?" key
+"   :Ag! - Start fzf in fullscreen and display the preview window above
+command! -bang -nargs=* Ag
+  \ call fzf#vim#ag(<q-args>,
+  \                 <bang>0 ? fzf#vim#with_preview('up:60%')
+  \                         : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \                 <bang>0)
+
+" Similarly, we can apply it to fzf#vim#grep. To use ripgrep instead of ag:
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+" Likewise, Files command with preview window
+command! -bang -nargs=? -complete=dir Files
+  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
 nnoremap <silent> <M-o> :Buffers<cr>
 nnoremap <silent> <C-p> :FZF<CR>
@@ -365,11 +435,34 @@ endfunction
 
 command! -nargs=* -complete=file JQ call JQFun( '<f-args>' )
 
-" YouCompleteMe options
-let g:ycm_collect_identifiers_from_tags_files = 1
-let g:ycm_use_ultisnips_completer = 1
+" Easy align
+
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
+
+" vim-sandwich options
+" add some of the vim-surround bindings
+runtime macros/sandwich/keymap/surround.vim
+" https://github.com/machakann/vim-sandwich/wiki/Introduce-vim-surround-keymappings
+
+" Textobjects to select a text surrounded by braket or same characters user input.
+xmap is <Plug>(textobj-sandwich-query-i)
+xmap as <Plug>(textobj-sandwich-query-a)
+omap is <Plug>(textobj-sandwich-query-i)
+omap as <Plug>(textobj-sandwich-query-a)
+
+" Deoplete options
+let g:deoplete#enable_at_startup = 1
+" <TAB>: completion.
+" inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" default to going down the list instead of up
+let g:SuperTabDefaultCompletionType = "<c-n>"
 
 " ultisnips options
+" Don't use tab, because it's already used for going through autocompletes
 let g:UltiSnipsExpandTrigger = "<c-l>"
 let g:UltiSnipsJumpForwardTrigger = "<c-j>"
 let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
@@ -387,6 +480,10 @@ nnoremap <silent> <leader>gp :Git push<CR>
 let g:gist_show_privates = 1
 let g:gist_get_multiplefile = 1
 
+" Scratch buffer options
+let g:scratch_insert_autohide = 0
+let g:scratch_persistence_file = "~/.vim/tmp/scratch-buffer.txt"
+
 " Commentary options
 map <silent> <M-/> :Commentary<CR>
 
@@ -395,7 +492,7 @@ let NERDTreeIgnore=['\.pyc', '\~$', '\.swo$', '\.swp$', '\.git', '\.hg', '\.svn'
 let NERDTreeShowBookmarks=1
 "let NERDTreeChDirMode=0
 "let NERDTreeShowHidden=1
-let g:nerdtree_tabs_open_on_console_startup=1
+let g:nerdtree_tabs_open_on_console_startup=2
 " On startup, focus NERDTree if opening a directory, focus file if opening a file. (When set to 2, always focus file window after startup).
 let g:nerdtree_tabs_smart_startup_focus=2
 
@@ -437,13 +534,18 @@ let g:tagbar_type_go = {
 \ }
 
 " Set easytags options
-" let g:easytags_opts = ['--options=$HOME/.ctags']
-set tags=./tags;,tags;
+let g:easytags_opts = ['--options=$HOME/.ctags']
 let g:easytags_dynamic_files = 2
 let g:easytags_events = ['BufWritePost']
-" let g:easytags_async = 1
+let g:easytags_async = 1
+let g:easytags_auto_highlight = 0
+
 " When you set g:easytags_dynamic_files to 2 new tags files are created in the same directory as the file you're editing. If you want the tags files to be created in your working directory instead then change Vim's 'cpoptions' option to include the lowercase letter 'd'.
+set tags=./tags;,tags;
 set cpoptions=aAceFsBd
+
+" guten tags options
+" let g:gutentags_file_list_command = 'ag -l | ctags -L -'
 
 " vim-sneak
 let g:sneak#s_next = 1
@@ -452,6 +554,15 @@ let g:sneak#s_next = 1
 nmap ;; <Plug>SneakNext
 nmap ,, <Plug>SneakPrevious
 
+function! ToggleVerbose()
+    if !&verbose
+        set verbosefile=~/.log/vim/verbose.log
+        set verbose=15
+    else
+        set verbose=0
+        set verbosefile=
+    endif
+endfunction
 
 " Autocmd Section
 
@@ -477,7 +588,7 @@ au BufRead,BufNewFile *.styl setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmar
 au FileType css set omnifunc=csscomplete#Complete
 
 " JavaScript
-autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType javascript setlocal tabstop=2 shiftwidth=2
 
 " CoffeeScript
 au BufNewFile,BufReadPost *.coffee setlocal shiftwidth=2 tabstop=2 expandtab
@@ -490,14 +601,35 @@ au BufRead,BufNewFile *.txt setlocal textwidth=0 wrap
 au FileType go setl tabstop=4
 au FileType go setl shiftwidth=4
 au FileType go setl noexpandtab
+
+" Groovy
+au BufRead,BufNewFile Jenkinsfile set filetype=groovy
+au FileType groovy setlocal expandtab shiftwidth=4 tabstop=8 softtabstop=4 smartindent cursorcolumn
+
+
 " do not wrap generate go protobuf files
-autocmd BufNewFile,BufRead *.pb.go set nowrap
+autocmd BufNewFile,BufRead *.pb.go setlocal textwidth=0 nowrap
+
+" Protobuf
+au FileType proto setlocal tabstop=2 shiftwidth=2
 
 " Show trailing whitespace and spaces.
-:highlight ExtraWhiteSpace ctermbg=red guibg=red
-"autocmd Syntax * syn match ExtraWhiteSpace /\s\+$\| \+\ze\t/ containedin=ALL
-"autocmd BufWinLeave * call clearmatches()
-autocmd BufWritePre * :%s/\s\+$//e
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+autocmd BufWinLeave * call clearmatches()
+
+fun! StripTrailingWhitespace()
+    " Only strip if the b:noStripeWhitespace variable isn't set
+    if exists('b:noStripWhitespace')
+        return
+    endif
+    %s/\s\+$//e
+endfun
+autocmd BufWritePre * call StripTrailingWhitespace()
+autocmd FileType markdown let b:noStripWhitespace=1
 
 
 " Removes trailing white spaces
@@ -505,8 +637,11 @@ autocmd FileType asm,c,cpp,java,php,javascript,python,sql,twig,xml,yml autocmd B
 
 au BufRead,BufNewFile user-data set filetype=yaml
 au BufRead,BufNewFile *.yml set filetype=yaml
-au FileType yaml setlocal tabstop=2
+au FileType yaml setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
 au FileType sh setlocal tabstop=4 shiftwidth=4
+
+" fix gutentags erroring on git commit/rebase
+au FileType gitcommit,gitrebase let g:gutentags_enabled=0
 
 " always go into insert mode when entering a terminal
 autocmd BufWinEnter,WinEnter term://* startinsert

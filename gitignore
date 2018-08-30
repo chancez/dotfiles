@@ -89,6 +89,7 @@ bundler_stubs/
 
 *.sublime-*
 
+.env
 dev.env
 quay.env
 salesforce.env
@@ -102,7 +103,6 @@ contact.json
 sync.env
 json_files
 tectonic_compute.sql
-*.env
 _mocks
 .agignore
 tags
@@ -117,3 +117,30 @@ Session.vim
 
 dev/coreupdate
 dev/quay-enterprise
+
+.glide/*
+
+.tern-project
+
+static/tectonic-signing-key.staging.pem.txt
+static/tectonic-signing-key.staging.pub.txt
+static/dexconfig/emailer-fake.json
+static/dexconfig/emailer-mailgun.json
+
+.secrets
+
+domain_migration
+
+aws.env
+license.txt
+pull_secret.json
+
+manifests_revised
+examples_revised
+.envrc
+
+*@neomake*
+
+chargeback_reports/*
+tags.tmp
+/scratch/
