@@ -100,6 +100,9 @@ if (empty($TMUX))
   endif
 endif
 
+" use the system clipboard
+set clipboard=unnamed
+
 if (has("nvim"))
     set clipboard+=unnamedplus
     set inccommand=nosplit
@@ -228,9 +231,6 @@ set linespace=0	" Number of pixels between chars
 " Project specific .vimrcs
 set exrc
 set secure " Disable unsafe commands in project specific .vimrc
-
-" use the system clipboard
-set clipboard=unnamed
 
 " Allow undos and history to be persistant
 set undofile

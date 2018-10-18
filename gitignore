@@ -67,7 +67,6 @@ Thumbs.db
 
 # Ignore other unneeded files.
 database.yml
-doc/
 *~
 .project
 .idea

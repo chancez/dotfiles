@@ -13,7 +13,8 @@ Host sebastian
 
 
 Host shell
-  HostName sh-el6.eng.rdu2.redhat.com
+  # HostName sh-el6.eng.rdu2.redhat.com
+  HostName shell.eng.rdu.redhat.com
   User czibolsk
   GSSAPIAuthentication yes
   GSSAPIDelegateCredentials yes
