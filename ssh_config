@@ -20,6 +20,15 @@ Host shell
   GSSAPIDelegateCredentials yes
   PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
 
+Host rcm-guest
+  # HostName sh-el6.eng.rdu2.redhat.com
+  HostName rcm-guest.app.eng.bos.redhat.com
+  User czibolsk
+  GSSAPIAuthentication yes
+  GSSAPIDelegateCredentials yes
+  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
+
+
 Host *github.com
     User git
     IdentityFile ~/.ssh/id_rsa

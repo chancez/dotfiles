@@ -10,7 +10,7 @@ Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'altercation/vim-colors-solarized'
 Plug 'avakhov/vim-yaml', { 'for': [ 'yaml', 'yaml.ansible' ] }
-Plug 'git@github.com:chancez/neomake.git', { 'branch': 'custom_tempfile_dir' }
+Plug 'git@github.com:chancez/neomake.git', { 'branch': 'custom_tempfile_dir2' }
 Plug 'burnettk/vim-angular', { 'for': 'javascript' }
 Plug 'chancez/groovy.vim', { 'for': 'groovy' }
 Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
@@ -635,8 +635,11 @@ fun! StripTrailingWhitespace()
     %s/\s\+$//e
 endfun
 autocmd BufWritePre * call StripTrailingWhitespace()
+autocmd FileType markdown setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
 autocmd FileType markdown let b:noStripWhitespace=1
 
+" set .envrc to sh
+au BufRead,BufNewFile .envrc set filetype=sh
 
 " Removes trailing white spaces
 autocmd FileType asm,c,cpp,java,php,javascript,python,sql,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
@@ -652,3 +655,30 @@ au FileType gitcommit,gitrebase let g:gutentags_enabled=0
 " always go into insert mode when entering a terminal
 autocmd BufWinEnter,WinEnter term://* startinsert
 
+" save folds automatically. based on comments in http://vim.wikia.com/wiki/Make_views_automatic
+let g:skipview_files = [ 'NERD_tree_1', '.git/COMMIT_EDITMSG']
+function! MakeViewCheck()
+    if &l:diff | return 0 | endif
+    if &buftype != '' | return 0 | endif
+    if expand('%') =~ '\[.*\]' | return 0 | endif
+    if empty(glob(expand('%:p'))) | return 0 | endif
+    if &modifiable == 0 | return 0 | endif
+    if len($TEMP) && expand('%:p:h') == $TEMP | return 0 | endif
+    if len($TMP) && expand('%:p:h') == $TMP | return 0 | endif
+
+    let file_name = expand('%:p')
+    for ifiles in g:skipview_files
+        if file_name =~ ifiles
+            return 0
+        endif
+    endfor
+
+    return 1
+endfunction
+
+augroup AutoView
+    autocmd!
+    " Autosave & Load Views.
+    autocmd BufWritePre,BufWinLeave ?* if MakeViewCheck() | silent! mkview | endif
+    autocmd BufWinEnter ?* if MakeViewCheck() | silent! loadview | endif
+augroup END

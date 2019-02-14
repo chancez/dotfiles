@@ -143,3 +143,4 @@ examples_revised
 chargeback_reports/*
 tags.tmp
 /scratch/
+.gvm_local
