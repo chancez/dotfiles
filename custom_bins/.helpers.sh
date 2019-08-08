@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echoerr() { echo "$@" 1>&2; }
+
 _internal_kubectl() {
     command kubectl --namespace="${KUBE_NAMESPACE:-default}" "$@"
 }
@@ -42,7 +44,7 @@ _internal_kpods() {
                 break
                 ;;
             -*|--*=) # unsupported flags
-                echo "Error: Unsupported flag $key" >&2
+                echoerr "Error: Unsupported flag $key" >&2
                 return 1
                 ;;
             *) # preserve positional arguments
@@ -70,7 +72,7 @@ _internal_kpods() {
         fi
 
         if [ "$POD" == "" ]; then
-            echo "Must select a pod or specify one via flags"
+            echoerr "Must select a pod or specify one via flags"
             return 1
         fi
 
@@ -84,11 +86,11 @@ _internal_kpods() {
             if [ -z "$CONTAINER" ]; then
                 CONTAINER="$(echo "$CONTAINERS" | fzf --select-1)"
             elif ! echo $CONTAINERS | grep -q "^${CONTAINER}$"; then
-                echo "Invalid container $CONTAINER, not in container list: ${$(echo $CONTAINERS | paste -sd ', ' -)}"
+                echoerr "Invalid container $CONTAINER, not in container list: ${$(echo $CONTAINERS | paste -sd ', ' -)}"
                 return 1
             fi
             if [ "$CONTAINER" == "" ]; then
-                echo "Must specify container for pod $POD. Choices: ${$(echo $CONTAINERS | paste -sd ', ' -)}"
+                echoerr "Must specify container for pod $POD. Choices: ${$(echo $CONTAINERS | paste -sd ', ' -)}"
                 return 1
             fi
 
@@ -98,7 +100,7 @@ _internal_kpods() {
         fi
     else
         # handle args
-        echo "Do not currently support args"
+        echoerr "Do not currently support args"
         exit 1
     fi
 }
@@ -147,11 +149,11 @@ _internal_kexec() {
                 ;;
             --) # end argument parsing and pass the rest as arguments to the logs command
                 shift
-                PARAMS+=($@)
+                PARAMS+=("$@")
                 break
                 ;;
             -*|--*=) # unsupported flags
-                echo "Error: Unsupported flag $key" >&2
+                echoerr "Error: Unsupported flag $key" >&2
                 return 1
                 ;;
             *) # preserve positional arguments
@@ -167,13 +169,13 @@ _internal_kexec() {
         POD="$(_internal_kpods -n "$NAMESPACE" -l "$SELECTOR")"
         local RET=$?
         if [ $RET -ne 0 ]; then
-            echo "$POD"
+            echoerr "$POD"
             return $RET
         fi
     fi
 
     if [ -z "$POD" ]; then
-        echo "Must specify pod!"
+        echoerr "Must specify pod!"
         return 1
     fi
 
@@ -181,13 +183,13 @@ _internal_kexec() {
         CONTAINER="$(_internal_kpods -p "$POD" -n "$NAMESPACE" -l "$SELECTOR" --print-container)"
         local RET=$?
         if [ $RET -ne 0 ]; then
-            echo "$CONTAINER"
+            echoerr "$CONTAINER"
             return $RET
         fi
     fi
 
     if [ -z "$CONTAINER" ]; then
-        echo "Must specify container!"
+        echoerr "Must specify container!"
         return 1
     fi
 
@@ -221,7 +223,7 @@ _internal_kexec() {
         # execute our shell
         EXEC_CMD+=(-- "$KUBE_SHELL" -il)
     fi
-    echo "${EXEC_CMD[@]}"
+    echoerr "${EXEC_CMD[@]}"
     "${EXEC_CMD[@]}"
 }
 
@@ -273,7 +275,7 @@ function _internal_klogs() {
                 break
                 ;;
             -*|--*=) # unsupported flags
-                echo "Error: Unsupported flag $key" >&2
+                echoerr "Error: Unsupported flag $key" >&2
                 return 1
                 ;;
             *) # preserve positional arguments
@@ -289,13 +291,13 @@ function _internal_klogs() {
         POD="$(_internal_kpods -n "$NAMESPACE" -l "$SELECTOR")"
         local RET=$?
         if [ $RET -ne 0 ]; then
-            echo "$POD"
+            echoerr "$POD"
             return $RET
         fi
     fi
 
     if [ -z "$POD" ]; then
-        echo "Must specify pod!"
+        echoerr "Must specify pod!"
         return 1
     fi
 
@@ -303,13 +305,13 @@ function _internal_klogs() {
         CONTAINER="$(_internal_kpods -p "$POD" -n "$NAMESPACE" -l "$SELECTOR" --print-container)"
         local RET=$?
         if [ $RET -ne 0 ]; then
-            echo "$CONTAINER"
+            echoerr "$CONTAINER"
             return $RET
         fi
     fi
 
     if [ -z "$CONTAINER" ]; then
-        echo "Must specify container!"
+        echoerr "Must specify container!"
         return 1
     fi
 
@@ -328,6 +330,6 @@ function _internal_klogs() {
     fi
 
     LOGS_CMD+=("$@")
-    echo "${LOGS_CMD[@]}"
+    echoerr "${LOGS_CMD[@]}"
     "${LOGS_CMD[@]}"
 }
