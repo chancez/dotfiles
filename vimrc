@@ -9,17 +9,16 @@ Plug 'Matt-Deacalion/vim-systemd-syntax'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'altercation/vim-colors-solarized'
-Plug 'avakhov/vim-yaml', { 'for': [ 'yaml', 'yaml.ansible' ] }
-Plug 'git@github.com:chancez/neomake.git', { 'branch': 'custom_tempfile_dir2' }
-Plug 'burnettk/vim-angular', { 'for': 'javascript' }
+" Plug 'avakhov/vim-yaml', { 'for': [ 'yaml'] }
+Plug 'neomake/neomake'
 Plug 'chancez/groovy.vim', { 'for': 'groovy' }
 Plug 'ekalinin/Dockerfile.vim', { 'for': 'Dockerfile' }
 Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'exu/pgsql.vim'
 Plug 'geoffharcourt/one-dark.vim'
 Plug 'joshdick/onedark.vim'
-" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug '/usr/local/opt/fzf'
+" Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'justinmk/vim-sneak'
@@ -31,6 +30,7 @@ Plug 'mtth/scratch.vim'
 Plug 'mustache/vim-mustache-handlebars'
 Plug 'othree/html5.vim', { 'for': 'html' }
 Plug 'pangloss/vim-javascript', { 'for': 'javascript' }
+Plug 'leafgarland/typescript-vim', { 'for': 'typescript' }
 Plug 'othree/yajs.vim', { 'for': 'javascript' }
 Plug 'rizzatti/dash.vim'
 Plug 'rust-lang/rust.vim', { 'for': 'rust' }
@@ -63,6 +63,9 @@ Plug 'google/vim-jsonnet', { 'for': 'jsonnet' }
 Plug 'pearofducks/ansible-vim'
 Plug 'wincent/terminus'
 Plug 'kassio/neoterm'
+Plug 'vito-c/jq.vim'
+Plug 'szw/vim-maximizer'
+Plug 'junegunn/goyo.vim'
 
 function! InstallGoBins(info)
   if a:info.status != 'unchanged' || a:info.force
@@ -168,11 +171,39 @@ if has('nvim')
     tnoremap <leader><Esc> <C-\><C-n>
     " This makes navigating windows the same no matter if they are displaying
     " a normal buffer or a terminal buffer
+    "
+    " Move around windows in terminal
     tnoremap <A-h> <C-\><C-n><C-w>h
     tnoremap <A-j> <C-\><C-n><C-w>j
     tnoremap <A-k> <C-\><C-n><C-w>k
     tnoremap <A-l> <C-\><C-n><C-w>l
 endif
+
+" Move around windows
+map <A-j> <C-W>j
+map <A-k> <C-W>k
+map <A-h> <C-W>h
+map <A-l> <C-W>l
+
+" function! MaximizeCurrentBuffer()
+"     if !exists('t:maximize')
+"         let t:maximize=1
+"     endif
+"     if t:maximize
+"         wincmd _
+"         wincmd |
+"         let t:maximize=0
+"     else
+"         wincmd =
+"         let t:maximize=1
+"     endif
+" endfunction
+
+" maximize the current buffer
+" map <silent> <C-W>0 :call MaximizeCurrentBuffer()<CR>
+
+let g:maximizer_default_mapping_key = '<C-W>0'
+
 let g:Guifont="Inconsolata For Powerline:12"
 
 " Wrapped lines goes down/up to next row, rather than next line in file.
@@ -186,11 +217,6 @@ nnoremap Y y$
 vnoremap < <gv
 vnoremap > >gv
 
-" Move around windows
-map <A-j> <C-W>j
-map <A-k> <C-W>k
-map <A-h> <C-W>h
-map <A-l> <C-W>l
 
 " UI
 set hidden
@@ -292,10 +318,13 @@ let g:airline#extensions#fugitiveline#enabled = 0
 let g:airline#extensions#syntastic#enabled = 0
 let g:airline#extensions#tagbar#enabled = 0
 
+" disable vim-json concealing
+let g:vim_json_syntax_conceal = 0
+
 " Neomake
 " When writing a buffer.
 call neomake#configure#automake('w')
-let g:neomake_tempfile_base_directory = '/Users/chance/.vim/tmp/neomake'
+let g:neomake_tempfile_dir = '/Users/chance/.vim/tmp/neomake'
 
 " multicursor
 " let g:multi_cursor_next_key='<C-n>'
@@ -304,12 +333,21 @@ let g:neomake_tempfile_base_directory = '/Users/chance/.vim/tmp/neomake'
 let g:multi_cursor_exit_from_visual_mode = 0
 let g:multi_cursor_exit_from_insert_mode = 0
 
-function! Multiple_cursors_before()
-  let g:deoplete#disable_auto_complete = 1
-endfunction
-function! Multiple_cursors_after()
-  let g:deoplete#disable_auto_complete = 0
-endfunction
+" fix Inserting <Plug>_ when using multiple cursors
+" https://github.com/terryma/vim-multiple-cursors/issues/235
+func! Multiple_cursors_before()
+  if deoplete#is_enabled()
+    call deoplete#disable()
+    let g:deoplete_is_enable_before_multi_cursors = 1
+  else
+    let g:deoplete_is_enable_before_multi_cursors = 0
+  endif
+endfunc
+func! Multiple_cursors_after()
+  if g:deoplete_is_enable_before_multi_cursors
+    call deoplete#enable()
+  endif
+endfunc
 
 " vim-go
 let g:go_highlight_functions = 1
@@ -338,6 +376,8 @@ let g:go_term_enabled = 1
 " By default new terminals are opened in a vertical split. To change it:
 let g:go_term_mode = "split"
 
+let g:go_list_type = "quickfix"
+
 " don't run vet/lint with vim-go, it's done with Neomake
 let g:go_metalinter_autosave = 0
 " disable auto fmt on save:
@@ -350,6 +390,15 @@ au FileType go nmap <leader>gotf <Plug>(go-test-func)
 au FileType go nmap <leader>gol <Plug>(go-lint)
 au FileType go nmap <leader>gov <Plug>(go-vet)
 au FileType go nmap <Leader>i <Plug>(go-info)
+
+function! Go_guru_scope_from_git_root()
+  let gitroot = system("git rev-parse --show-toplevel | tr -d '\n'")
+  let pattern = escape(go#util#gopath() . "/src/", '\ /')
+  let repo_pkg = substitute(gitroot, pattern, "", "")
+  return printf("%s/...,-%s/vendor/...", repo_pkg, repo_pkg)
+endfunction
+
+au FileType go silent exe "GoGuruScope " . Go_guru_scope_from_git_root()
 
 " rust.vim
 let g:rustfmt_autosave = 1
@@ -364,7 +413,8 @@ let g:AutoPairsShortcutToggle = '<M-y>'
 
 " fzf
 let g:fzf_layout = { 'down': '~23%' }
-let g:fzf_buffers_jump = 1
+" jump to existing buffer if it exists, instead of opening new
+" let g:fzf_buffers_jump = 1
 
 let g:find_home = 'find $HOME -path "*/\.*" -prune -o -path "*/Applications*" -prune -o -path "*/Library*" -prune -o -type d -print 2> /dev/null'
 command! FZFcd call fzf#run({
@@ -488,6 +538,7 @@ let g:gist_get_multiplefile = 1
 
 " Scratch buffer options
 let g:scratch_insert_autohide = 0
+let g:scratch_autohide = 0
 let g:scratch_persistence_file = "~/.vim/tmp/scratch-buffer.txt"
 
 " Commentary options
@@ -507,8 +558,6 @@ unmap <leader>w
 let g:winresizer_start_key = '<leader>w '
 
 " tagbar
-" Toggle tagbar
-nmap <silent> <leader>tb :TagbarToggle<CR>
 
 " tagbar options for go
 let g:tagbar_type_go = {
@@ -575,8 +624,8 @@ endfunction
 " If you prefer the Omni-Completion tip window to close when a selection is
 " made, these lines close it on movement in insert mode or when leaving
 " insert mode
-autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
-autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+" autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
+" autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 
 " Python
 autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
@@ -619,6 +668,10 @@ autocmd BufNewFile,BufRead *.pb.go setlocal textwidth=0 nowrap
 " Protobuf
 au FileType proto setlocal tabstop=2 shiftwidth=2
 
+autocmd FileType markdown setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
+autocmd FileType markdown let b:noStripWhitespace=1
+autocmd FileType diff let b:noStripWhitespace=1
+
 " Show trailing whitespace and spaces.
 highlight ExtraWhitespace ctermbg=red guibg=red
 match ExtraWhitespace /\s\+$/
@@ -635,19 +688,22 @@ fun! StripTrailingWhitespace()
     %s/\s\+$//e
 endfun
 autocmd BufWritePre * call StripTrailingWhitespace()
-autocmd FileType markdown setlocal shiftwidth=2 tabstop=2 textwidth=0 wrapmargin=0
-autocmd FileType markdown let b:noStripWhitespace=1
 
 " set .envrc to sh
 au BufRead,BufNewFile .envrc set filetype=sh
 
 " Removes trailing white spaces
-autocmd FileType asm,c,cpp,java,php,javascript,python,sql,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+autocmd FileType asm,c,cpp,java,php,javascript,typescript,python,sql,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
 
+" set user-data files to yaml file type
 au BufRead,BufNewFile user-data set filetype=yaml
-au BufRead,BufNewFile *.yml set filetype=yaml
 au FileType yaml setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
+
 au FileType sh setlocal tabstop=4 shiftwidth=4
+
+
+" set .ts to typescript
+au BufRead,BufNewFile *.ts set filetype=typescript
 
 " fix gutentags erroring on git commit/rebase
 au FileType gitcommit,gitrebase let g:gutentags_enabled=0
