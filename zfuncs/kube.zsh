@@ -42,10 +42,6 @@ kns() {
     export KUBE_NAMESPACE="$(echo "$namespaces" | sed "s/$ns/$(tput bold)$ns$(tput sgr0)/" | "${fzf_cmd[@]}" )"
 }
 
-kn() {
-    kns "$@"
-}
-
 kcns() {
     if [ -n "$1" ]; then
         kc "$1"
