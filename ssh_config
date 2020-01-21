@@ -8,3 +8,13 @@ Host cloud
     Hostname chancez.net
     user chance
     IdentityFile ~/.ssh/id_rsa
+
+Host pi
+    Hostname pi.home.chancez.xyz
+    User chance
+    IdentityFile ~/.ssh/id_rsa
+
+Host soma
+    Hostname soma-internal.home.chancez.xyz
+    User root
+    IdentityFile ~/.ssh/id_rsa
