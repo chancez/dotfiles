@@ -1,102 +1,10 @@
-Host sebastian
-  HostName ovpn-phx2.redhat.com
-  Port 330
-  User czibolsk
-  LocalForward 2227 devserv.devel.redhat.com:991
-  LocalForward 2228 squid.redhat.com:3128
-  ControlMaster yes
-  ControlPath /tmp/rhat_ssh
-  DynamicForward 9999
-  GSSAPIAuthentication yes
-  GSSAPIDelegateCredentials yes
-  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
-
-
-Host shell
-  # HostName sh-el6.eng.rdu2.redhat.com
-  HostName shell.eng.rdu.redhat.com
-  User czibolsk
-  GSSAPIAuthentication yes
-  GSSAPIDelegateCredentials yes
-  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
-
-Host rcm-guest
-  # HostName sh-el6.eng.rdu2.redhat.com
-  HostName rcm-guest.app.eng.bos.redhat.com
-  User czibolsk
-  GSSAPIAuthentication yes
-  GSSAPIDelegateCredentials yes
-  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
-
-
 Host *github.com
     User git
     IdentityFile ~/.ssh/id_rsa
     Hostname ssh.github.com
     Port 443
 
-Host flip
-    Hostname flip1.engr.oregonstate.edu
-    user zibolskc
-    IdentityFile ~/.ssh/id_rsa
-
-Host onid
-    Hostname shell.onid.oregonstate.edu
-    user zibolskc
-    IdentityFile ~/.ssh/id_rsa
-
 Host cloud
     Hostname chancez.net
     user chance
     IdentityFile ~/.ssh/id_rsa
-
-Host ash
-    Hostname ash.osuosl.org
-    user chance
-    IdentityFile ~/.ssh/id_rsa
-
-Host citadel.coreos.systems
-  ProxyCommand none
-  ForwardAgent yes
-
-Host *.coreos.systems
-  ProxyCommand ssh -q citadel.coreos.systems -W %h:%p
-
-Host *.libcore.so
-  User czibolski
-  GSSAPIAuthentication yes
-  GSSAPIDelegateCredentials yes
-  # GSSAPIKeyExchange yes
-  # GSSAPITrustDNS no
-  PreferredAuthentications gssapi-keyex,gssapi-with-mic,password
-
-Host *.chancez.test
-  User core
-  Port 22
-  UserKnownHostsFile /dev/null
-  StrictHostKeyChecking no
-  PasswordAuthentication no
-  IdentityFile "/Users/chance/.ssh/id_rsa"
-  IdentitiesOnly yes
-  LogLevel FATAL
-
-Host *.chancez.test
-  User core
-  Port 22
-  UserKnownHostsFile /dev/null
-  StrictHostKeyChecking no
-  PasswordAuthentication no
-  IdentityFile "/Users/chance/.ssh/id_rsa"
-  IdentitiesOnly yes
-  LogLevel FATAL
-
-Host 172.17.0.*
-  User core
-  Port 22
-  UserKnownHostsFile /dev/null
-  StrictHostKeyChecking no
-  PasswordAuthentication no
-  IdentityFile "/Users/chance/.ssh/id_rsa"
-  IdentitiesOnly yes
-  LogLevel FATAL
-
