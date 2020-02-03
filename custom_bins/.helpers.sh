@@ -2,10 +2,6 @@
 
 echoerr() { echo "$@" 1>&2; }
 
-_internal_kubectl() {
-    command kubectl --namespace="${KUBE_NAMESPACE:-default}" "$@"
-}
-
 _internal_kpods() {
     local POD
     local CONTAINER
@@ -58,7 +54,7 @@ _internal_kpods() {
 
 
     if [ "$#" -eq 0 ]; then
-        local POD_CMD=(_internal_kubectl get pods --no-headers)
+        local POD_CMD=(kubectl get pods --no-headers)
         if [ -n "$NAMESPACE" ]; then
             POD_CMD+=(--namespace "$NAMESPACE")
         fi
@@ -77,7 +73,7 @@ _internal_kpods() {
         fi
 
         if [ "$PRINT_CONTAINER" == "true" ]; then
-            local CONTAINER_CMD=(_internal_kubectl get pod "$POD" -o json)
+            local CONTAINER_CMD=(kubectl get pod "$POD" -o json)
             if [ -n "$NAMESPACE" ]; then
                 CONTAINER_CMD+=(--namespace "$NAMESPACE")
             fi
@@ -196,7 +192,7 @@ _internal_kexec() {
     local COLUMNS=$(tput cols)
     local LINES=$(tput lines)
     local TERM=xterm
-    local EXEC_CMD=(_internal_kubectl exec "$POD" -c "$CONTAINER")
+    local EXEC_CMD=(kubectl exec "$POD" -c "$CONTAINER")
 
     if [ "$INTERACTIVE" == "true" ]; then
         EXEC_CMD+=(-i)
@@ -315,7 +311,7 @@ function _internal_klogs() {
         return 1
     fi
 
-    local LOGS_CMD=(_internal_kubectl logs "$POD" -c "$CONTAINER")
+    local LOGS_CMD=(kubectl logs "$POD" -c "$CONTAINER")
     if [ -n "$NAMESPACE" ]; then
         LOGS_CMD+=(--namespace "$NAMESPACE")
     fi
