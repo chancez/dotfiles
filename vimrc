@@ -1,5 +1,7 @@
 set nocompatible               " be iMproved
-set shell=/usr/local/bin/zsh
+set shell=/bin/zsh
+
+set rtp +=~/.vim
 
 call plug#begin('~/.vim/plugged')
 
@@ -17,8 +19,8 @@ Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'exu/pgsql.vim'
 Plug 'geoffharcourt/one-dark.vim'
 Plug 'joshdick/onedark.vim'
-" Plug '/usr/local/opt/fzf'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
+Plug '/usr/local/opt/fzf'
+" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'justinmk/vim-sneak'
@@ -698,6 +700,7 @@ autocmd FileType asm,c,cpp,java,php,javascript,typescript,python,sql,twig,xml,ym
 " set user-data files to yaml file type
 au BufRead,BufNewFile user-data set filetype=yaml
 au FileType yaml setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
+au FileType jsonnet setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
 
 au FileType sh setlocal tabstop=4 shiftwidth=4
 
