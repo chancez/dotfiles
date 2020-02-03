@@ -1,12 +1,12 @@
 [user]
 	name = Chance Zibolski
-	email = czibolsk@redhat.com
+	email = czibolski@rigetti.com
 [github]
 	user = chancez
 [color]
     ui = true
 [core]
-	excludesfile = /Users/chance/.gitignore
+	excludesfile = ~/.gitignore
 [merge]
     tool = vimdiff
     log = true
@@ -60,6 +60,6 @@
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
 [http]
-	cookiefile = /Users/chance/.gitcookies
+	cookiefile = ~/.gitcookies
 [rebase]
 	autosquash = true
