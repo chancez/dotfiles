@@ -591,7 +591,6 @@ let g:tagbar_type_go = {
 \ }
 
 " Set easytags options
-let g:easytags_opts = ['--options=$HOME/.ctags']
 let g:easytags_dynamic_files = 2
 let g:easytags_events = ['BufWritePost']
 let g:easytags_async = 1
@@ -699,7 +698,7 @@ autocmd FileType asm,c,cpp,java,php,javascript,typescript,python,sql,twig,xml,ym
 
 " set user-data files to yaml file type
 au BufRead,BufNewFile user-data set filetype=yaml
-au FileType yaml setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
+au FileType yml,yaml setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
 au FileType jsonnet setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
 
 au FileType sh setlocal tabstop=4 shiftwidth=4
