@@ -10,6 +10,9 @@ mkdir -p "$HOME/.vim/tmp/backup"
 mkdir -p "$HOME/.vim/tmp/swap"
 mkdir -p "$HOME/.vim/tmp/undo"
 ln -s "$DOTFILES_DIR/vimrc" "$HOME/.vimrc"
+mkdir -p "$HOME/.config/nvim"
+ln -s "$DOTFILES_DIR/init.vim" "$HOME/.config/nvim/init.vim"
+
 ln -s "$DOTFILES_DIR/tmux.conf" "$HOME/.tmux.conf"
 
 ln -s "$DOTFILES_DIR/ctags" "$HOME/.ctags"
