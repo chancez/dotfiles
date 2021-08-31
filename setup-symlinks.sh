@@ -6,7 +6,9 @@ DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 git submodule update --init --recursive
 
-mkdir -p "$HOME/.vim/tmp/{backup,undo,swap}"
+mkdir -p "$HOME/.vim/tmp/backup"
+mkdir -p "$HOME/.vim/tmp/swap"
+mkdir -p "$HOME/.vim/tmp/undo"
 ln -s "$DOTFILES_DIR/vimrc" "$HOME/.vimrc"
 ln -s "$DOTFILES_DIR/tmux.conf" "$HOME/.tmux.conf"
 
