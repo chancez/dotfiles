@@ -19,7 +19,7 @@ ln -s "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
 ln -s "$DOTFILES_DIR/pgclirc" "$HOME/.pgclirc"
 ln -s "$DOTFILES_DIR/inputrc" "$HOME/.inputrc"
 ln -s "$DOTFILES_DIR/gitconfig" "$HOME/.gitconfig"
-ln -s "$DOTFILES_DIR/gitignore" "$HOME/.gitconfig"
+ln -s "$DOTFILES_DIR/gitignore" "$HOME/.gitignore"
 ln -s "$DOTFILES_DIR/ssh_config" "$HOME/.ssh/config"
 
 ln -s "$DOTFILES_DIR/prezto" "$HOME/.zprezto"
