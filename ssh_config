@@ -23,3 +23,5 @@ Host gl synology
     Hostname synology.home.chancez.xyz
     User chance
     IdentityFile ~/.ssh/id_rsa
+
+Include ~/.ssh/config_work

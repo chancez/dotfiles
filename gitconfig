@@ -49,19 +49,21 @@
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
-# [url "ssh://git@github.com/"]
-# 	insteadOf = https://github.com/
 [hub]
 	protocol = ssh
 [fetch]
 	prune = true
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path =
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
 [http]
 	cookiefile = ~/.gitcookies
 [rebase]
 	autosquash = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[init]
+	templateDir = /Users/chance/.git-template
+
+[includeIf "gitdir: ~/projects/work"]
+    path = /Users/chance/.gitconfig-work
