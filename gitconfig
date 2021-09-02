@@ -40,6 +40,8 @@
 	default = current
 [pull]
     default = current
+	ff = only
+	rebase = true
 [help]
 	autocorrect = 3
 [grep]
