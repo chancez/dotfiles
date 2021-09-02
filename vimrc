@@ -19,8 +19,7 @@ Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'exu/pgsql.vim'
 Plug 'geoffharcourt/one-dark.vim'
 Plug 'joshdick/onedark.vim'
-Plug '/usr/local/opt/fzf'
-" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'justinmk/vim-sneak'
@@ -68,6 +67,8 @@ Plug 'kassio/neoterm'
 Plug 'vito-c/jq.vim'
 Plug 'szw/vim-maximizer'
 Plug 'junegunn/goyo.vim'
+Plug 'cespare/vim-toml'
+Plug 'rodjek/vim-puppet'
 
 function! InstallGoBins(info)
   if a:info.status != 'unchanged' || a:info.force
@@ -620,6 +621,9 @@ function! ToggleVerbose()
     endif
 endfunction
 
+let g:python_host_prog = '/usr/bin/python2'
+let g:python3_host_prog = '/usr/bin/python3'
+
 " Autocmd Section
 
 " If you prefer the Omni-Completion tip window to close when a selection is
@@ -703,6 +707,9 @@ au FileType jsonnet setlocal expandtab shiftwidth=2 tabstop=2 cursorcolumn
 
 au FileType sh setlocal tabstop=4 shiftwidth=4
 
+" puppet
+autocmd BufNewFile,BufRead *.pp setfiletype puppet
+autocmd BufNewFile,BufRead *.pp set shiftwidth=2 softtabstop=2 filetype=puppet
 
 " set .ts to typescript
 au BufRead,BufNewFile *.ts set filetype=typescript
