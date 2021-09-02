@@ -8,6 +8,7 @@ _internal_kpods() {
     local PRINT_CONTAINER=false
     local NAMESPACE
     local SELECTOR
+    local CONTEXT
     local PARAMS=()
 
     while [ $# -gt 0 ]; do
@@ -34,6 +35,10 @@ _internal_kpods() {
                 SELECTOR=$value
                 shift 2
                 ;;
+            --context)
+                CONTEXT=$value
+                shift 2
+                ;;
             --) # end argument parsing and pass the rest as arguments to the logs command
                 shift
                 PARAMS+=($@)
@@ -52,12 +57,16 @@ _internal_kpods() {
     # set positional arguments in their proper place
     set -- "${PARAMS[@]}"
 
+    local COMMON_FLAGS=()
+    if [ -n "$NAMESPACE" ]; then
+        COMMON_FLAGS+=(--namespace "$NAMESPACE")
+    fi
+    if [ -n "$CONTEXT" ]; then
+        COMMON_FLAGS+=(--context "$CONTEXT")
+    fi
 
     if [ "$#" -eq 0 ]; then
-        local POD_CMD=(kubectl get pods --no-headers)
-        if [ -n "$NAMESPACE" ]; then
-            POD_CMD+=(--namespace "$NAMESPACE")
-        fi
+        local POD_CMD=(kubectl "${COMMON_FLAGS[@]}" get pods --no-headers)
         if [ -n "$SELECTOR" ]; then
             POD_CMD+=(--selector "$SELECTOR")
         fi
@@ -73,10 +82,7 @@ _internal_kpods() {
         fi
 
         if [ "$PRINT_CONTAINER" == "true" ]; then
-            local CONTAINER_CMD=(kubectl get pod "$POD" -o json)
-            if [ -n "$NAMESPACE" ]; then
-                CONTAINER_CMD+=(--namespace "$NAMESPACE")
-            fi
+            local CONTAINER_CMD=(kubectl "${COMMON_FLAGS[@]}" get pod "$POD" -o json)
 
             local CONTAINERS="$(${CONTAINER_CMD[@]} | jq -r '.spec.containers[].name')"
             if [ -z "$CONTAINER" ]; then
@@ -108,6 +114,7 @@ _internal_kexec() {
     local SELECTOR
     local TTY
     local INTERACTIVE
+    local CONTEXT
     local PARAMS=()
 
     while [ $# -gt 0 ]; do
@@ -128,6 +135,10 @@ _internal_kexec() {
                 ;;
             -l|--selector)
                 SELECTOR=$value
+                shift 2
+                ;;
+            --context)
+                CONTEXT=$value
                 shift 2
                 ;;
             -it|-ti)
@@ -161,8 +172,16 @@ _internal_kexec() {
     # set positional arguments in their proper place
     set -- "${PARAMS[@]}"
 
+    local COMMON_FLAGS=()
+    if [ -n "$NAMESPACE" ]; then
+        COMMON_FLAGS+=(--namespace "$NAMESPACE")
+    fi
+    if [ -n "$CONTEXT" ]; then
+        COMMON_FLAGS+=(--context "$CONTEXT")
+    fi
+
     if [ -z "$POD" ]; then
-        POD="$(_internal_kpods -n "$NAMESPACE" -l "$SELECTOR")"
+        POD="$(_internal_kpods "${COMMON_FLAGS[@]}" -l "$SELECTOR")"
         local RET=$?
         if [ $RET -ne 0 ]; then
             echoerr "$POD"
@@ -176,7 +195,7 @@ _internal_kexec() {
     fi
 
     if [ -z "$CONTAINER" ]; then
-        CONTAINER="$(_internal_kpods -p "$POD" -n "$NAMESPACE" -l "$SELECTOR" --print-container)"
+        CONTAINER="$(_internal_kpods "${COMMON_FLAGS[@]}" -p "$POD" -l "$SELECTOR" --print-container)"
         local RET=$?
         if [ $RET -ne 0 ]; then
             echoerr "$CONTAINER"
@@ -192,17 +211,13 @@ _internal_kexec() {
     local COLUMNS=$(tput cols)
     local LINES=$(tput lines)
     local TERM=xterm
-    local EXEC_CMD=(kubectl exec "$POD" -c "$CONTAINER")
+    local EXEC_CMD=(kubectl "${COMMON_FLAGS[@]}" exec "$POD" -c "$CONTAINER")
 
     if [ "$INTERACTIVE" == "true" ]; then
         EXEC_CMD+=(-i)
     fi
     if [ "$TTY" == "true" ]; then
         EXEC_CMD+=(-t)
-    fi
-
-    if [ -n "$NAMESPACE" ]; then
-        EXEC_CMD+=(--namespace "$NAMESPACE")
     fi
 
     # if arguments are passed, then invoke that command instead of a shell
@@ -231,6 +246,7 @@ function _internal_klogs() {
     local FOLLOW=false
     local PREVIOUS=false
     local SINCE
+    local CONTEXT
     local PARAMS=()
 
     while [ $# -gt 0 ]; do
@@ -265,6 +281,10 @@ function _internal_klogs() {
                 SINCE=$value
                 shift 2
                 ;;
+            --context)
+                CONTEXT=$value
+                shift 2
+                ;;
             --) # end argument parsing and pass the rest as arguments to the logs command
                 shift
                 PARAMS+=($@)
@@ -283,8 +303,16 @@ function _internal_klogs() {
     # set positional arguments in their proper place
     set -- "${PARAMS[@]}"
 
+    local COMMON_FLAGS=()
+    if [ -n "$NAMESPACE" ]; then
+        COMMON_FLAGS+=(--namespace "$NAMESPACE")
+    fi
+    if [ -n "$CONTEXT" ]; then
+        COMMON_FLAGS+=(--context "$CONTEXT")
+    fi
+
     if [ -z "$POD" ]; then
-        POD="$(_internal_kpods -n "$NAMESPACE" -l "$SELECTOR")"
+        POD="$(_internal_kpods "${COMMON_FLAGS[@]}" -l "$SELECTOR")"
         local RET=$?
         if [ $RET -ne 0 ]; then
             echoerr "$POD"
@@ -298,7 +326,7 @@ function _internal_klogs() {
     fi
 
     if [ -z "$CONTAINER" ]; then
-        CONTAINER="$(_internal_kpods -p "$POD" -n "$NAMESPACE" -l "$SELECTOR" --print-container)"
+        CONTAINER="$(_internal_kpods "${COMMON_FLAGS[@]}" -p "$POD" -l "$SELECTOR" --print-container)"
         local RET=$?
         if [ $RET -ne 0 ]; then
             echoerr "$CONTAINER"
@@ -311,10 +339,7 @@ function _internal_klogs() {
         return 1
     fi
 
-    local LOGS_CMD=(kubectl logs "$POD" -c "$CONTAINER")
-    if [ -n "$NAMESPACE" ]; then
-        LOGS_CMD+=(--namespace "$NAMESPACE")
-    fi
+    local LOGS_CMD=(kubectl "${COMMON_FLAGS[@]}" logs "$POD" -c "$CONTAINER")
     if [ -n "$SINCE" ]; then
         LOGS_CMD+=(--since "$SINCE")
     fi
