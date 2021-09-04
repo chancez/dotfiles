@@ -63,7 +63,7 @@
 	process = git-lfs filter-process
 	required = true
 [init]
-	templateDir = /Users/chance/.git-template
+	templateDir = ~/.git-template
 
-[includeIf "gitdir: ~/projects/work"]
-    path = /Users/chance/.gitconfig-work
+[includeIf "gitdir:~/projects/work/"]
+    path = ~/.gitconfig-work

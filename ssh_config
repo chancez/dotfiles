@@ -24,4 +24,5 @@ Host gl synology
     User chance
     IdentityFile ~/.ssh/id_rsa
 
-Include ~/.ssh/config_work
+Host *
+    Include ~/.ssh/config_work
