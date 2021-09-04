@@ -4,9 +4,9 @@ Host *github.com
     Hostname ssh.github.com
     Port 443
 
-Host cloud
-    Hostname chancez.net
-    user chance
+Host fedora
+    Hostname fedora.chancez.xyz
+    User chance
     IdentityFile ~/.ssh/id_rsa
 
 Host pi
@@ -15,7 +15,7 @@ Host pi
     IdentityFile ~/.ssh/id_rsa
 
 Host soma
-    Hostname soma-internal.home.chancez.xyz
+    Hostname soma.home.chancez.xyz
     User root
     IdentityFile ~/.ssh/id_rsa
 
