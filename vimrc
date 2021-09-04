@@ -8,7 +8,6 @@ call plug#begin('~/.vim/plugged')
 Plug 'AndrewRadev/splitjoin.vim'
 Plug 'MarcWeber/vim-addon-mw-utils'
 Plug 'Matt-Deacalion/vim-systemd-syntax'
-Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'altercation/vim-colors-solarized'
 " Plug 'avakhov/vim-yaml', { 'for': [ 'yaml'] }
@@ -48,13 +47,6 @@ Plug 'tpope/vim-git'
 Plug 'machakann/vim-sandwich'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-if has('nvim')
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-else
-  Plug 'Shougo/deoplete.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
 Plug 'zchee/deoplete-go', { 'for': 'go', 'do': 'make'}
 Plug 'ervandew/supertab'
 Plug 'hashivim/vim-terraform', { 'for': 'terraform' }
@@ -69,6 +61,19 @@ Plug 'szw/vim-maximizer'
 Plug 'junegunn/goyo.vim'
 Plug 'cespare/vim-toml'
 Plug 'rodjek/vim-puppet'
+
+let hostname = substitute(system('hostname -s'), '\n', '', '')
+" These plugins have issues on soma due to python stuff
+if hostname != 'soma'
+    Plug 'SirVer/ultisnips'
+    if has('nvim')
+      Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    else
+      Plug 'Shougo/deoplete.nvim'
+      Plug 'roxma/nvim-yarp'
+      Plug 'roxma/vim-hug-neovim-rpc'
+    endif
+endif
 
 function! InstallGoBins(info)
   if a:info.status != 'unchanged' || a:info.force
