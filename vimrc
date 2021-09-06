@@ -168,7 +168,7 @@ inoremap jj <ESC>
 nmap <silent> <leader>/ :nohlsearch<CR>
 
 " edit vimrc/zshrc and load vimrc bindings
-nnoremap <leader>ev :e $MYVIMRC<CR>
+nnoremap <leader>ev :e ~/.vimrc<CR>
 nnoremap <leader>ez :e ~/.zshrc<CR>
 nnoremap <leader>sv :source $MYVIMRC<CR>
 
