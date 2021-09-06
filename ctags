@@ -12,3 +12,4 @@
 --exclude=*.md
 --exclude=.sass-cache
 --exclude=Gruntfile.js
+--exclude=venv/*

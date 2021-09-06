@@ -158,3 +158,6 @@ chargeback_reports/*
 tags.tmp
 /scratch/
 .gvm_local
+venv
+.venv
+.venv/*
