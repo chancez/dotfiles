@@ -27,7 +27,7 @@ ln -s "$DOTFILES_DIR/gitconfig" "$HOME/.gitconfig"
 ln -s "$DOTFILES_DIR/gitignore" "$HOME/.gitignore"
 ln -s "$DOTFILES_DIR/ssh_config" "$HOME/.ssh/config"
 
-ln -s "$DOTFILES_DIR/prezto" "$HOME/.zprezto"
+ln -T -s "$DOTFILES_DIR/prezto" "$HOME/.zprezto"
 
 for rcfile in "${HOME}"/.zprezto/runcoms/^README.md(.N); do
   ln -s "$rcfile" "${HOME}/.${rcfile:t}"
