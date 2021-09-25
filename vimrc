@@ -626,8 +626,8 @@ function! ToggleVerbose()
     endif
 endfunction
 
-let g:python_host_prog = '/usr/bin/python2'
-let g:python3_host_prog = '/usr/bin/python3'
+let g:python_host_prog = '/home/chance/.asdf/shims/python2'
+let g:python3_host_prog = '/home/chance/.asdf/shims/python3'
 
 " Autocmd Section
 
