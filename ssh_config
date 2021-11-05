@@ -14,6 +14,17 @@ Host pi
     User chance
     IdentityFile ~/.ssh/id_rsa
 
+Host chance-desktop
+    Hostname chance-desktop.home.chancez.xyz
+    User chance
+    IdentityFile ~/.ssh/id_rsa
+
+Host chance-desktop-wsl
+    Hostname chance-desktop.home.chancez.xyz
+    User chance
+    Port 2222
+    IdentityFile ~/.ssh/id_rsa
+
 Host soma
     Hostname soma.home.chancez.xyz
     User root

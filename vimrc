@@ -47,7 +47,6 @@ Plug 'tpope/vim-git'
 Plug 'machakann/vim-sandwich'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'zchee/deoplete-go', { 'for': 'go', 'do': 'make'}
 Plug 'ervandew/supertab'
 Plug 'hashivim/vim-terraform', { 'for': 'terraform' }
 Plug 'chr4/nginx.vim'
@@ -520,6 +519,7 @@ omap as <Plug>(textobj-sandwich-query-a)
 
 " Deoplete options
 let g:deoplete#enable_at_startup = 1
+
 " <TAB>: completion.
 " inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 " default to going down the list instead of up
