@@ -3,6 +3,13 @@ set shell=/bin/zsh
 
 set rtp +=~/.vim
 
+
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 call plug#begin('~/.vim/plugged')
 
 Plug 'AndrewRadev/splitjoin.vim'
@@ -626,8 +633,8 @@ function! ToggleVerbose()
     endif
 endfunction
 
-let g:python_host_prog = '/home/chance/.asdf/shims/python2'
-let g:python3_host_prog = '/home/chance/.asdf/shims/python3'
+let g:python_host_prog = '~/.asdf/shims/python2'
+let g:python3_host_prog = '~/.asdf/shims/python3'
 
 " Autocmd Section
 
