@@ -35,5 +35,10 @@ Host gl synology
     User chance
     IdentityFile ~/.ssh/id_rsa
 
+Host router usg
+    Hostname usg.home.chancez.xyz
+    User admin
+    IdentityFile ~/.ssh/id_rsa
+
 Host *
     Include ~/.ssh/config_work
