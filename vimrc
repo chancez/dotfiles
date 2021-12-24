@@ -405,15 +405,6 @@ au FileType go nmap <leader>gol <Plug>(go-lint)
 au FileType go nmap <leader>gov <Plug>(go-vet)
 au FileType go nmap <Leader>i <Plug>(go-info)
 
-function! Go_guru_scope_from_git_root()
-  let gitroot = system("git rev-parse --show-toplevel | tr -d '\n'")
-  let pattern = escape(go#util#gopath() . "/src/", '\ /')
-  let repo_pkg = substitute(gitroot, pattern, "", "")
-  return printf("%s/...,-%s/vendor/...", repo_pkg, repo_pkg)
-endfunction
-
-au FileType go silent exe "GoGuruScope " . Go_guru_scope_from_git_root()
-
 " rust.vim
 let g:rustfmt_autosave = 1
 
