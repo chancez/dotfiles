@@ -13,6 +13,7 @@ STOW_DIRS=(\
     git \
     neovim \
     postgres \
+    rg \
     ssh \
     tmux \
     zsh \
