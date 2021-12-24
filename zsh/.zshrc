@@ -28,6 +28,9 @@ command -v fasd >/dev/null && eval "$(fasd --init auto)"
 # Completion for kitty
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
 
+# rg config
+if which rg > /dev/null; then export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc; fi
+
 # List folders, and sizes
 alias ducks='du -cksh * | sort -rn|head -11'
 
