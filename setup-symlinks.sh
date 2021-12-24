@@ -7,6 +7,7 @@ git submodule update --init --recursive
 
 STOW_DIRS=(\
     ag \
+    brew \
     bins \
     ctags \
     git \
