@@ -1,7 +1,6 @@
 #!/bin/zsh
 setopt EXTENDED_GLOB
 
-set -x
 DOTFILES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 git submodule update --init --recursive
@@ -18,6 +17,6 @@ STOW_DIRS=(\
     zsh \
 )
 
-for dir in "${STOW_DIRS}"; do
-    stow -R "${dir}"
+for dir in "${STOW_DIRS[@]}"; do
+    stow -R "${dir}" 2>&1 | grep -v "BUG in find_stowed_path"
 done
