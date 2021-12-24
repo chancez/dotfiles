@@ -81,14 +81,7 @@ export CARGO_HOME=$HOME/.cargo
 
 [[ -s "/usr/local/etc/profile.d/z.sh" ]] && source "/usr/local/etc/profile.d/z.sh"
 
-[[ -s "$HOME/dotfiles/zfuncs/fzf.zsh" ]] && source "$HOME/dotfiles/zfuncs/fzf.zsh"
-
-if [[ -s "$HOME/.fzf.zsh" ]]; then
-    source "$HOME/.fzf.zsh"
-else
-    [[ -s "$HOME/.vim/plugged/fzf/shell/key-bindings.zsh" ]] && source "$HOME/.vim/plugged/fzf/shell/key-bindings.zsh"
-    [[ -s "$HOME/.vim/plugged/fzf/shell/completion.zsh" ]] && source "$HOME/.vim/plugged/fzf/shell/completion.zsh"
-fi
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 if (( $+commands[rg] )); then
     export FZF_DEFAULT_COMMAND='rg --files'
@@ -111,4 +104,3 @@ fi
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/local/bin/vault vault
 complete -o nospace -C /usr/local/bin/kustomize kustomize
-
