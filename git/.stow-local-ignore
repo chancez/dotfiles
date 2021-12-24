@@ -1,0 +1,3 @@
+# It's important that .gitignore is absent from this list, so
+# that the .gitignore in this repo gets installed by stow as
+# ~/.gitignore.
