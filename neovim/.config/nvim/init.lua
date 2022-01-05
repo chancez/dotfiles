@@ -15,7 +15,7 @@ local packer = require('packer').startup(function(use)
   -- visual
   use 'navarasu/onedark.nvim'
   use 'norcalli/nvim-colorizer.lua'
-  use 'majutsushi/tagbar'
+  use 'preservim/tagbar'
   use 'scrooloose/nerdtree'
 
   use {
@@ -80,15 +80,15 @@ if not packer_exists then packer.sync() end -- install on first run
 
 -- misc global opts
 local settings = {
+  'set mouse=a',
   'set colorcolumn=80,100',
   'set cursorline',
-  'set completeopt-=preview',
+  'set cursorcolumn',
+  'set completeopt=menu,menuone,longest,noinsert,noselect',
   'set cpoptions=ces$',
   'set ffs=unix,dos',
   'set fillchars=vert:·',
   'set foldopen=block,insert,jump,mark,percent,quickfix,search,tag,undo',
-  'set guioptions-=T',
-  'set guioptions-=m',
   'set autoread',
   'set hidden',
   'set scrolloff=5', -- Begin scrolling when cursor is at 5 from the edge
@@ -115,14 +115,17 @@ local settings = {
   'set wrapscan',
   'set termguicolors',
   'set clipboard=unnamed',
-  'colorscheme onedark',
   'set undofile',
   -- Allow undos and history to be persistant
   'set undolevels=1000',
   'set history=1000',
-  -- When you set g:easytags_dynamic_files to 2 new tags files are created in the same directory as the file you're editing. If you want the tags files to be created in your working directory instead then change Vim's 'cpoptions' option to include the lowercase letter 'd'.
+  -- When you set g:easytags_dynamic_files to 2 new tags files are created in the same directory as the file you're editing.
+  -- If you want the tags files to be created in your working directory instead then change Vim's 'cpoptions' option to include the lowercase letter 'd'.
   'set tags=./tags;,tags;',
   'set cpoptions=aAceFsBd_',
+  -- show the effects of a command incrementally as you type.
+  'set inccommand=nosplit',
+  [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]],
 
 }
 for _, setting in ipairs(settings) do vim.cmd(setting) end
@@ -132,6 +135,10 @@ vim.g.mapleader = ','
 
 vim.g.python_host_prog = '~/.asdf/shims/python2'
 vim.g.python3_host_prog = '~/.asdf/shims/python3'
+
+-- colorscheme
+vim.cmd('colorscheme onedark')
+vim.g.onedark_style = 'warm'
 
 -- mapping functions
 local cmap        = function(lhs, rhs) vim.api.nvim_set_keymap('c', lhs, rhs, {}) end
@@ -147,6 +154,95 @@ local tnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('t', lhs, rhs, { 
 local inoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('i', lhs, rhs, { noremap = true }) end
 local bufsnoremap = function(lhs, rhs) vim.api.nvim_buf_set_keymap(0, 'n', lhs, rhs, { noremap = true, silent = true }) end
 local lspremap    = function(keymap, fn_name) bufsnoremap(keymap, '<cmd>lua vim.lsp.' .. fn_name .. '()<CR>') end
+
+-- autocmds
+local function autocmd(group, cmds, clear)
+  clear = clear == nil and false or clear
+  if type(cmds) == 'string' then cmds = {cmds} end
+  vim.cmd('augroup ' .. group)
+  if clear then vim.cmd [[au!]] end
+  for _, c in ipairs(cmds) do vim.cmd('autocmd ' .. c) end
+  vim.cmd [[augroup END]]
+end
+
+-- language server
+
+-- Add neovim lua files to runtime path for LSP
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, "lua/?.lua")
+table.insert(runtime_path, "lua/?/init.lua")
+
+local lspcfg = {
+  gopls       = {
+    binary         = 'gopls',
+    format_on_save = nil
+  },
+  sumneko_lua = {
+    binary         = 'lua-language-server',
+    format_on_save = nil,
+    settings = {
+      Lua = {
+        diagnostics = {
+          -- Get the language server to recognize the `vim` global
+          globals = {'vim'},
+        },
+        workspace = {
+          -- Make the server aware of Neovim runtime files
+          library = vim.api.nvim_get_runtime_file("", true),
+        },
+      },
+    },
+  },
+}
+
+local lsp_keymaps = {
+  {capability = 'declaration',      mapping = 'gd',    command = 'buf.declaration'     },
+  {capability = 'implementation',   mapping = 'gD',    command = 'buf.implementation'  },
+  {capability = 'goto_definition',  mapping = '<c-]>', command = 'buf.definition'      },
+  {capability = 'type_definition',  mapping = '1gD',   command = 'buf.type_definition' },
+  {capability = 'hover',            mapping = 'K',     command = 'buf.hover'           },
+  {capability = 'signature_help',   mapping = '<c-k>', command = 'buf.signature_help'  },
+  {capability = 'find_references',  mapping = 'gr',    command = 'buf.references'      },
+  {capability = 'document_symbol',  mapping = 'g0',    command = 'buf.document_symbol' },
+  {capability = 'workspace_symbol', mapping = 'gW',    command = 'buf.workspace_symbol'},
+}
+
+local custom_lsp_attach = function(client)
+  -- require('lsp_signature').on_attach { hint_enable = false }
+  require('lsp_signature').on_attach()
+  local opts = lspcfg[client.name]
+
+  -- autocommplete
+  vim.api.nvim_buf_set_option(0, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- format on save
+  if opts['format_on_save'] ~= nil then
+    autocmd(client.name, {
+      'ButWritePre' .. opts['format_on_save'] .. ' :lua vim.lsp.buf.formatting_sync(nil, 1000)',
+    }, true)
+  end
+
+  -- conditional keymaps
+  for _, keymap in ipairs(lsp_keymaps) do
+    if client.resolved_capabilities[keymap.capability] then
+      lspremap(keymap.mapping, keymap.command)
+    end
+  end
+
+  -- unconditional keymaps
+  lspremap('gl', 'diagnostic.show_line_diagnostics')
+end
+
+-- only setup lsp clients for binaries that exist
+local lsp = require('lspconfig')
+for srv, opts in pairs(lspcfg) do
+  if vim.fn.executable(opts['binary']) then
+    lsp[srv].setup {
+      on_attach = custom_lsp_attach,
+      settings = opts.settings
+    }
+  end
+end
 
 -- mappings
 nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
@@ -184,9 +280,9 @@ nnoremap('j', 'gj')
 nnoremap('k', 'gk')
 
 -- Make Y behave like other capitals
+-- Reselect visual block after indent
 nnoremap('Y', 'y$')
 
--- Reselect visual block after indent:
 vnoremap('<', '<gv')
 vnoremap('>', '>gv')
 
@@ -208,14 +304,14 @@ vmap('<M-/>', ':Commentary<CR>')
 -- nerdtree
 map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
 
--- telescope
-nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
-nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
-nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
-nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
-nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>")
-nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>")
-nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>")
+-- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
+map('<m-e>', ':TagbarToggle<CR>')
+
+-- supertab
+-- vim.g.SuperTabDefaultCompletionType = "context"
+vim.g.SuperTabDefaultCompletionType = "<c-x><c-o>"
+-- vim.g.SuperTabContextDefaultCompletionType  = "<c-x><c-o>"
+inoremap('<S-Tab>', '<C-v><Tab>')
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
@@ -235,8 +331,8 @@ require('telescope').setup{
       i = {
         ["<C-k>"] = "move_selection_previous",
         ["<C-j>"] = "move_selection_next",
-        ["<C-K>"] = "preview_scrolling_up",
-        ["<C-J>"] = "preview_scrolling_down",
+        ["<M-k>"] = "preview_scrolling_up",
+        ["<M-j>"] = "preview_scrolling_down",
         ["<C-u>"] = false,
         ["<C-d>"] = false,
       },
@@ -247,38 +343,33 @@ require('telescope').setup{
     }
   }
 }
+
+nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
+nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
+nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
+nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
+nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>")
+nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>")
+nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>")
+
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
   ensure_installed = "maintained",
   highlight = { enable = true },
 }
 
+-- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
+vim.cmd([[
+  autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+  match ExtraWhitespace /\s\+$/
+  autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+  autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+  autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+  autocmd BufWinLeave * call clearmatches()
+]])
 
-
--- autocmds
-local function autocmd(group, cmds, clear)
-  clear = clear == nil and false or clear
-  if type(cmds) == 'string' then cmds = {cmds} end
-  vim.cmd('augroup ' .. group)
-  if clear then vim.cmd [[au!]] end
-  for _, c in ipairs(cmds) do vim.cmd('autocmd ' .. c) end
-  vim.cmd [[augroup END]]
-end
-
--- define trailing whitespace
-vim.cmd [[match ExtraWhitespace /\s\+$/]]
-autocmd('ExtraWhitespace', {
-  [[BufWinEnter * match ExtraWhitespace /\s\+$/]],
-  [[InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/]],
-  [[InsertLeave * match ExtraWhitespace /\s\+$/]],
-  [[BufWinLeave * call clearmatches()]],
-}, true)
-
--- highlight trailing whitespace
-vim.cmd 'highlight ExtraWhitespace ctermbg=red guibg=red'
-
--- Define a vim function for stripping trailing whitespace
-vim.api.nvim_exec([[
+-- strip trailing whitespace
+vim.cmd([[
 fun! StripTrailingWhitespace()
     " Only strip if the b:noStripeWhitespace variable isn't set
     if exists('b:noStripWhitespace')
@@ -286,8 +377,27 @@ fun! StripTrailingWhitespace()
     endif
     %s/\s\+$//e
 endfun
-]], true)
+autocmd BufWritePre * call StripTrailingWhitespace()
+]])
 
-autocmd('StripExtraWhitespace', {
-  [[BufWritePre * call StripTrailingWhitespace()]],
+-- always go into insert mode when entering a terminal
+autocmd('TerminalEnter', {
+  [[BufWinEnter,WinEnter term://* startinsert]]
 }, true)
+
+vim.cmd([[autocmd BufWinEnter,WinEnter term://* startinsert]])
+  --
+-- custom commands
+vim.cmd(
+[[
+command! -nargs=* -complete=file TermBelow call TermFunc('below', 'new', '15', <f-args>)
+command! -nargs=* -complete=file TermBottom call TermFunc('bo', 'new', '15', <f-args>)
+command! -nargs=* -complete=file TermSizedBottom call TermFunc('bo', 'new', <f-args>)
+
+function! TermFunc(pos, direction, size, ...)
+    execute a:pos " " . a:size . a:direction . " "
+    execute 'terminal ' . join(a:000)
+    setlocal winfixheight
+endfunction
+]]
+)
