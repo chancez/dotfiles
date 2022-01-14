@@ -136,10 +136,6 @@ vim.g.mapleader = ','
 vim.g.python_host_prog = '~/.asdf/shims/python2'
 vim.g.python3_host_prog = '~/.asdf/shims/python3'
 
--- colorscheme
-vim.cmd('colorscheme onedark')
-vim.g.onedark_style = 'warm'
-
 -- mapping functions
 local cmap        = function(lhs, rhs) vim.api.nvim_set_keymap('c', lhs, rhs, {}) end
 local nmap        = function(lhs, rhs) vim.api.nvim_set_keymap('n', lhs, rhs, {}) end
@@ -321,9 +317,28 @@ inoremap('<S-Tab>', '<C-v><Tab>')
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
 
+-- colorscheme
+require('onedark').setup {
+  style = 'warm'
+}
+require('onedark').load()
+
 -- lualine
 require'lualine'.setup {
-  options = {theme = 'onedark'}
+  options = {theme = 'onedark'},
+  tabline = {
+    lualine_a = {
+      {
+        'buffers',
+        mode = 2,
+      }
+    },
+    lualine_b = {},
+    lualine_c = {},
+    lualine_x = {},
+    lualine_y = {},
+    lualine_z = {'tabs'}
+  }
 }
 
 -- setup colorizer
