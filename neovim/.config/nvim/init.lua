@@ -208,8 +208,13 @@ local lsp_keymaps = {
 }
 
 local custom_lsp_attach = function(client)
-  -- require('lsp_signature').on_attach { hint_enable = false }
-  require('lsp_signature').on_attach()
+  require('lsp_signature').on_attach {
+    zindex = 50,
+    bind = true, -- This is mandatory, otherwise border config won't get registered.
+    handler_opts = {
+      border = "rounded"
+    }
+  }
   local opts = lspcfg[client.name]
 
   -- autocommplete
