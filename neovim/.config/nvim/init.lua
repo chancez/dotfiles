@@ -320,9 +320,7 @@ map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
 map('<m-e>', ':TagbarToggle<CR>')
 
 -- supertab
--- vim.g.SuperTabDefaultCompletionType = "context"
-vim.g.SuperTabDefaultCompletionType = "<c-x><c-o>"
--- vim.g.SuperTabContextDefaultCompletionType  = "<c-x><c-o>"
+vim.g.SuperTabDefaultCompletionType = "context"
 inoremap('<S-Tab>', '<C-v><Tab>')
 
 -- clipboard
