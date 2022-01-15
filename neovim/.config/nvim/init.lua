@@ -171,7 +171,16 @@ table.insert(runtime_path, "lua/?/init.lua")
 local lspcfg = {
   gopls       = {
     binary         = 'gopls',
-    format_on_save = nil
+    -- Unneeded, already handled
+    format_on_save = nil,
+    settings = {
+      Gopls = {
+        completeUnimported = true,
+        analyses = {
+          unusedparams = true,
+        },
+      },
+    },
   },
   sumneko_lua = {
     binary         = 'lua-language-server',
