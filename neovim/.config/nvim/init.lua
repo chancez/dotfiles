@@ -213,13 +213,6 @@ local lsp_keymaps = {
 }
 
 local custom_lsp_attach = function(client)
-  require('lsp_signature').on_attach {
-    zindex = 50,
-    bind = true, -- This is mandatory, otherwise border config won't get registered.
-    handler_opts = {
-      border = "rounded"
-    }
-  }
   local opts = lspcfg[client.name]
 
   -- autocommplete
@@ -253,6 +246,15 @@ for srv, opts in pairs(lspcfg) do
     }
   end
 end
+
+require('lsp_signature').setup {
+  zindex = 50,
+  bind = true, -- This is mandatory, otherwise border config won't get registered.
+  handler_opts = {
+    border = "rounded"
+  },
+  toggle_key = "<C-l>",
+}
 
 -- mappings
 nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
