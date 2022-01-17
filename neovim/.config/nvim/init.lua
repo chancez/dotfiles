@@ -93,7 +93,7 @@ local settings = {
   'set hidden',
   'set scrolloff=5', -- Begin scrolling when cursor is at 5 from the edge
   'set lazyredraw',
-  'set list listchars=tab:·\\ ,eol:¬',
+  'set list listchars=tab:·\\ ',
   'set noerrorbells',
   'set noshowmode',
   'set number',
@@ -126,7 +126,6 @@ local settings = {
   -- show the effects of a command incrementally as you type.
   'set inccommand=nosplit',
   [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]],
-
 }
 for _, setting in ipairs(settings) do vim.cmd(setting) end
 
