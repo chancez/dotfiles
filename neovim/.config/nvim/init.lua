@@ -397,6 +397,9 @@ map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
 map('<m-e>', ':TagbarToggle<CR>')
 
+-- vim-go
+snmap('<leader>gb', ':GoBuild<cr>')
+
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
 
