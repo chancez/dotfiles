@@ -486,6 +486,14 @@ endfun
 autocmd BufWritePre * call StripTrailingWhitespace()
 ]])
 
+-- Highlight on yank
+vim.cmd [[
+  augroup YankHighlight
+    autocmd!
+    autocmd TextYankPost * silent! lua vim.highlight.on_yank()
+  augroup end
+]]
+
 -- always go into insert mode when entering a terminal
 autocmd('TerminalEnter', {
   [[BufWinEnter,WinEnter term://* startinsert]]
