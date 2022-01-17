@@ -23,8 +23,7 @@ local packer = require('packer').startup(function(use)
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
   }
 
-  -- search/completion
-  use {'ervandew/supertab'}
+  -- search
   use {
     'nvim-telescope/telescope.nvim',
     requires = {
@@ -48,6 +47,15 @@ local packer = require('packer').startup(function(use)
   use 'neovim/nvim-lspconfig'
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
+
+  -- autocomplete
+  use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
+  use 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
+
+  -- snippets
+  use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
+  use "rafamadriz/friendly-snippets"
+  use 'L3MON4D3/LuaSnip' -- Snippets plugin
 
   -- utilities that leverage vim verbs
   use 'tpope/vim-repeat'
@@ -235,17 +243,24 @@ local custom_lsp_attach = function(client)
   lspremap('gl', 'diagnostic.show_line_diagnostics')
 end
 
+-- Add additional capabilities supported by nvim-cmp
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+
+-- lspconfig
 -- only setup lsp clients for binaries that exist
 local lsp = require('lspconfig')
 for srv, opts in pairs(lspcfg) do
   if vim.fn.executable(opts['binary']) then
     lsp[srv].setup {
       on_attach = custom_lsp_attach,
-      settings = opts.settings
+      settings = opts.settings,
+      capabilities = capabilities,
     }
   end
 end
 
+-- lsp signature
 require('lsp_signature').setup {
   zindex = 50,
   bind = true, -- This is mandatory, otherwise border config won't get registered.
@@ -254,6 +269,70 @@ require('lsp_signature').setup {
   },
   toggle_key = "<C-l>",
 }
+
+-- luasnip setup
+local luasnip = require 'luasnip'
+luasnip.config.set_config {
+    history = true,
+    updateevents = "TextChanged,TextChangedI"
+}
+require("luasnip/loaders/from_vscode").load()
+
+-- nvim-cmp setup
+local cmp = require 'cmp'
+
+cmp.setup {
+  snippet = {
+    expand = function(args)
+      require('luasnip').lsp_expand(args.body)
+    end,
+  },
+  mapping = {
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-k>'] = cmp.mapping.select_prev_item(),
+    ['<C-j>'] = cmp.mapping.select_next_item(),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    },
+    ['<Tab>'] = function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end,
+    ['<S-Tab>'] = function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end,
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'buffer' },
+    { name = 'luasnip' },
+    { name = 'path' },
+  },
+}
+
+-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline(':', {
+  sources = cmp.config.sources({
+    { name = 'path' }
+  }, {
+    { name = 'cmdline' }
+  })
+})
 
 -- mappings
 nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
@@ -317,10 +396,6 @@ map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
 
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
 map('<m-e>', ':TagbarToggle<CR>')
-
--- supertab
-vim.g.SuperTabDefaultCompletionType = "context"
-inoremap('<S-Tab>', '<C-v><Tab>')
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
