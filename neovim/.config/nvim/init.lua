@@ -7,6 +7,7 @@ if not packer_exists then
 end
 
 local packer = require('packer').startup(function(use)
+  -- package management
   use 'wbthomason/packer.nvim'
 
   -- performance
@@ -17,7 +18,6 @@ local packer = require('packer').startup(function(use)
   use 'norcalli/nvim-colorizer.lua'
   use 'preservim/tagbar'
   use 'scrooloose/nerdtree'
-
   use {
     'nvim-lualine/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
@@ -69,12 +69,11 @@ local packer = require('packer').startup(function(use)
   -- utilities
   use 'tpope/vim-commentary'
   use 'tpope/vim-eunuch'
+  use 'junegunn/vim-easy-align'
 
   -- multicursor support like sublime text
   use 'terryma/vim-multiple-cursors'
 
-  -- Prettifies
-  use 'junegunn/vim-easy-align'
 
   -- git
   use 'tpope/vim-fugitive'
