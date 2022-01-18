@@ -71,10 +71,10 @@ local packer = require('packer').startup(function(use)
   use 'tpope/vim-eunuch'
   use 'junegunn/vim-easy-align'
   use 'b0o/mapx.nvim'
+  use 'folke/which-key.nvim'
 
   -- multicursor support like sublime text
   use 'terryma/vim-multiple-cursors'
-
 
   -- git
   use 'tpope/vim-fugitive'
@@ -320,11 +320,14 @@ cmp.setup.cmdline(':', {
 })
 
 -- mappings
-require'mapx'.setup()
+require'mapx'.setup { whichkey = true }
 local mapx = require'mapx'
 
-mapx.nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
-mapx.nnoremap('<leader>sv', ':source $MYVIMRC<CR>')
+-- Whichkey
+mapx.nmap('<leader>w', ':WhichKey<CR>', 'silent', 'Open WhichKey')
+
+mapx.nnoremap('<leader>ev', ':e $MYVIMRC<CR>', 'Edit neovim init.lua')
+mapx.nnoremap('<leader>sv', ':source $MYVIMRC<CR>', 'Reload neovim init.lua')
 
 -- Get rid of annoying mistakes
 mapx.cmap('WQ', 'wq')
