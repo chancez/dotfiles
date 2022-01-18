@@ -30,6 +30,7 @@ local packer = require('packer').startup(function(use)
       'nvim-lua/popup.nvim',
       'nvim-telescope/telescope-frecency.nvim',
       'nvim-lua/plenary.nvim',
+      {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
     },
   }
 
@@ -51,6 +52,7 @@ local packer = require('packer').startup(function(use)
   -- autocomplete
   use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
   use 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
+  use 'hrsh7th/cmp-path'
 
   -- snippets
   use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
@@ -308,6 +310,7 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'path' },
   },
 }
 
@@ -424,6 +427,8 @@ require('telescope').setup{
     }
   }
 }
+
+require('telescope').load_extension('fzf')
 
 nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
 nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
