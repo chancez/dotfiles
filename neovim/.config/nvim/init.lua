@@ -454,7 +454,7 @@ require('telescope').setup {
 
 require('telescope').load_extension('fzf')
 
-mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
+mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files' }})<cr>")
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
 mapx.nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
 mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
