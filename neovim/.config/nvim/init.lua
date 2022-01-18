@@ -79,7 +79,6 @@ local packer = require('packer').startup(function(use)
   -- language/syntax integrations
   use 'jjo/vim-cue'
   use 'fatih/vim-go'
-
   use 'google/vim-jsonnet'
   use 'chr4/nginx.vim'
   use 'hashivim/vim-terraform'
@@ -87,55 +86,47 @@ end)
 if not packer_exists then packer.sync() end -- install on first run
 
 -- misc global opts
-local settings = {
-  'set mouse=a',
-  'set colorcolumn=80,100',
-  'set cursorline',
-  'set cursorcolumn',
-  'set completeopt=menu,menuone,longest,noinsert,noselect',
-  'set cpoptions=ces$',
-  'set ffs=unix,dos',
-  'set fillchars=vert:·',
-  'set foldopen=block,insert,jump,mark,percent,quickfix,search,tag,undo',
-  'set autoread',
-  'set hidden',
-  'set scrolloff=5', -- Begin scrolling when cursor is at 5 from the edge
-  'set lazyredraw',
-  'set list listchars=tab:·\\ ',
-  'set noerrorbells',
-  'set noshowmode',
-  'set number',
-  'set shellslash',
-  'set showfulltag',
-  'set hlsearch', -- Highlight as you search.
-  'set ignorecase', -- Ignore case when searching
-  'set showmatch', -- highlight matching [{()}]
-  'set incsearch', --  Searches as you type.
-  'set smartcase', -- if case seems to matter use it
-  'set showmode',
-  'set synmaxcol=2048',
-  'set t_Co=256',
-  'set title',
-  'set tabstop=2 softtabstop=2 shiftwidth=2 expandtab copyindent',
-  'set visualbell',
-  'set wrap',
-  'set visualbell',
-  'set wrapscan',
-  'set termguicolors',
-  'set clipboard=unnamed',
-  'set undofile',
-  -- Allow undos and history to be persistant
-  'set undolevels=1000',
-  'set history=1000',
-  -- When you set g:easytags_dynamic_files to 2 new tags files are created in the same directory as the file you're editing.
-  -- If you want the tags files to be created in your working directory instead then change Vim's 'cpoptions' option to include the lowercase letter 'd'.
-  'set tags=./tags;,tags;',
-  'set cpoptions=aAceFsBd_',
-  -- show the effects of a command incrementally as you type.
-  'set inccommand=nosplit',
-  [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]],
-}
-for _, setting in ipairs(settings) do vim.cmd(setting) end
+vim.opt.mouse = 'a'
+vim.opt.colorcolumn = '80,100'
+vim.opt.cursorline = true
+vim.opt.cursorcolumn = true
+vim.opt.completeopt = 'menu,menuone,longest,noinsert,noselect'
+vim.opt.foldopen = 'block,insert,jump,mark,percent,quickfix,search,tag,undo'
+vim.opt.autoread = true
+vim.opt.hidden = true
+vim.opt.scrolloff = 5 -- Begin scrolling when cursor is at 5 from the edge
+vim.opt.lazyredraw = true
+vim.opt.list = true
+vim.opt.listchars = { tab = '·\\ ' }
+vim.opt.errorbells = false
+vim.opt.number = true
+vim.opt.showfulltag = true
+vim.opt.hlsearch = true -- Highlight as you search.
+vim.opt.ignorecase = true -- Ignore case when searching
+vim.opt.showmatch = true -- highlight matching [{()}]
+vim.opt.incsearch = true --  Searches as you type.
+vim.opt.smartcase = true -- if case seems to matter use it
+vim.opt.showmode = true
+vim.opt.synmaxcol = 2048
+vim.opt.title = true
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.copyindent = true
+vim.opt.visualbell = true
+vim.opt.wrap = true
+vim.opt.visualbell = true
+vim.opt.wrapscan = true
+vim.opt.termguicolors = true
+vim.opt.clipboard = 'unnamed'
+vim.opt.undofile = true
+-- Allow undos and history to be persistant
+vim.opt.undolevels = 1000
+vim.opt.history = 1000
+-- show the effects of a command incrementally as you type.
+vim.opt.inccommand = 'nosplit'
+vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
 
 -- leader
 vim.g.mapleader = ','
