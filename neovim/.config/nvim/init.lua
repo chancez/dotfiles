@@ -182,7 +182,7 @@ local on_attach = function()
     mapx.nnoremap('<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
     mapx.nnoremap('<leader>so', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]])
   end)
-  vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
+  mapx.cmdbang('Format', 'lua vim.lsp.buf.formatting()')
 end
 
 -- nvim-cmp supports additional completion capabilities
