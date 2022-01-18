@@ -144,16 +144,6 @@ vim.g.mapleader = ','
 vim.g.python_host_prog = '~/.asdf/shims/python2'
 vim.g.python3_host_prog = '~/.asdf/shims/python3'
 
--- autocmds
-local function autocmd(group, cmds, clear)
-  clear = clear == nil and false or clear
-  if type(cmds) == 'string' then cmds = {cmds} end
-  vim.cmd('augroup ' .. group)
-  if clear then vim.cmd [[au!]] end
-  for _, c in ipairs(cmds) do vim.cmd('autocmd ' .. c) end
-  vim.cmd [[augroup END]]
-end
-
 -- language server
 
 -- Diagnostic keymaps
