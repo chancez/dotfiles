@@ -20,7 +20,6 @@ local packer = require('packer').startup(function(use)
   use {
     'kyazdani42/nvim-tree.lua',
     requires = { 'kyazdani42/nvim-web-devicons', opt = true },
-    config = function() requird'nvim-tree'.setup {} end
   }
   use {
     'nvim-lualine/lualine.nvim',
@@ -415,11 +414,14 @@ require'lualine'.setup {
   }
 }
 
+-- nvim-tree
+require 'nvim-tree'.setup()
+
 -- setup colorizer
 require('colorizer').setup()
 
 -- telescope
-require('telescope').setup{
+require('telescope').setup {
   defaults = {
     mappings = {
       i = {
