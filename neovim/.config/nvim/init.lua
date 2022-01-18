@@ -143,6 +143,7 @@ vim.opt.history = 1000
 -- show the effects of a command incrementally as you type.
 vim.opt.inccommand = 'nosplit'
 vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
+vim.opt.signcolumn = 'yes'
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
