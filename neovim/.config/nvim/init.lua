@@ -97,7 +97,7 @@ vim.opt.hidden = true
 vim.opt.scrolloff = 5 -- Begin scrolling when cursor is at 5 from the edge
 vim.opt.lazyredraw = true
 vim.opt.list = true
-vim.opt.listchars = { tab = '·\\ ' }
+vim.opt.listchars = { tab = '· ' }
 vim.opt.errorbells = false
 vim.opt.number = true
 vim.opt.showfulltag = true
@@ -119,7 +119,6 @@ vim.opt.wrap = true
 vim.opt.visualbell = true
 vim.opt.wrapscan = true
 vim.opt.termguicolors = true
-vim.opt.clipboard = 'unnamed'
 vim.opt.undofile = true
 -- Allow undos and history to be persistant
 vim.opt.undolevels = 1000
@@ -127,6 +126,10 @@ vim.opt.history = 1000
 -- show the effects of a command incrementally as you type.
 vim.opt.inccommand = 'nosplit'
 vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
+
+-- clipboard
+if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
+
 
 -- leader
 vim.g.mapleader = ','
@@ -374,9 +377,6 @@ map('<m-e>', ':TagbarToggle<CR>')
 
 -- vim-go
 snmap('<leader>gb', ':GoBuild<cr>')
-
--- clipboard
-if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
 
 -- colorscheme
 require('onedark').setup {
