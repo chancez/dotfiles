@@ -70,6 +70,7 @@ local packer = require('packer').startup(function(use)
   use 'tpope/vim-commentary'
   use 'tpope/vim-eunuch'
   use 'junegunn/vim-easy-align'
+  use 'b0o/mapx.nvim'
 
   -- multicursor support like sublime text
   use 'terryma/vim-multiple-cursors'
@@ -138,19 +139,6 @@ vim.g.mapleader = ','
 
 vim.g.python_host_prog = '~/.asdf/shims/python2'
 vim.g.python3_host_prog = '~/.asdf/shims/python3'
-
--- mapping functions
-local cmap        = function(lhs, rhs) vim.api.nvim_set_keymap('c', lhs, rhs, {}) end
-local nmap        = function(lhs, rhs) vim.api.nvim_set_keymap('n', lhs, rhs, {}) end
-local vmap        = function(lhs, rhs) vim.api.nvim_set_keymap('v', lhs, rhs, {}) end
-local xmap        = function(lhs, rhs) vim.api.nvim_set_keymap('v', lhs, rhs, {}) end
-local map       = function(lhs, rhs) vim.api.nvim_set_keymap('', lhs, rhs, {}) end
-local smap       = function(lhs, rhs) vim.api.nvim_set_keymap('', lhs, rhs, { silent = true}) end
-local snmap       = function(lhs, rhs) vim.api.nvim_set_keymap('n', lhs, rhs, { silent = true}) end
-local vnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('v', lhs, rhs, { noremap = true }) end
-local nnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('n', lhs, rhs, { noremap = true }) end
-local tnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('t', lhs, rhs, { noremap = true }) end
-local inoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('i', lhs, rhs, { noremap = true }) end
 
 -- autocmds
 local function autocmd(group, cmds, clear)
@@ -332,70 +320,73 @@ cmp.setup.cmdline(':', {
 })
 
 -- mappings
-nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
-nnoremap('<leader>sv', ':source $MYVIMRC<CR>')
+require'mapx'.setup()
+local mapx = require'mapx'
+
+mapx.nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
+mapx.nnoremap('<leader>sv', ':source $MYVIMRC<CR>')
 
 -- Get rid of annoying mistakes
-cmap('WQ', 'wq')
-cmap('wQ', 'wq')
-nnoremap(';', ':')
-vnoremap(';', ':')
-nnoremap(';;', ';')
-vnoremap(';;', ';')
-nnoremap(',,', ',')
-vnoremap(',,', ',')
-nnoremap(';', ':')
+mapx.cmap('WQ', 'wq')
+mapx.cmap('wQ', 'wq')
+mapx.nnoremap(';', ':')
+mapx.vnoremap(';', ':')
+mapx.nnoremap(';;', ';')
+mapx.vnoremap(';;', ';')
+mapx.nnoremap(',,', ',')
+mapx.vnoremap(',,', ',')
+mapx.nnoremap(';', ':')
 
 -- window movement
-nmap('<A-h>', '<c-w>h')
-nmap('<A-j>', '<c-w>j')
-nmap('<A-k>', '<c-w>k')
-nmap('<A-l>', '<c-w>l')
+mapx.nmap('<A-h>', '<c-w>h')
+mapx.nmap('<A-j>', '<c-w>j')
+mapx.nmap('<A-k>', '<c-w>k')
+mapx.nmap('<A-l>', '<c-w>l')
 
 -- this maps leader + esc to exit terminal mode
-tnoremap('<leader><Esc>', '<C-\\><C-n>')
+mapx.tnoremap('<leader><Esc>', '<C-\\><C-n>')
 -- This makes navigating windows the same no matter if they are displaying
 -- a normal buffer or a terminal buffer
 -- Move around windows in terminal
-tnoremap('<A-h>', '<C-\\><C-n><C-w>h')
-tnoremap('<A-j>', '<C-\\><C-n><C-w>j')
-tnoremap('<A-k>', '<C-\\><C-n><C-w>k')
-tnoremap('<A-l>', '<C-\\><C-n><C-w>l')
+mapx.tnoremap('<A-h>', '<C-\\><C-n><C-w>h')
+mapx.tnoremap('<A-j>', '<C-\\><C-n><C-w>j')
+mapx.tnoremap('<A-k>', '<C-\\><C-n><C-w>k')
+mapx.tnoremap('<A-l>', '<C-\\><C-n><C-w>l')
 
 -- Wrapped lines goes down/up to next row, rather than next line in file.
-nnoremap('j', 'gj')
-nnoremap('k', 'gk')
+mapx.nnoremap('j', 'gj')
+mapx.nnoremap('k', 'gk')
 
 -- Make Y behave like other capitals
 -- Reselect visual block after indent
-nnoremap('Y', 'y$')
+mapx.nnoremap('Y', 'y$')
 
-vnoremap('<', '<gv')
-vnoremap('>', '>gv')
+mapx.vnoremap('<', '<gv')
+mapx.vnoremap('>', '>gv')
 
 -- Escape insert by hitting jj
-inoremap('jj', '<ESC>')
+mapx.inoremap('jj', '<ESC>')
 -- Clear the current search highlights
-snmap('<leader>/', ':nohlsearch<CR>')
+mapx.nmap('<leader>/', ':nohlsearch<CR>', 'silent')
 -- clear hlsearch on redraw
-nnoremap('<C-L>', ':nohlsearch<CR><C-L>')
+mapx.nnoremap('<C-L>', ':nohlsearch<CR><C-L>')
 
 -- easy align
-xmap('ga', '<Plug>(EasyAlign)')
-nmap('ga', '<Plug>(EasyAlign)')
+mapx.xmap('ga', '<Plug>(EasyAlign)')
+mapx.nmap('ga', '<Plug>(EasyAlign)')
 
 -- vim commentary
-snmap('<M-/>', ':Commentary<CR>')
-vmap('<M-/>', ':Commentary<CR>')
+mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
+mapx.vmap('<M-/>', ':Commentary<CR>')
 
 -- nerdtree
-map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
+mapx.map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
 
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
-map('<m-e>', ':TagbarToggle<CR>')
+mapx.map('<m-e>', ':TagbarToggle<CR>')
 
 -- vim-go
-snmap('<leader>gb', ':GoBuild<cr>')
+mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
 vim.g.go_gopls_enabled = false
 
 -- colorscheme
@@ -447,13 +438,13 @@ require('telescope').setup{
 
 require('telescope').load_extension('fzf')
 
-nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
-nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
-nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
-nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
-nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>")
-nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>")
-nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>")
+mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>")
+mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
+mapx.nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
+mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
+mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>")
+mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>")
+mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>")
 
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
