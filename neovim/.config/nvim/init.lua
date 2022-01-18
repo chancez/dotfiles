@@ -326,6 +326,8 @@ mapx.nmap('<leader>w', ':WhichKey<CR>', 'silent', 'Open WhichKey')
 
 mapx.nnoremap('<leader>ev', ':e $MYVIMRC<CR>', 'Edit neovim init.lua')
 mapx.nnoremap('<leader>sv', ':source $MYVIMRC<CR>', 'Reload neovim init.lua')
+mapx.nnoremap('<leader>ps', ':source $MYVIMRC<CR>:PackerSync<CR>', 'Reload init.lua and run PackerSync')
+mapx.nnoremap('<leader>pc', ':source $MYVIMRC<CR>:PackerCompile<CR>', 'Reload init.lua and run PackerCompile')
 
 -- Get rid of annoying mistakes
 mapx.cmap('WQ', 'wq')
