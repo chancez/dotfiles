@@ -387,13 +387,13 @@ mapx.nmap('ga', '<Plug>(EasyAlign)')
 
 -- vim commentary
 mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
-mapx.vmap('<M-/>', ':Commentary<CR>')
+mapx.vmap('<M-/>', ':Commentary<CR>', 'silent')
 
 -- nvim-tree
-mapx.map('<C-e>', ':NvimTreeToggle<CR>')
+mapx.map('<C-e>', ':NvimTreeToggle<CR>', 'silent')
 
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
-mapx.map('<m-e>', ':TagbarToggle<CR>')
+mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- vim-go
 mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
