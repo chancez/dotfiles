@@ -17,7 +17,11 @@ local packer = require('packer').startup(function(use)
   use 'navarasu/onedark.nvim'
   use 'norcalli/nvim-colorizer.lua'
   use 'preservim/tagbar'
-  use 'scrooloose/nerdtree'
+  use {
+    'kyazdani42/nvim-tree.lua',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true },
+    config = function() requird'nvim-tree'.setup {} end
+  }
   use {
     'nvim-lualine/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
@@ -377,8 +381,8 @@ mapx.nmap('ga', '<Plug>(EasyAlign)')
 mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
 mapx.vmap('<M-/>', ':Commentary<CR>')
 
--- nerdtree
-mapx.map('<C-e>', ':NERDTreeToggle<CR>:NERDTreeMirror<CR>')
+-- nvim-tree
+mapx.map('<C-e>', ':NvimTreeToggle<CR>')
 
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
 mapx.map('<m-e>', ':TagbarToggle<CR>')
@@ -389,7 +393,7 @@ vim.g.go_gopls_enabled = false
 
 -- colorscheme
 require('onedark').setup {
-  style = 'warm'
+  style = 'dark'
 }
 require('onedark').load()
 
