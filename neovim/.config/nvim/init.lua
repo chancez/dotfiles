@@ -155,8 +155,6 @@ local vnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('v', lhs, rhs, { 
 local nnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('n', lhs, rhs, { noremap = true }) end
 local tnoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('t', lhs, rhs, { noremap = true }) end
 local inoremap    = function(lhs, rhs) vim.api.nvim_set_keymap('i', lhs, rhs, { noremap = true }) end
-local bufsnoremap = function(lhs, rhs) vim.api.nvim_buf_set_keymap(0, 'n', lhs, rhs, { noremap = true, silent = true }) end
-local lspremap    = function(keymap, fn_name) bufsnoremap(keymap, '<cmd>lua vim.lsp.' .. fn_name .. '()<CR>') end
 
 -- autocmds
 local function autocmd(group, cmds, clear)
@@ -170,95 +168,93 @@ end
 
 -- language server
 
--- Add neovim lua files to runtime path for LSP
-local runtime_path = vim.split(package.path, ';')
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
+-- Diagnostic keymaps
+vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
 
-local lspcfg = {
-  gopls       = {
-    binary         = 'gopls',
-    -- Unneeded, already handled
-    format_on_save = nil,
-    settings = {
-      Gopls = {
-        completeUnimported = true,
-        analyses = {
-          unusedparams = true,
-        },
-      },
-    },
-  },
-  sumneko_lua = {
-    binary         = 'lua-language-server',
-    format_on_save = nil,
-    settings = {
-      Lua = {
-        diagnostics = {
-          -- Get the language server to recognize the `vim` global
-          globals = {'vim'},
-        },
-        workspace = {
-          -- Make the server aware of Neovim runtime files
-          library = vim.api.nvim_get_runtime_file("", true),
-        },
-      },
-    },
-  },
-}
-
-local lsp_keymaps = {
-  {capability = 'declaration',      mapping = 'gd',    command = 'buf.declaration'     },
-  {capability = 'implementation',   mapping = 'gD',    command = 'buf.implementation'  },
-  {capability = 'goto_definition',  mapping = '<c-]>', command = 'buf.definition'      },
-  {capability = 'type_definition',  mapping = '1gD',   command = 'buf.type_definition' },
-  {capability = 'hover',            mapping = 'K',     command = 'buf.hover'           },
-  {capability = 'signature_help',   mapping = '<c-k>', command = 'buf.signature_help'  },
-  {capability = 'find_references',  mapping = 'gr',    command = 'buf.references'      },
-  {capability = 'document_symbol',  mapping = 'g0',    command = 'buf.document_symbol' },
-  {capability = 'workspace_symbol', mapping = 'gW',    command = 'buf.workspace_symbol'},
-}
-
-local custom_lsp_attach = function(client)
-  local opts = lspcfg[client.name]
-
-  -- autocommplete
-  vim.api.nvim_buf_set_option(0, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-  -- format on save
-  if opts['format_on_save'] ~= nil then
-    autocmd(client.name, {
-      'ButWritePre' .. opts['format_on_save'] .. ' :lua vim.lsp.buf.formatting_sync(nil, 1000)',
-    }, true)
-  end
-
-  -- conditional keymaps
-  for _, keymap in ipairs(lsp_keymaps) do
-    if client.resolved_capabilities[keymap.capability] then
-      lspremap(keymap.mapping, keymap.command)
-    end
-  end
-
-  -- unconditional keymaps
-  lspremap('gl', 'diagnostic.show_line_diagnostics')
+-- LSP settings
+local lspconfig = require 'lspconfig'
+local on_attach = function(_, bufnr)
+  local opts = { noremap = true, silent = true }
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>so', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]], opts)
+  vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
 end
 
--- Add additional capabilities supported by nvim-cmp
+-- nvim-cmp supports additional completion capabilities
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
--- lspconfig
--- only setup lsp clients for binaries that exist
-local lsp = require('lspconfig')
-for srv, opts in pairs(lspcfg) do
-  if vim.fn.executable(opts['binary']) then
-    lsp[srv].setup {
-      on_attach = custom_lsp_attach,
-      settings = opts.settings,
-      capabilities = capabilities,
-    }
-  end
+-- Enable the following language servers (using defaults)
+local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' }
+for _, lsp in ipairs(servers) do
+  lspconfig[lsp].setup {
+    on_attach = on_attach,
+    capabilities = capabilities,
+  }
 end
+
+-- Insert runtime_path of neovim lua files for LSP
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, 'lua/?.lua')
+table.insert(runtime_path, 'lua/?/init.lua')
+
+-- Lua LSP config
+lspconfig.sumneko_lua.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+        -- Setup your lua path
+        path = runtime_path,
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = { 'vim' },
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file('', true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
+
+-- Go LSP config
+lspconfig.gopls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  cmd = {"gopls", "serve"},
+  settings = {
+    gopls = {
+      completeUnimported = true,
+      analyses = {
+        unusedparams = true,
+      },
+      staticcheck = true,
+    },
+  },
+}
 
 -- lsp signature
 require('lsp_signature').setup {
@@ -280,7 +276,6 @@ require("luasnip/loaders/from_vscode").load()
 
 -- nvim-cmp setup
 local cmp = require 'cmp'
-
 cmp.setup {
   snippet = {
     expand = function(args)
@@ -319,20 +314,9 @@ cmp.setup {
   },
   sources = {
     { name = 'nvim_lsp' },
-    { name = 'buffer' },
     { name = 'luasnip' },
-    { name = 'path' },
   },
 }
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  sources = cmp.config.sources({
-    { name = 'path' }
-  }, {
-    { name = 'cmdline' }
-  })
-})
 
 -- mappings
 nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
