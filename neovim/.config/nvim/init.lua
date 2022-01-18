@@ -130,7 +130,6 @@ vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
 
-
 -- leader
 vim.g.mapleader = ','
 
@@ -377,6 +376,7 @@ map('<m-e>', ':TagbarToggle<CR>')
 
 -- vim-go
 snmap('<leader>gb', ':GoBuild<cr>')
+vim.g.go_gopls_enabled = false
 
 -- colorscheme
 require('onedark').setup {
