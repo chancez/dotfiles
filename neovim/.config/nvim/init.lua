@@ -25,6 +25,12 @@ local packer = require('packer').startup(function(use)
     'nvim-lualine/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
   }
+  use {
+    'lewis6991/gitsigns.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim'
+    },
+  }
 
   -- search
   use {
@@ -418,6 +424,9 @@ require'lualine'.setup {
 
 -- nvim-tree
 require 'nvim-tree'.setup()
+
+-- gitsigns
+require('gitsigns').setup()
 
 -- setup colorizer
 require('colorizer').setup()
