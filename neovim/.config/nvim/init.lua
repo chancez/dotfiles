@@ -491,15 +491,10 @@ vim.cmd [[
 ]]
 
 -- always go into insert mode when entering a terminal
-autocmd('TerminalEnter', {
-  [[BufWinEnter,WinEnter term://* startinsert]]
-}, true)
-
 vim.cmd([[autocmd BufWinEnter,WinEnter term://* startinsert]])
   --
 -- custom commands
-vim.cmd(
-[[
+vim.cmd([[
 command! -nargs=* -complete=file TermBelow call TermFunc('below', 'new', '15', <f-args>)
 command! -nargs=* -complete=file TermBottom call TermFunc('bo', 'new', '15', <f-args>)
 command! -nargs=* -complete=file TermSizedBottom call TermFunc('bo', 'new', <f-args>)
@@ -509,5 +504,4 @@ function! TermFunc(pos, direction, size, ...)
     execute 'terminal ' . join(a:000)
     setlocal winfixheight
 endfunction
-]]
-)
+]])
