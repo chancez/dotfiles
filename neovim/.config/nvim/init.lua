@@ -50,9 +50,11 @@ local packer = require('packer').startup(function(use)
   use 'onsails/lspkind-nvim'
 
   -- autocomplete
+  use 'hrsh7th/cmp-cmdline' -- cmdline source
+  use 'hrsh7th/cmp-nvim-lsp' -- LSP source
+  use 'hrsh7th/cmp-path' -- path source
+  use 'hrsh7th/cmp-buffer' -- buffer source
   use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
-  use 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
-  use 'hrsh7th/cmp-path'
 
   -- snippets
   use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
@@ -311,8 +313,24 @@ cmp.setup {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'path' },
+    { name = 'buffer' },
   },
 }
+
+-- Use buffer source for `/`
+cmp.setup.cmdline('/', {
+  sources = {
+    { name = 'buffer' }
+  }
+})
+
+-- Use cmdline & path source for ':'
+cmp.setup.cmdline(':', {
+  sources = {
+    { name = 'path' },
+    { name = 'cmdline' },
+  }
+})
 
 -- mappings
 nnoremap('<leader>ev', ':e $MYVIMRC<CR>')
