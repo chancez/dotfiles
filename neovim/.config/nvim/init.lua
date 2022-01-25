@@ -247,6 +247,20 @@ lspconfig.gopls.setup {
   },
 }
 
+-- YAML LSP config
+lspconfig.yamlls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    yaml = {
+      schemaStore = {
+        url = "https://www.schemastore.org/api/json/catalog.json",
+        enable = true,
+      }
+    }
+  },
+}
+
 -- lsp signature
 require('lsp_signature').setup {
   zindex = 50,
