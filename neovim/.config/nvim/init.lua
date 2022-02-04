@@ -514,7 +514,6 @@ require('telescope').setup {
       height = 0.80,
       preview_cutoff = 120,
     },
-    path_display = { "smart" },
 
     mappings = {
       i = {
