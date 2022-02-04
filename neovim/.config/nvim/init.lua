@@ -31,6 +31,7 @@ local packer = require('packer').startup(function(use)
       'nvim-lua/plenary.nvim'
     },
   }
+  use "lukas-reineke/indent-blankline.nvim"
 
   -- search
   use {
@@ -133,8 +134,6 @@ vim.opt.autoread = true
 vim.opt.hidden = true
 vim.opt.scrolloff = 5 -- Begin scrolling when cursor is at 5 from the edge
 vim.opt.lazyredraw = true
-vim.opt.list = true
-vim.opt.listchars = { tab = '· ' }
 vim.opt.errorbells = false
 vim.opt.number = true
 vim.opt.showfulltag = true
@@ -166,6 +165,16 @@ vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
 vim.opt.signcolumn = 'yes'
 -- Look for tags in the project directory
 vim.opt.tags = 'tags;'
+
+-- indent-blankline
+vim.opt.list = true
+vim.opt.listchars:append("space:⋅")
+
+require("indent_blankline").setup {
+  space_char_blankline = " ",
+  show_current_context = true,
+  show_current_context_start = false,
+}
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
