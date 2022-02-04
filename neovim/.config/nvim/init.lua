@@ -457,8 +457,32 @@ require('gitsigns').setup()
 require('colorizer').setup()
 
 -- telescope
+local actions = require("telescope.actions")
 require('telescope').setup {
+  extensions = {
+    fzf = {
+      fuzzy = true,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    }
+  },
   defaults = {
+    -- asthetic options
+    sorting_strategy = "ascending",
+    layout_strategy = "horizontal",
+    layout_config = {
+      horizontal = {
+        prompt_position = "top",
+        preview_width = 0.55,
+        results_width = 0.8,
+      },
+      width = 0.87,
+      height = 0.80,
+      preview_cutoff = 120,
+    },
+    path_display = { "smart" },
+
     mappings = {
       i = {
         ["<C-k>"] = "move_selection_previous",
@@ -467,6 +491,8 @@ require('telescope').setup {
         ["<M-j>"] = "preview_scrolling_down",
         ["<C-u>"] = false,
         ["<C-d>"] = false,
+        ["<esc>"] = actions.close,
+
       },
       n = {
         ["<C-k>"] = "move_selection_previous",
@@ -481,6 +507,8 @@ require('telescope').load_extension('fzf')
 mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files' }})<cr>")
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>")
 mapx.nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>")
+mapx.nnoremap('<m-[>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>")
+
 mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>")
 mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>")
 mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>")
