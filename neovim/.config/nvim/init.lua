@@ -104,7 +104,7 @@ local packer = require('packer').startup(function(use)
   use 'windwp/nvim-autopairs'
 
   -- multicursor support like sublime text
-  use 'terryma/vim-multiple-cursors'
+  use 'mg979/vim-visual-multi'
 
   -- git
   use 'tpope/vim-fugitive'
@@ -565,7 +565,6 @@ vim.cmd([[
   autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
   autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
   autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-  autocmd BufWinLeave * call clearmatches()
 ]])
 
 -- strip trailing whitespace
