@@ -59,16 +59,31 @@ local packer = require('packer').startup(function(use)
   use 'onsails/lspkind-nvim'
 
   -- autocomplete
-  use 'hrsh7th/cmp-cmdline' -- cmdline source
-  use 'hrsh7th/cmp-nvim-lsp' -- LSP source
-  use 'hrsh7th/cmp-path' -- path source
-  use 'hrsh7th/cmp-buffer' -- buffer source
-  use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
+  use {
+    'hrsh7th/nvim-cmp', -- Autocompletion plugin
+    requires = {
+      'hrsh7th/cmp-cmdline', -- cmdline source
+      'hrsh7th/cmp-nvim-lsp', -- LSP source
+      'hrsh7th/cmp-path', -- path source
+      'hrsh7th/cmp-buffer', -- buffer source
+    },
+  }
 
   -- snippets
-  use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
-  use "rafamadriz/friendly-snippets"
-  use 'L3MON4D3/LuaSnip' -- Snippets plugin
+  use {
+    'saadparwaiz1/cmp_luasnip', -- Snippets source for nvim-cmp
+    after = "nvim-cmp",
+  }
+  use {
+    'L3MON4D3/LuaSnip',
+    config = function()
+      require("luasnip/loaders/from_vscode").lazy_load()
+    end,
+    requires = {
+      -- Snippet collections
+      "rafamadriz/friendly-snippets",
+    },
+  }
 
   -- utilities that leverage vim verbs
   use 'tpope/vim-repeat'
