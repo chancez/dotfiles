@@ -100,6 +100,7 @@ local packer = require('packer').startup(function(use)
   use 'junegunn/vim-easy-align'
   use 'b0o/mapx.nvim'
   use 'folke/which-key.nvim'
+  use 'windwp/nvim-autopairs'
 
   -- multicursor support like sublime text
   use 'terryma/vim-multiple-cursors'
@@ -301,7 +302,11 @@ luasnip.config.set_config {
 require("luasnip/loaders/from_vscode").load()
 
 -- nvim-cmp setup
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 local cmp = require 'cmp'
+cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
+
+---@diagnostic disable-next-line: redundant-parameter
 cmp.setup {
   snippet = {
     expand = function(args)
@@ -537,6 +542,11 @@ mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<c
 require'nvim-treesitter.configs'.setup {
   ensure_installed = "maintained",
   highlight = { enable = true },
+}
+
+-- Autopairs
+require('nvim-autopairs').setup{
+  check_ts = true,
 }
 
 -- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
