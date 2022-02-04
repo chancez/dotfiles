@@ -426,13 +426,13 @@ mapx.vnoremap('>', '>gv')
 -- Escape insert by hitting jj
 mapx.inoremap('jj', '<ESC>')
 -- Clear the current search highlights
-mapx.nmap('<leader>/', ':nohlsearch<CR>', 'silent')
+mapx.nmap('<leader>/', ':nohlsearch<CR>', 'silent', 'Clear search hightlights')
 -- clear hlsearch on redraw
-mapx.nnoremap('<C-L>', ':nohlsearch<CR><C-L>')
+mapx.nnoremap('<C-L>', ':nohlsearch<CR><C-L>', 'Clear search hightlights')
 
 -- easy align
-mapx.xmap('ga', '<Plug>(EasyAlign)')
-mapx.nmap('ga', '<Plug>(EasyAlign)')
+mapx.xmap('ga', '<Plug>(EasyAlign)', 'Easy align')
+mapx.nmap('ga', '<Plug>(EasyAlign)', 'Easy align')
 
 -- vim commentary
 mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
