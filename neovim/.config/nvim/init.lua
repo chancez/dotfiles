@@ -57,6 +57,10 @@ local packer = require('packer').startup(function(use)
   use 'neovim/nvim-lspconfig'
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
+  use {
+    "simrat39/symbols-outline.nvim",
+    cmd = "SymbolsOutline",
+  }
 
   -- autocomplete
   use {
