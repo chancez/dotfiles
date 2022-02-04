@@ -189,7 +189,7 @@ vim.g.python3_host_prog = '~/.asdf/shims/python3'
 
 -- Diagnostic keymaps
 mapx.group("silent", function()
-  mapx.nnoremap('<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', 'LSP Diagnostics')
+  mapx.nnoremap('<leader>d', '<cmd>lua vim.diagnostic.open_float()<CR>', 'LSP Diagnostics')
   mapx.nnoremap('[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', 'Diagnostics goto previous')
   mapx.nnoremap(']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', 'Diagnostics goto next')
   mapx.nnoremap('<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', 'Diagnostics loclist')
