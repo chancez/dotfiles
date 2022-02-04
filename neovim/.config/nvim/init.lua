@@ -144,6 +144,8 @@ vim.opt.history = 1000
 vim.opt.inccommand = 'nosplit'
 vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
 vim.opt.signcolumn = 'yes'
+-- Look for tags in the project directory
+vim.opt.tags = 'tags;'
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
