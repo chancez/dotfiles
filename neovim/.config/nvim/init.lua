@@ -305,7 +305,6 @@ luasnip.config.set_config {
     history = true,
     updateevents = "TextChanged,TextChangedI"
 }
-require("luasnip/loaders/from_vscode").load()
 
 -- nvim-cmp setup
 local cmp_autopairs = require('nvim-autopairs.completion.cmp')
