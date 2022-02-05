@@ -58,10 +58,7 @@ local packer = require('packer').startup(function(use)
   use 'neovim/nvim-lspconfig'
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
-  use {
-    "simrat39/symbols-outline.nvim",
-    cmd = "SymbolsOutline",
-  }
+  use 'simrat39/symbols-outline.nvim'
 
   -- autocomplete
   use {
@@ -444,6 +441,9 @@ mapx.map('<C-e>', ':NvimTreeToggle<CR>', 'silent')
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
 mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
+-- symbols outline
+mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
+
 -- vim-go
 mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
 vim.g.go_gopls_enabled = false
@@ -482,6 +482,11 @@ require'lualine'.setup {
 
 -- nvim-tree
 require 'nvim-tree'.setup()
+
+-- symbols-outline
+vim.g.symbols_outline = {
+  width = 40,
+}
 
 -- gitsigns
 require('gitsigns').setup()
