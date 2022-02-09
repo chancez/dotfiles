@@ -122,6 +122,7 @@ packer.startup(function(use)
   use 'folke/which-key.nvim'
   use 'windwp/nvim-autopairs'
   use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
+  use 'akinsho/toggleterm.nvim'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -516,6 +517,11 @@ vim.g.symbols_outline = {
   width = 40,
 }
 
+-- toggleterm
+require("toggleterm").setup {
+  open_mapping = '<c-t>',
+}
+
 -- gitsigns
 require('gitsigns').setup()
 
@@ -622,19 +628,3 @@ vim.cmd [[
     autocmd TextYankPost * silent! lua vim.highlight.on_yank()
   augroup end
 ]]
-
--- always go into insert mode when entering a terminal
-vim.cmd([[autocmd BufWinEnter,WinEnter term://* startinsert]])
-  --
--- custom commands
-vim.cmd([[
-command! -nargs=* -complete=file TermBelow call TermFunc('below', 'new', '15', <f-args>)
-command! -nargs=* -complete=file TermBottom call TermFunc('bo', 'new', '15', <f-args>)
-command! -nargs=* -complete=file TermSizedBottom call TermFunc('bo', 'new', <f-args>)
-
-function! TermFunc(pos, direction, size, ...)
-    execute a:pos " " . a:size . a:direction . " "
-    execute 'terminal ' . join(a:000)
-    setlocal winfixheight
-endfunction
-]])
