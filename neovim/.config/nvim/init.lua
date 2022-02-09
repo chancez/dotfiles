@@ -128,7 +128,6 @@ packer.startup(function(use)
 
   -- git
   use 'tpope/vim-fugitive'
-  use 'tpope/vim-git'
   --
   -- language/syntax integrations
   use 'jjo/vim-cue'
