@@ -420,9 +420,9 @@ mapx.nnoremap('j', 'gj')
 mapx.nnoremap('k', 'gk')
 
 -- Make Y behave like other capitals
--- Reselect visual block after indent
 mapx.nnoremap('Y', 'y$')
 
+-- Reselect visual block after indent
 mapx.vnoremap('<', '<gv')
 mapx.vnoremap('>', '>gv')
 
@@ -449,7 +449,7 @@ mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- vim-go
 mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
-vim.g.go_gopls_enabled = false
+vim.g.go_gopls_enabled = false -- handled by LSP
 
 -- colorscheme
 require('onedark').setup {
