@@ -535,6 +535,7 @@ require('colorizer').setup()
 
 -- telescope
 local actions = require("telescope.actions")
+
 require('telescope').setup {
   extensions = {
     fzf = {
@@ -544,26 +545,16 @@ require('telescope').setup {
       case_mode = "smart_case",
     }
   },
-  defaults = {
-    -- asthetic options
-    sorting_strategy = "ascending",
-    layout_strategy = "horizontal",
+ defaults = require('telescope.themes').get_ivy {
     layout_config = {
-      horizontal = {
-        prompt_position = "top",
-        preview_width = 0.55,
-        results_width = 0.8,
-      },
-      width = 0.87,
-      height = 0.80,
-      preview_cutoff = 120,
+      scroll_speed = 5,
     },
     mappings = {
       i = {
-        ["<C-k>"] = "move_selection_previous",
-        ["<C-j>"] = "move_selection_next",
-        ["<M-k>"] = "preview_scrolling_up",
-        ["<M-j>"] = "preview_scrolling_down",
+        ["<C-k>"] = actions.move_selection_previous,
+        ["<C-j>"] = actions.move_selection_next,
+        ["<M-k>"] = actions.preview_scrolling_up,
+        ["<M-j>"] = actions.preview_scrolling_down,
         ["<C-u>"] = false,
         ["<C-d>"] = false,
         ["<esc>"] = actions.close,
