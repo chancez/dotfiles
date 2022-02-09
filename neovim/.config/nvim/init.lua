@@ -123,6 +123,7 @@ packer.startup(function(use)
   use 'windwp/nvim-autopairs'
   use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
   use 'akinsho/toggleterm.nvim'
+  use 'szw/vim-maximizer'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -476,6 +477,9 @@ mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
 -- vim-go
 mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
 vim.g.go_gopls_enabled = false -- handled by LSP
+
+-- vim-maximizer
+vim.g.maximizer_default_mapping_key = '<c-w>0'
 
 -- colorscheme
 require('onedark').setup {
