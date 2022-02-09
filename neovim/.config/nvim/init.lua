@@ -40,6 +40,10 @@ packer.startup(function(use)
   use 'norcalli/nvim-colorizer.lua'
   use 'preservim/tagbar'
   use {
+    'kyazdani42/nvim-tree.lua',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true },
+  }
+  use {
     'nvim-lualine/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
   }
@@ -49,7 +53,6 @@ packer.startup(function(use)
       'nvim-lua/plenary.nvim'
     },
   }
-  use 'sidebar-nvim/sidebar.nvim'
   use "lukas-reineke/indent-blankline.nvim"
 
   -- search
@@ -77,6 +80,7 @@ packer.startup(function(use)
   use 'neovim/nvim-lspconfig'
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
+  use 'simrat39/symbols-outline.nvim'
 
   -- autocomplete
   use {
@@ -187,17 +191,6 @@ vim.opt.tags = 'tags;'
 -- indent-blankline
 vim.opt.list = true
 vim.opt.listchars:append("space:⋅")
-
-vim.g.indent_blankline_filetype_exclude = {
-  "help",
-  "startify",
-  "dashboard",
-  "packer",
-  "neogitstatus",
-  "NvimTree",
-  "SidebarNvim",
-  "Trouble",
-}
 
 require("indent_blankline").setup {
   space_char_blankline = " ",
@@ -467,10 +460,13 @@ mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
 mapx.vmap('<M-/>', ':Commentary<CR>', 'silent')
 
 -- nvim-tree
-mapx.map('<C-e>', ':SidebarNvimToggle<CR>', 'silent')
+mapx.map('<C-e>', ':NvimTreeToggle<CR>', 'silent')
 
 -- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
 mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
+
+-- symbols outline
+mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
 
 -- vim-go
 mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
@@ -508,22 +504,12 @@ require'lualine'.setup {
   }
 }
 
--- sidebar-nvim
-require("sidebar-nvim").setup {
-  open = true,
-  disable_closing_prompt = true,
-  initial_width = 30,
-  sections = {
-    "git",
-    "diagnostics",
-    "files",
-    "symbols",
-    "todos",
-  },
-  files = {
-    show_hidden = true,
-    ignored_paths = {"%.git$"},
-  }
+-- nvim-tree
+require 'nvim-tree'.setup()
+
+-- symbols-outline
+vim.g.symbols_outline = {
+  width = 40,
 }
 
 -- gitsigns
