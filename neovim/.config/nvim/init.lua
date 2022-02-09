@@ -466,7 +466,7 @@ mapx.vmap('<M-/>', ':Commentary<CR>', 'silent')
 -- nvim-tree
 mapx.map('<C-e>', ':NvimTreeToggle<CR>', 'silent')
 
--- tagbar (requires remapped key in terminal emulator for "ctrl-shift-e" to work)
+-- tagbar
 mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- symbols outline
