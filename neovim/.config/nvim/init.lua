@@ -434,6 +434,10 @@ mapx.tnoremap('<A-j>', '<C-\\><C-n><C-w>j')
 mapx.tnoremap('<A-k>', '<C-\\><C-n><C-w>k')
 mapx.tnoremap('<A-l>', '<C-\\><C-n><C-w>l')
 
+-- Buffer movement
+mapx.nmap('<c-]>', ':bnext<CR>', 'Next buffer')
+mapx.nmap('<c-[>', ':bprev<CR>', 'Previous buffer')
+
 -- Wrapped lines goes down/up to next row, rather than next line in file.
 mapx.nnoremap('j', 'gj')
 mapx.nnoremap('k', 'gk')
