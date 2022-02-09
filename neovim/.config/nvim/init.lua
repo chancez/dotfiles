@@ -490,6 +490,7 @@ require('onedark').load()
 -- lualine
 require'lualine'.setup {
   options = {theme = 'onedark'},
+  extensions = {'toggleterm'},
   sections = {
     lualine_c = {
       {
