@@ -579,13 +579,13 @@ require('telescope').setup {
 
 require('telescope').load_extension('fzf')
 
-mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files' }})<cr>", 'Telescope find_files')
+mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files', '--hidden', '--no-binary' }})<cr>", 'Telescope find_files')
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
 mapx.nnoremap('<m-p>', "<cmd>lua require('telescope.builtin').tags()<cr>", 'Telescope tags')
 mapx.nnoremap('<c-_>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>", 'Telescope current_buffer_fuzzy_find') -- ctrl-/
 mapx.nnoremap('<c-g>', "<cmd>lua require('telescope.builtin').grep_string()<cr>", 'Telescope grep_string')
 
-mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files' }})<cr>", 'Telescope find_files')
+mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files({find_command={'rg', '--files', '--hidden' , '--no-binary' }})<cr>", 'Telescope find_files')
 mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>", 'Telescope live_grep')
 mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
 mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>", 'Telescope help_tags')
