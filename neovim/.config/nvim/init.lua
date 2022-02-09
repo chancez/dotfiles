@@ -95,6 +95,7 @@ local packer = require('packer').startup(function(use)
   use 'b0o/mapx.nvim'
   use 'folke/which-key.nvim'
   use 'windwp/nvim-autopairs'
+  use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -575,6 +576,9 @@ require'nvim-treesitter.configs'.setup {
 require('nvim-autopairs').setup{
   check_ts = true,
 }
+
+-- Autotag
+require('nvim-ts-autotag').setup()
 
 -- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
 vim.cmd([[
