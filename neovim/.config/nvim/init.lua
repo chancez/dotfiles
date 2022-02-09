@@ -321,7 +321,8 @@ require('lsp_signature').setup {
   handler_opts = {
     border = "rounded"
   },
-  toggle_key = "<C-l>",
+  toggle_key = "<M-x>",
+  floating_window_off_x = 60,
 }
 
 -- luasnip setup
