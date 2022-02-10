@@ -137,6 +137,8 @@ packer.startup(function(use)
   use 'google/vim-jsonnet'
   use 'chr4/nginx.vim'
   use 'hashivim/vim-terraform'
+  use 'fladson/vim-kitty'
+
   if PACKER_BOOTSTRAP then
     require("packer").sync()
   end
