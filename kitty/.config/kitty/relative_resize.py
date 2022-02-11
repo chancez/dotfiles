@@ -17,16 +17,16 @@ def handle_result(args, result, target_window_id, boss):
     if direction == 'down':
         neighbor_direction = 'bottom'
 
-    neighbor = boss.active_tab.neighboring_group_id(neighbor_direction)
+    has_neighbor = boss.active_tab.neighboring_group_id(neighbor_direction) is not None
 
     if direction == 'left' or direction == 'right':
-        if neighbor is None:
-            boss.active_tab.resize_window('narrower', 1)
-        else:
+        if has_neighbor:
             boss.active_tab.resize_window('wider', 1)
+        else:
+            boss.active_tab.resize_window('narrower', 1)
 
     if direction == 'up' or direction == 'down':
-        if neighbor is None:
-            boss.active_tab.resize_window('shorter', 1)
-        else:
+        if has_neighbor:
             boss.active_tab.resize_window('taller', 1)
+        else:
+            boss.active_tab.resize_window('shorter', 1)
