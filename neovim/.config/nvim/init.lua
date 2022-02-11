@@ -81,6 +81,7 @@ packer.startup(function(use)
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
   use 'simrat39/symbols-outline.nvim'
+  use 'williamboman/nvim-lsp-installer'
 
   -- autocomplete
   use {
@@ -245,77 +246,95 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
+
+local lsp_installer_servers = require('nvim-lsp-installer.servers')
+
 -- Enable the following language servers (using defaults)
-local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' }
-for _, lsp in ipairs(servers) do
-  lspconfig[lsp].setup {
-    on_attach = on_attach,
-    capabilities = capabilities,
-  }
-end
+local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' , 'sumneko_lua' }
+
+local lsp_opts = {
+  on_attach = on_attach,
+  capabilities = capabilities,
+}
 
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
--- Lua LSP config
-lspconfig.sumneko_lua.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-  settings = {
-    Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
-        -- Setup your lua path
-        path = runtime_path,
-      },
-      diagnostics = {
-        -- Get the language server to recognize the `vim` global
-        globals = { 'vim' },
-      },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = vim.api.nvim_get_runtime_file('', true),
-      },
-      -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = {
-        enable = false,
+local server_lsp_opts = {
+  -- Provide settings that should only apply to the "eslintls" server
+  ["sumneko_lua"] = {
+    settings = {
+      Lua = {
+        runtime = {
+          -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+          version = 'LuaJIT',
+          -- Setup your lua path
+          path = runtime_path,
+        },
+        diagnostics = {
+          -- Get the language server to recognize the `vim` global
+          globals = { 'vim' },
+        },
+        workspace = {
+          -- Make the server aware of Neovim runtime files
+          library = vim.api.nvim_get_runtime_file('', true),
+        },
+        -- Do not send telemetry data containing a randomized but unique identifier
+        telemetry = {
+          enable = false,
+        },
       },
     },
   },
-}
-
--- Go LSP config
-lspconfig.gopls.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-  cmd = {"gopls", "serve"},
-  settings = {
-    gopls = {
-      completeUnimported = true,
-      analyses = {
-        unusedparams = true,
+  ["gopls"] = {
+    cmd = {"gopls", "serve"},
+    settings = {
+      gopls = {
+        completeUnimported = true,
+        analyses = {
+          unusedparams = true,
+        },
+        staticcheck = true,
       },
-      staticcheck = true,
     },
   },
-}
-
--- YAML LSP config
-lspconfig.yamlls.setup {
-  on_attach = on_attach,
-  capabilities = capabilities,
-  settings = {
-    yaml = {
-      schemaStore = {
-        url = "https://www.schemastore.org/api/json/catalog.json",
-        enable = true,
+  ["yamlls"] = {
+    settings = {
+      yaml = {
+        schemaStore = {
+          url = "https://www.schemastore.org/api/json/catalog.json",
+          enable = true,
+        }
       }
-    }
+    },
   },
 }
+
+-- Loop through the servers listed above and set them up. If a server is
+-- not already installed, install it.
+for _, server_name in pairs(servers) do
+    local server_available, server = lsp_installer_servers.get_server(server_name)
+    if server_available then
+        server:on_ready(function ()
+          if server_lsp_opts[server.name] then
+            local server_opts = server_lsp_opts[server.name]
+            -- Update  the default opts with the server-specific ones
+            for k, v in pairs(server_opts) do
+              lsp_opts[k] = v
+            end
+          end
+            server:setup(lsp_opts)
+        end)
+        if not server:is_installed() then
+
+          print("Installing " .. server_name)
+          -- Queue the server to be installed.
+          server:install()
+        end
+    end
+end
 
 -- lsp signature
 require('lsp_signature').setup {
