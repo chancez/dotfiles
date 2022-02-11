@@ -11,6 +11,7 @@ STOW_DIRS=(\
     bins \
     ctags \
     git \
+    kitty \
     neovim \
     postgres \
     rg \
