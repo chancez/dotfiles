@@ -1,6 +1,15 @@
+# XDG
+export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+
+# zgen options
+export ZGEN_DIR=$XDG_DATA_HOME/zgen
+export ZGEN_RESET_ON_CHANGE=(${HOME}/.zshrc)
+# install zgen
+[[ ! -d $ZGEN_DIR ]] && git clone git@github.com:tarjoilija/zgen.git $ZGEN_DIR
+
 # load zgen
-ZGEN_RESET_ON_CHANGE=(${HOME}/.zshrc)
-source "${HOME}/.zgen/zgen.zsh"
+source "$ZGEN_DIR/zgen.zsh"
 
 # if the init script doesn't exist
 if ! zgen saved; then
