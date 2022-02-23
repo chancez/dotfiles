@@ -13,6 +13,3 @@
     zcompile "$zcompdump"
   fi
 } &!
-
-setopt extended_glob
-setopt interactivecomments

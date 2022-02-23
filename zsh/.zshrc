@@ -1,8 +1,11 @@
-fpath=(/usr/local/share/zsh-completions $fpath)
-[[ -d /opt/brew/share/zsh/site-functions/ ]] && fpath+=(/opt/brew/share/zsh/site-functions/)
-[[ -d /opt/homebrew/share/zsh/site-functions/ ]] && fpath+=(/opt/homebrew/share/zsh/site-functions/)
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
 
-# Paths. These come first, since we rely on using the commands below.
+# zsh opts
+setopt extended_glob
+setopt interactivecomments
 
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path
@@ -19,20 +22,23 @@ cdpath=(
 path=(
   $HOME/.local/bin
   $GOPATH/bin
-  /opt/homebrew/bin
-  /opt/homebrew/sbin
+  /opt/brew/{bin,sbin}
+  /opt/homebrew/{bin,sbin}
   /usr/local/{bin,sbin}
   "$HOME/.krew/bin"
   /usr/local/opt/curl/bin
   $path
 )
 
-eval "$(brew shellenv)"
+# Add shell functions to zsh function path, this is needed for completition
+fpath=(
+  /opt/homebrew/share/zsh/site-functions/
+  /opt/brew/share/zsh/site-functions/
+  /usr/local/share/zsh-completions
+  $fpath
+)
 
-# Source Prezto.
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
-fi
+eval "$(brew shellenv)"
 
 command -v hub >/dev/null && eval "$(hub alias -s)"
 command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d') && compdef k=kubectl
