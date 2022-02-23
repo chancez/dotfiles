@@ -149,6 +149,9 @@ fi
 if [[ "$OSTYPE" == darwin* ]]; then
   export BROWSER='open'
 fi
+if [[ $(uname -r) == *Microsoft ]]; then
+  export BROWSER=wsl-open
+fi
 
 if (( $+commands[rg] )); then
     export FZF_DEFAULT_COMMAND='rg --files'
