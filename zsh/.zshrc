@@ -1,7 +1,5 @@
 # Source Prezto.
 
-zstyle ':prezto:*:*' color 'yes'
-
 PREZTO_MODULES_TO_LOAD=(\
   'environment' \
   'terminal' \
@@ -23,7 +21,7 @@ PREZTO_MODULES_TO_LOAD=(\
   'history-substring-search' \
 )
 
-zstyle ':prezto:load' pmodule "${PREZTO_MODULES_TO_LOAD[@]}"
+zstyle ':prezto:*:*' color 'yes'
 zstyle ':prezto:module:editor' key-bindings 'vi'
 zstyle ':prezto:module:git:status:ignore' submodules 'all'
 zstyle ':prezto:module:gnu-utility' prefix 'g'
@@ -33,7 +31,7 @@ zstyle ':prezto:module:ssh:load' identities 'id_rsa'
 zstyle ':prezto:module:terminal' auto-title 'yes'
 zstyle ':prezto:module:terminal:window-title' format '%n@%m: %s'
 zstyle ':prezto:module:terminal:tab-title' format '%m: %s'
-
+zstyle ':prezto:load' pmodule "${PREZTO_MODULES_TO_LOAD[@]}"
 
 if [[ "$(uname)" -eq "Darwin" ]]; then
     # homebrew only on OSX
