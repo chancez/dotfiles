@@ -1,24 +1,25 @@
-# Source Prezto.
+# setup Prezto.
 
-PREZTO_MODULES_TO_LOAD=(\
-  'environment' \
-  'terminal' \
-  'editor' \
-  'history' \
-  'directory' \
-  'spectrum' \
-  'utility' \
-  'osx' \
-  'git' \
-  'ruby' \
-  'python' \
-  'gpg' \
-  'archive' \
-  'prompt' \
-  'syntax-highlighting' \
-  'completion' \
-  'go' \
-  'history-substring-search' \
+PREZTO_MODULES_TO_LOAD=(
+  'environment'
+  'terminal'
+  'editor'
+  'history'
+  'directory'
+  'spectrum'
+  'utility'
+  'osx'
+  'git'
+  'ruby'
+  'python'
+  'gpg'
+  'archive'
+  'prompt'
+  'syntax-highlighting'
+  'completion'
+  'go'
+  'history-substring-search'
+  'ssh'
 )
 
 zstyle ':prezto:*:*' color 'yes'
@@ -36,12 +37,6 @@ zstyle ':prezto:load' pmodule "${PREZTO_MODULES_TO_LOAD[@]}"
 if [[ "$(uname)" -eq "Darwin" ]]; then
     # homebrew only on OSX
     PREZTO_MODULES_TO_LOAD+=('homebrew')
-
-    # if custom ssh agent is available, skip ssh module when uses system
-    # ssh-agent
-    if (( ! $+commands[memento] )); then
-        PREZTO_MODULES_TO_LOAD+=('ssh')
-    fi
 fi
 
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
