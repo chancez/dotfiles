@@ -58,7 +58,9 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 # Ensure path arrays do not contain duplicates.
-typeset -gU cdpath fpath mailpath path
+typeset -gU cdpath fpath mailpath path manpath infopath
+
+export HOMEBREW_PREFIX="/opt/homebrew";
 
 # Set the the list of directories that cd searches.
 cdpath=(
@@ -72,8 +74,7 @@ cdpath=(
 path=(
   $HOME/.local/bin
   $GOPATH/bin
-  /opt/brew/{bin,sbin}
-  /opt/homebrew/{bin,sbin}
+  $HOMEBREW_PREFIX/{bin,sbin}
   /usr/local/{bin,sbin}
   "$HOME/.krew/bin"
   /usr/local/opt/curl/bin
@@ -82,13 +83,20 @@ path=(
 
 # Add shell functions to zsh function path, this is needed for completition
 fpath=(
-  /opt/homebrew/share/zsh/site-functions/
-  /opt/brew/share/zsh/site-functions/
+  $HOMEBREW_PREFIX/share/zsh/site-functions/
   /usr/local/share/zsh-completions
   $fpath
 )
 
-eval "$(brew shellenv)"
+manpath=(
+  $HOMEBREW_PREFIX/share/man
+  $infopath
+)
+
+infopath=(
+  $HOMEBREW_PREFIX/share/info
+  $infopath
+)
 
 command -v hub >/dev/null && eval "$(hub alias -s)"
 command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d') && compdef k=kubectl
