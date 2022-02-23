@@ -2,14 +2,37 @@ fpath=(/usr/local/share/zsh-completions $fpath)
 [[ -d /opt/brew/share/zsh/site-functions/ ]] && fpath+=(/opt/brew/share/zsh/site-functions/)
 [[ -d /opt/homebrew/share/zsh/site-functions/ ]] && fpath+=(/opt/homebrew/share/zsh/site-functions/)
 
+# Paths. These come first, since we rely on using the commands below.
+
+# Ensure path arrays do not contain duplicates.
+typeset -gU cdpath fpath mailpath path
+
+# Set the the list of directories that cd searches.
+cdpath=(
+  $cdpath
+  $HOME
+  $HOME/projects
+  $HOME/go/src/github.com
+)
+
+# Set the list of directories that Zsh searches for programs.
+path=(
+  $HOME/.local/bin
+  $GOPATH/bin
+  /opt/homebrew/bin
+  /opt/homebrew/sbin
+  /usr/local/{bin,sbin}
+  "$HOME/.krew/bin"
+  /usr/local/opt/curl/bin
+  $path
+)
+
+eval "$(brew shellenv)"
+
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
-
-setopt interactivecomments
-
-BREW_PREFIX="$(brew --prefix)"
 
 command -v hub >/dev/null && eval "$(hub alias -s)"
 command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d') && compdef k=kubectl
@@ -44,7 +67,27 @@ alias tf=terraform
 
 if command -v nvim >/dev/null; then
     alias vim='nvim'
+    export EDITOR='nvim'
+else
+    export EDITOR='vim'
 fi
+export VISUAL="$EDITOR"
+export GIT_EDITOR="$EDITOR"
+export PAGER='less'
+
+# Set the default Less options.
+# Mouse-wheel scrolling has been disabled by -X (disable screen clearing).
+# Remove -X and -F (exit if the content fits on one screen) to enable it.
+export LESS='-F -g -i -M -R -S -w -X -z-4'
+
+if [[ -z "$LANG" ]]; then
+  export LANG='en_US.UTF-8'
+fi
+
+if [[ "$OSTYPE" == darwin* ]]; then
+  export BROWSER='open'
+fi
+
 
 if (( $+commands[rg] )); then
     export FZF_DEFAULT_COMMAND='rg --files'
@@ -54,7 +97,21 @@ else
     echo "missing rg/ag for fzf"
 fi
 
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+# adds previews to completion
+export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -C {}) 2> /dev/null | head -200'"
+export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"
+export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
+
 # rg config
 if which rg > /dev/null; then
   export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc;
 fi
+
+export HISTSIZE=20000
+export SAVEHIST=100000
+export GOPATH="$HOME/go"
+export GOBIN="$GOPATH/bin"
+export HOMEBREW_NO_INSTALL_CLEANUP=true
+export BC_ENV_ARGS="$HOME/.bc"
