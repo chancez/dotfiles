@@ -18,6 +18,9 @@ if ! zgen saved; then
   zgen prezto editor key-bindings 'vi'
   zgen prezto history-substring-search color 'yes'
   zgen prezto ssh:load identities 'id_rsa'
+  zgen prezto '*:*' case-sensitive 'no'
+  zgen prezto '*:*' color 'yes'
+  zgen prezto 'module:syntax-highlighting' highlighters 'main' 'brackets' 'pattern' 'cursor'
 
   # zgen plugins
   zgen prezto
@@ -28,19 +31,15 @@ if ! zgen saved; then
   zgen prezto directory
   zgen prezto spectrum
   zgen prezto utility
-  zgen prezto osx
   zgen prezto git
-  zgen prezto ruby
-  zgen prezto python
-  zgen prezto gpg
-  zgen prezto archive
   zgen prezto prompt
   zgen prezto syntax-highlighting
   zgen prezto completion
   zgen prezto history-substring-search
   zgen prezto ssh
-  if [[ "$(uname)" -eq "Darwin" ]]; then
+  if [[ "$OSTYPE" == darwin* ]]; then
     zgen prezto homebrew
+    zgen prezto osx
   fi
 
   zgen load jonmosco/kube-ps1
@@ -97,8 +96,6 @@ command -v oc >/dev/null && source <(oc completion zsh)
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 command -v fasd >/dev/null && eval "$(fasd --init auto)"
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
-
-[[ -s "${HOME}/.iterm2_shell_integration.zsh" && "$UNAME" == "Darwin" ]] && source "$HOME/.iterm2_shell_integration.zsh"
 
 if [[ -s "$BREW_PREFIX/opt/fzf/shell/completion.zsh" ]]; then
   source "$BREW_PREFIX/opt/fzf/shell/completion.zsh"
