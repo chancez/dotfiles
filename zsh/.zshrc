@@ -105,20 +105,20 @@ command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 command -v fasd >/dev/null && eval "$(fasd --init auto)"
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
 
-if [[ -s "$BREW_PREFIX/opt/fzf/shell/completion.zsh" ]]; then
-  source "$BREW_PREFIX/opt/fzf/shell/completion.zsh"
-  source "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
-elif [[ -s "$HOME/.fzf.zsh" ]]; then
-  source "$HOME/.fzf.zsh"
+# source a script, if it exists
+function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
+
+if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
+  source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+else
+  # fallback
+  source_if_exists "$HOME/.fzf.zsh"
 fi
 
-if [[ -s "$BREW_PREFIX/opt/asdf/asdf.sh" ]]; then
-    source "$BREW_PREFIX/opt/asdf/asdf.sh"
-elif [[ -s "$HOME/.asdf/asdf.sh" ]]; then
-    source "$HOME/.asdf/asdf.sh"
+if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
+  # fallback
+  source_if_exists "$HOME/.asdf/asdf.sh"
 fi
-
-[[ -s "$HOME/.zshrc_work" ]] && source "$HOME/.zshrc_work"
 
 alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com A3-GERNM3-T7F7QX-WEQCD-5PARX-F59D6-AMGG7)'
 alias gst='git status'
