@@ -131,7 +131,6 @@ if [[ "$OSTYPE" == darwin* ]]; then
   export BROWSER='open'
 fi
 
-
 if (( $+commands[rg] )); then
     export FZF_DEFAULT_COMMAND='rg --files'
 elif (( $+commands[ag] )); then
