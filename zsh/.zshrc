@@ -1,4 +1,51 @@
 # Source Prezto.
+
+zstyle ':prezto:*:*' color 'yes'
+
+PREZTO_MODULES_TO_LOAD=(\
+  'environment' \
+  'terminal' \
+  'editor' \
+  'history' \
+  'directory' \
+  'spectrum' \
+  'utility' \
+  'osx' \
+  'git' \
+  'ruby' \
+  'python' \
+  'gpg' \
+  'archive' \
+  'prompt' \
+  'syntax-highlighting' \
+  'completion' \
+  'go' \
+  'history-substring-search' \
+)
+
+zstyle ':prezto:load' pmodule "${PREZTO_MODULES_TO_LOAD[@]}"
+zstyle ':prezto:module:editor' key-bindings 'vi'
+zstyle ':prezto:module:git:status:ignore' submodules 'all'
+zstyle ':prezto:module:gnu-utility' prefix 'g'
+zstyle ':prezto:module:history-substring-search' color 'yes'
+zstyle ':prezto:module:prompt' theme 'sorin'
+zstyle ':prezto:module:ssh:load' identities 'id_rsa'
+zstyle ':prezto:module:terminal' auto-title 'yes'
+zstyle ':prezto:module:terminal:window-title' format '%n@%m: %s'
+zstyle ':prezto:module:terminal:tab-title' format '%m: %s'
+
+
+if [[ "$(uname)" -eq "Darwin" ]]; then
+    # homebrew only on OSX
+    PREZTO_MODULES_TO_LOAD+=('homebrew')
+
+    # if custom ssh agent is available, skip ssh module when uses system
+    # ssh-agent
+    if (( ! $+commands[memento] )); then
+        PREZTO_MODULES_TO_LOAD+=('ssh')
+    fi
+fi
+
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
