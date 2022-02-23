@@ -35,6 +35,7 @@ if ! zgen saved; then
   fi
 
   zgen load jonmosco/kube-ps1
+  zgen load zsh-users/zsh-autosuggestions
 
   # generate the init script from plugins above
   zgen save
@@ -43,6 +44,10 @@ fi
 # zsh opts
 setopt extended_glob
 setopt interactivecomments
+
+# zsh-autosuggestions config
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path
