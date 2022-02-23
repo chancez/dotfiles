@@ -1,46 +1,43 @@
-# setup Prezto.
+# load zgen
+ZGEN_RESET_ON_CHANGE=(${HOME}/.zshrc)
+source "${HOME}/.zgen/zgen.zsh"
 
-PREZTO_MODULES_TO_LOAD=(
-  'environment'
-  'terminal'
-  'editor'
-  'history'
-  'directory'
-  'spectrum'
-  'utility'
-  'osx'
-  'git'
-  'ruby'
-  'python'
-  'gpg'
-  'archive'
-  'prompt'
-  'syntax-highlighting'
-  'completion'
-  'go'
-  'history-substring-search'
-  'ssh'
-)
+# if the init script doesn't exist
+if ! zgen saved; then
+  # prezto options
+  zgen prezto prompt theme 'sorin'
+  zgen prezto editor key-bindings 'vi'
+  zgen prezto history-substring-search color 'yes'
+  zgen prezto ssh:load identities 'id_rsa'
 
-zstyle ':prezto:*:*' color 'yes'
-zstyle ':prezto:module:editor' key-bindings 'vi'
-zstyle ':prezto:module:git:status:ignore' submodules 'all'
-zstyle ':prezto:module:gnu-utility' prefix 'g'
-zstyle ':prezto:module:history-substring-search' color 'yes'
-zstyle ':prezto:module:prompt' theme 'sorin'
-zstyle ':prezto:module:ssh:load' identities 'id_rsa'
-zstyle ':prezto:module:terminal' auto-title 'yes'
-zstyle ':prezto:module:terminal:window-title' format '%n@%m: %s'
-zstyle ':prezto:module:terminal:tab-title' format '%m: %s'
-zstyle ':prezto:load' pmodule "${PREZTO_MODULES_TO_LOAD[@]}"
+  # zgen plugins
+  zgen prezto
+  zgen prezto environment
+  zgen prezto terminal
+  zgen prezto editor
+  zgen prezto history
+  zgen prezto directory
+  zgen prezto spectrum
+  zgen prezto utility
+  zgen prezto osx
+  zgen prezto git
+  zgen prezto ruby
+  zgen prezto python
+  zgen prezto gpg
+  zgen prezto archive
+  zgen prezto prompt
+  zgen prezto syntax-highlighting
+  zgen prezto completion
+  zgen prezto history-substring-search
+  zgen prezto ssh
+  if [[ "$(uname)" -eq "Darwin" ]]; then
+    zgen prezto homebrew
+  fi
 
-if [[ "$(uname)" -eq "Darwin" ]]; then
-    # homebrew only on OSX
-    PREZTO_MODULES_TO_LOAD+=('homebrew')
-fi
+  zgen load jonmosco/kube-ps1
 
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+  # generate the init script from plugins above
+  zgen save
 fi
 
 # zsh opts
@@ -161,3 +158,6 @@ export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
 export HOMEBREW_NO_INSTALL_CLEANUP=true
 export BC_ENV_ARGS="$HOME/.bc"
+
+# Add kube-ps1 to prompt
+PROMPT='$(kube_ps1) '$PROMPT
