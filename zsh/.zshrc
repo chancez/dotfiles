@@ -3,50 +3,52 @@ export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
 # zgen options
-export ZGEN_DIR=$XDG_DATA_HOME/zgen
+export ZGEN_DIR=$XDG_DATA_HOME/zgenom
 export ZGEN_RESET_ON_CHANGE=(${HOME}/.zshrc)
-# install zgen
-[[ ! -d $ZGEN_DIR ]] && git clone git@github.com:tarjoilija/zgen.git $ZGEN_DIR
+# install zgenom
+[[ ! -d $ZGEN_DIR ]] && git clone https://github.com/jandamm/zgenom $ZGEN_DIR
 
-# load zgen
-source "$ZGEN_DIR/zgen.zsh"
+# load zgenom
+source "$ZGEN_DIR/zgenom.zsh"
+
+# Check for plugin and zgenom updates every 7 days
+# This does not increase the startup time.
+zgenom autoupdate
 
 # if the init script doesn't exist
-if ! zgen saved; then
+if ! zgenom saved; then
+  echo "Creating a zgenom save"
+
   # prezto options
-  zgen prezto prompt theme 'sorin'
-  zgen prezto editor key-bindings 'vi'
-  zgen prezto history-substring-search color 'yes'
-  zgen prezto ssh:load identities 'id_rsa'
-  zgen prezto '*:*' case-sensitive 'no'
-  zgen prezto '*:*' color 'yes'
-  zgen prezto 'module:syntax-highlighting' highlighters 'main' 'brackets' 'pattern' 'cursor'
+  zgenom prezto prompt theme 'sorin'
+  zgenom prezto editor key-bindings 'vi'
+  zgenom prezto history-substring-search color 'yes'
+  zgenom prezto ssh:load identities 'id_rsa'
+  zgenom prezto '*:*' case-sensitive 'no'
+  zgenom prezto '*:*' color 'yes'
+  zgenom prezto 'module:syntax-highlighting' highlighters 'main' 'brackets' 'pattern' 'cursor'
 
-  # zgen plugins
-  zgen prezto
-  zgen prezto environment
-  zgen prezto terminal
-  zgen prezto editor
-  zgen prezto history
-  zgen prezto directory
-  zgen prezto spectrum
-  zgen prezto utility
-  zgen prezto git
-  zgen prezto prompt
-  zgen prezto syntax-highlighting
-  zgen prezto completion
-  zgen prezto history-substring-search
-  zgen prezto ssh
-  if [[ "$OSTYPE" == darwin* ]]; then
-    zgen prezto homebrew
-    zgen prezto osx
-  fi
+  # zgenom plugins
+  zgenom prezto
+  zgenom prezto environment
+  zgenom prezto terminal
+  zgenom prezto editor
+  zgenom prezto history
+  zgenom prezto directory
+  zgenom prezto spectrum
+  zgenom prezto utility
+  zgenom prezto git
+  zgenom prezto prompt
+  zgenom prezto syntax-highlighting
+  zgenom prezto completion
+  zgenom prezto history-substring-search
+  zgenom prezto ssh
 
-  zgen load jonmosco/kube-ps1
-  zgen load zsh-users/zsh-autosuggestions
+  zgenom load jonmosco/kube-ps1
+  zgenom load zsh-users/zsh-autosuggestions
 
   # generate the init script from plugins above
-  zgen save
+  zgenom save
 fi
 
 # zsh opts
