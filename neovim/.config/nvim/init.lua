@@ -250,7 +250,7 @@ capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 local lsp_installer_servers = require('nvim-lsp-installer.servers')
 
 -- Enable the following language servers (using defaults)
-local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' , 'sumneko_lua' }
+local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' , 'sumneko_lua' , 'gopls' }
 
 local lsp_opts = {
   on_attach = on_attach,
