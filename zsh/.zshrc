@@ -58,6 +58,10 @@ fi
 setopt extended_glob
 setopt interactivecomments
 
+
+# open the currently entered command in a text editor using 'v' in normal mode
+bindkey -M vicmd v edit-command-line
+
 # zsh-autosuggestions config
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
