@@ -58,6 +58,8 @@ fi
 setopt extended_glob
 setopt interactivecomments
 
+# autocd interfers with trying to call binaries that have the same name as a directory in CDPATH, so disable it.
+unsetopt autocd
 
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
@@ -135,6 +137,9 @@ alias k=kubectl
 alias kc=kubectx
 alias kns=kubens
 alias tf=terraform
+# we disable autocd so this is an alternative for common path changes
+alias ..='cd ..'
+alias ../..='cd ../..'
 
 if command -v nvim >/dev/null; then
     alias vim='nvim'
