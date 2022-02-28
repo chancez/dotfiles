@@ -649,3 +649,11 @@ vim.cmd [[
     autocmd TextYankPost * silent! lua vim.highlight.on_yank()
   augroup end
 ]]
+
+-- JQ formats JSON in the current buffer
+vim.cmd [[
+  function! JQFun(...)
+    execute '%!jq .'
+  endfunction
+  command! -nargs=* -complete=file JQ call JQFun( '<f-args>' )
+]]
