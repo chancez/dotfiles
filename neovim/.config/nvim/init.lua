@@ -3,7 +3,7 @@ local install_path = vim.fn.stdpath "data" .. "/site/pack/packer/start/packer.nv
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   PACKER_BOOTSTRAP = vim.fn.system {
     "git",
-    "vim-multiple-cursorsclone",
+    "clone",
     "--depth",
     "1",
     "https://github.com/wbthomason/packer.nvim",
