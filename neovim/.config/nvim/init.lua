@@ -621,6 +621,12 @@ require('nvim-autopairs').setup{
 -- Autotag
 require('nvim-ts-autotag').setup()
 
+-- vim-visual-multi
+vim.g.VM_custom_remaps = {
+  ['<c-p>'] = 'Q', -- map c-p to previous
+  ['<c-x>'] = 'q', -- map c-x to skip
+}
+
 -- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
 vim.cmd([[
   autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
