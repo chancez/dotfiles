@@ -1,73 +1,73 @@
 [user]
-	name = Chance Zibolski
-	email = chance.zibolski@gmail.com
+  name = Chance Zibolski
+  email = chance.zibolski@gmail.com
 [github]
-	user = chancez
+  user = chancez
 [color]
-    ui = true
+  ui = true
 [core]
-	excludesfile = ~/.gitignore
+  excludesfile = ~/.gitignore
 [merge]
-    tool = vimdiff
-    log = true
+  tool = vimdiff
+  log = true
 [diff]
-    compactionHeuristic = true
-    algorithm = histogram
+  compactionHeuristic = true
+  algorithm = histogram
 [alias]
-    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
-    ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
-    lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
-    lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-    le = log --oneline --decorate
-    l = "!git ll -1"
-    dlc = diff --cached HEAD^
-    la = "!git config -l | grep alias | cut -c 7-"
-    amend = commit --amend -C HEAD
-    undo = reset --soft HEAD^
-    count = shortlog -sn
-	commit = commit
+  ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+  lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
+  lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
+  le = log --oneline --decorate
+  l = "!git ll -1"
+  dlc = diff --cached HEAD^
+  la = "!git config -l | grep alias | cut -c 7-"
+  amend = commit --amend -C HEAD
+  undo = reset --soft HEAD^
+  count = shortlog -sn
+  commit = commit
     #commit = commit -v
-    conflicts = diff --name-only --diff-filter=U
-    addnw=!sh -c 'git diff -U0 -w --no-color "$@" | git apply --cached --ignore-whitespace --unidiff-zero -'
+  conflicts = diff --name-only --diff-filter=U
+  addnw=!sh -c 'git diff -U0 -w --no-color "$@" | git apply --cached --ignore-whitespace --unidiff-zero -'
 
     # golang.org code review aliases
-	change = codereview change
-	gofmt = codereview gofmt
-	mail = codereview mail
-	pending = codereview pending
-	submit = codereview submit
-	sync = codereview sync
+  change = codereview change
+  gofmt = codereview gofmt
+  mail = codereview mail
+  pending = codereview pending
+  submit = codereview submit
+  sync = codereview sync
 [push]
-	default = current
+  default = current
 [pull]
-    default = current
-	ff = only
-	rebase = true
+  default = current
+  ff = only
+  rebase = true
 [help]
-	autocorrect = 3
+  autocorrect = 3
 [grep]
-    linenumber = true
+  linenumber = true
 [filter "media"]
-	clean = git-media-clean %f
-	smudge = git-media-smudge %f
+  clean = git-media-clean %f
+  smudge = git-media-smudge %f
 [hub]
-	protocol = ssh
+  protocol = ssh
 [fetch]
-	prune = true
+  prune = true
 [http]
-	cookiefile = ~/.gitcookies
+  cookiefile = ~/.gitcookies
 [rebase]
-	autosquash = true
+  autosquash = true
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
 [init]
-	templateDir = ~/.git-template
+  templateDir = ~/.git-template
 
 [includeIf "gitdir:~/projects/work/"]
-    path = ~/.gitconfig-work
+  path = ~/.gitconfig-work
 
 [url "ssh://git@github.com/"]
-	insteadOf = https://github.com/
+  insteadOf = https://github.com/
