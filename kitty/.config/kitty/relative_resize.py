@@ -53,7 +53,7 @@ def handle_result(args, result, target_window_id, boss):
         boss.active_tab.resize_window('taller', 1)
     # only has bottom neighbor
     elif direction == 'up' and bottom_neighbors:
-        boss.active_tab.resize_window('short', 1)
+        boss.active_tab.resize_window('shorter', 1)
 
     # has a neighbor above and below
     elif direction == 'down' and (top_neighbors and bottom_neighbors):
@@ -62,7 +62,7 @@ def handle_result(args, result, target_window_id, boss):
         # boss.active_tab.set_active_window(current_window_id)
     # only has top neighbor
     elif direction == 'down' and top_neighbors:
-        boss.active_tab.resize_window('short', 1)
+        boss.active_tab.resize_window('shorter', 1)
     # only has bottom neighbor
     elif direction == 'down' and bottom_neighbors:
         boss.active_tab.resize_window('taller', 1)
