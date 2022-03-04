@@ -11,14 +11,65 @@ export ZGEN_RESET_ON_CHANGE=(${HOME}/.zshrc)
 # install zgenom
 [[ ! -d $ZGEN_DIR ]] && git clone https://github.com/jandamm/zgenom $ZGEN_DIR
 
-# load zgenom
+# zsh opts
+setopt extended_glob
+setopt interactivecomments
+
+# autocd interfers with trying to call binaries that have the same name as a directory in CDPATH, so disable it.
+unsetopt autocd
+
+# zsh-autosuggestions config
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# Ensure path arrays do not contain duplicates.
+typeset -gU cdpath fpath mailpath path manpath infopath
+
+export HOMEBREW_PREFIX="/opt/homebrew";
+
+# Set the the list of directories that cd searches.
+cdpath=(
+  $cdpath
+  $HOME
+  $HOME/projects
+  $HOME/projects/work
+  $HOME/go/src/github.com
+)
+
+# Set the list of directories that Zsh searches for programs.
+path=(
+  $HOME/.local/bin
+  $GOPATH/bin
+  $HOMEBREW_PREFIX/{bin,sbin}
+  /usr/local/{bin,sbin}
+  "$HOME/.krew/bin"
+  /usr/local/opt/curl/bin
+  $path
+)
+
+# Add shell functions to zsh function path, this is needed for completition
+fpath=(
+  $HOMEBREW_PREFIX/share/zsh/site-functions
+  $fpath
+)
+
+manpath=(
+  $HOMEBREW_PREFIX/share/man
+  $infopath
+)
+
+infopath=(
+  $HOMEBREW_PREFIX/share/info
+  $infopath
+)
+
+# load zgenom only after fpath is set, as it runs compinit
 source "$ZGEN_DIR/zgenom.zsh"
 
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
 
-# if the init script doesn't exist
 if ! zgenom saved; then
   echo "Creating a zgenom save"
 
@@ -54,63 +105,7 @@ if ! zgenom saved; then
   zgenom save
 fi
 
-# zsh opts
-setopt extended_glob
-setopt interactivecomments
-
-# autocd interfers with trying to call binaries that have the same name as a directory in CDPATH, so disable it.
-unsetopt autocd
-
-# open the currently entered command in a text editor using 'v' in normal mode
-bindkey -M vicmd v edit-command-line
-
-# zsh-autosuggestions config
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-
-# Ensure path arrays do not contain duplicates.
-typeset -gU cdpath fpath mailpath path manpath infopath
-
-export HOMEBREW_PREFIX="/opt/homebrew";
-
-# Set the the list of directories that cd searches.
-cdpath=(
-  $cdpath
-  $HOME
-  $HOME/projects
-  $HOME/go/src/github.com
-)
-
-# Set the list of directories that Zsh searches for programs.
-path=(
-  $HOME/.local/bin
-  $GOPATH/bin
-  $HOMEBREW_PREFIX/{bin,sbin}
-  /usr/local/{bin,sbin}
-  "$HOME/.krew/bin"
-  /usr/local/opt/curl/bin
-  $path
-)
-
-# Add shell functions to zsh function path, this is needed for completition
-fpath=(
-  $HOMEBREW_PREFIX/share/zsh/site-functions/
-  /usr/local/share/zsh-completions
-  $fpath
-)
-
-manpath=(
-  $HOMEBREW_PREFIX/share/man
-  $infopath
-)
-
-infopath=(
-  $HOMEBREW_PREFIX/share/info
-  $infopath
-)
-
-command -v hub >/dev/null && eval "$(hub alias -s)"
-command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d') && compdef k=kubectl
+command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d')
 command -v oc >/dev/null && source <(oc completion zsh)
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 command -v fasd >/dev/null && eval "$(fasd --init auto)"
@@ -196,3 +191,6 @@ export BC_ENV_ARGS="$HOME/.bc"
 
 # Add kube-ps1 to prompt
 PROMPT='$(kube_ps1) '$PROMPT
+
+# open the currently entered command in a text editor using 'v' in normal mode
+bindkey -M vicmd v edit-command-line
