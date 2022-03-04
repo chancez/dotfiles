@@ -213,6 +213,9 @@ vim.g.python3_host_prog = '~/.asdf/shims/python3'
 
 -- language server
 
+-- nvim-cmp supports additional completion capabilities
+local cmp_lsp = require('cmp_nvim_lsp')
+
 -- Diagnostic keymaps
 mapx.group("silent", function()
   mapx.nnoremap('<leader>d', '<cmd>lua vim.diagnostic.open_float()<CR>', 'LSP Diagnostics')
@@ -221,50 +224,87 @@ mapx.group("silent", function()
   mapx.nnoremap('<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', 'Diagnostics loclist')
 end)
 
--- LSP settings
-local lspconfig = require 'lspconfig'
-local on_attach = function()
-  mapx.group("silent", "buffer", function()
-    mapx.nnoremap('gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', 'LSP declaration')
-    mapx.nnoremap('gd', '<cmd>lua vim.lsp.buf.definition()<CR>', 'LSP definition')
-    mapx.nnoremap('K', '<cmd>lua vim.lsp.buf.hover()<CR>', 'LSP hover')
-    mapx.nnoremap('gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', 'LSP implementation')
-    mapx.nnoremap('<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', 'LSP signature_help')
-    mapx.nnoremap('<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', 'LSP add_workspace_folder')
-    mapx.nnoremap('<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', 'LSP remove_workspace_folder')
-    mapx.nnoremap('<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', 'LSP list_workspace_folders')
-    mapx.nnoremap('<leader>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', 'LSP type_definition')
-    mapx.nnoremap('<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', 'LSP rename')
-    mapx.nnoremap('gr', '<cmd>lua vim.lsp.buf.references()<CR>', 'LSP references')
-    mapx.nnoremap('<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', 'LSP code_action')
-    mapx.nnoremap('<leader>so', '<cmd>lua require("telescope.builtin").lsp_document_symbols()<CR>', 'LSP document symbols')
-  end)
-  mapx.cmdbang('Format', 'lua vim.lsp.buf.formatting()')
+function OrgImports(wait_ms)
+  local params = vim.lsp.util.make_range_params()
+  params.context = {only = {"source.organizeImports"}}
+  local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
+  for _, res in pairs(result or {}) do
+    for _, r in pairs(res.result or {}) do
+      if r.edit then
+        vim.lsp.util.apply_workspace_edit(r.edit)
+      else
+        vim.lsp.buf.execute_command(r.command)
+      end
+    end
+  end
 end
 
--- nvim-cmp supports additional completion capabilities
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+-- LSP settings
+local on_attach = function(client, _)
+  mapx.cmdbang('LspRename', 'lua vim.lsp.buf.rename()')
+  mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
+  mapx.cmdbang('LspDefinition', 'lua vim.lsp.buf.definition()')
+  mapx.cmdbang('LspTypeDefinition', 'lua vim.lsp.buf.type_definition()')
+  mapx.cmdbang('LspReferences', 'lua vim.lsp.buf.references()')
+  mapx.cmdbang('LspImplementation', 'lua vim.lsp.buf.implementation()')
 
+  mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
+  mapx.cmdbang('LspHover', 'lua vim.lsp.buf.hover()')
+  mapx.cmdbang('LspSignatureHelp', 'lua vim.lsp.buf.signature_help()')
+
+  mapx.cmdbang('LspAddWorkspaceFolder', 'lua vim.lsp.buf.add_workspace_folder()')
+  mapx.cmdbang('LspRemoveWorkspaceFolder', 'lua vim.lsp.buf.remove_workspace_folder()')
+  mapx.cmdbang('LspListWorkspaceFolders', 'lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))')
+
+  mapx.cmdbang('LspDocumentSymbols', 'lua require("telescope.builtin").lsp_document_symbols()')
+  mapx.cmdbang('LspWorkspaceSymbols', 'lua require("telescope.builtin").lsp_dynamic_workspace_symbols()')
+
+  -- formatting
+  if client.resolved_capabilities.document_formatting then
+    mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.formatting()')
+    mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
+    vim.api.nvim_command [[augroup Format]]
+    vim.api.nvim_command [[autocmd! * <buffer>]]
+    vim.api.nvim_command [[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_seq_sync()]]
+    vim.api.nvim_command [[autocmd BufWritePre *.go lua OrgImports(1000)]]
+    vim.api.nvim_command [[augroup END]]
+  end
+
+  mapx.group("silent", "buffer", function()
+    mapx.nnoremap('<leader>rn', '<cmd>LspRename<CR>', 'LspRename')
+    mapx.nnoremap('gD', '<cmd>LspDeclaration<CR>', 'LspDeclaration')
+    mapx.nnoremap('gd', '<cmd>LspDefinition<CR>', 'LspDefinition')
+    mapx.nnoremap('<leader>D', '<cmd>LspTypeDefinition<CR>', 'LspTypeDefinition')
+    mapx.nnoremap('gr', '<cmd>LspReferences<CR>', 'LspReferences')
+    mapx.nnoremap('gi', '<cmd>LspImplementation<CR>', 'LspImplementation')
+
+    mapx.nnoremap('<leader>ca', '<cmd>LspCodeAction<CR>', 'LspCodeAction')
+    mapx.nnoremap('K', '<cmd>LspHover<CR>', 'LspHover')
+    mapx.nnoremap('<C-k>', '<cmd>LspSignatureHelp<CR>', 'LspSignatureHelp')
+
+    mapx.nnoremap('<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', 'LspAddWorkspaceFolder')
+    mapx.nnoremap('<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', 'LspRemoveWorkspaceFolder')
+    mapx.nnoremap('<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', 'LspListWorkspaceFolders')
+
+    mapx.nnoremap('<leader>so', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
+    mapx.nnoremap('<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+    mapx.nnoremap('<m-p>', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+  end)
+end
 
 local lsp_installer_servers = require('nvim-lsp-installer.servers')
-
--- Enable the following language servers (using defaults)
-local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' , 'sumneko_lua' , 'gopls' }
-
-local lsp_opts = {
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
 
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
-local server_lsp_opts = {
-  -- Provide settings that should only apply to the "eslintls" server
-  ["sumneko_lua"] = {
+local servers = {
+  clangd = {},
+  rust_analyzer = {},
+  pyright = {},
+  tsserver  = {},
+  sumneko_lua = {
     settings = {
       Lua = {
         runtime = {
@@ -288,7 +328,7 @@ local server_lsp_opts = {
       },
     },
   },
-  ["gopls"] = {
+  gopls = {
     cmd = {"gopls", "serve"},
     settings = {
       gopls = {
@@ -298,9 +338,12 @@ local server_lsp_opts = {
         },
         staticcheck = true,
       },
+      flags = {
+        debounce_text_changes = 500,
+      },
     },
   },
-  ["yamlls"] = {
+  yamlls = {
     settings = {
       yaml = {
         schemaStore = {
@@ -314,26 +357,22 @@ local server_lsp_opts = {
 
 -- Loop through the servers listed above and set them up. If a server is
 -- not already installed, install it.
-for _, server_name in pairs(servers) do
-    local server_available, server = lsp_installer_servers.get_server(server_name)
-    if server_available then
-        server:on_ready(function ()
-          if server_lsp_opts[server.name] then
-            local server_opts = server_lsp_opts[server.name]
-            -- Update  the default opts with the server-specific ones
-            for k, v in pairs(server_opts) do
-              lsp_opts[k] = v
-            end
-          end
-            server:setup(lsp_opts)
-        end)
-        if not server:is_installed() then
+for server_name, server_opts in pairs(servers) do
+  local capabilities = cmp_lsp.update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  server_opts["on_attach"] = on_attach
+  server_opts["capabilities"] = capabilities
 
-          print("Installing " .. server_name)
-          -- Queue the server to be installed.
-          server:install()
-        end
-    end
+  local server_available, server = lsp_installer_servers.get_server(server_name)
+  if server_available then
+      if not server:is_installed() then
+        print("Installing " .. server_name)
+        -- Queue the server to be installed.
+        server:install()
+      end
+      server:on_ready(function ()
+        server:setup(server_opts)
+      end)
+  end
 end
 
 -- lsp signature
