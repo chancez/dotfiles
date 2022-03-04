@@ -134,7 +134,6 @@ packer.startup(function(use)
   --
   -- language/syntax integrations
   use 'jjo/vim-cue'
-  use 'fatih/vim-go'
   use 'google/vim-jsonnet'
   use 'chr4/nginx.vim'
   use 'hashivim/vim-terraform'
@@ -533,10 +532,6 @@ mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- symbols outline
 mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
-
--- vim-go
-mapx.nmap('<leader>gb', ':GoBuild<cr>', 'silent')
-vim.g.go_gopls_enabled = false -- handled by LSP
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
