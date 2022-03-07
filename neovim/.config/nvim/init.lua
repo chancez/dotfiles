@@ -342,14 +342,15 @@ local servers = {
     cmd = {"gopls", "serve"},
     settings = {
       gopls = {
+        env = {
+          GOFLAGS="-tags=e2e_tests",
+        },
         completeUnimported = true,
         analyses = {
           unusedparams = true,
         },
         staticcheck = true,
-      },
-      flags = {
-        debounce_text_changes = 500,
+        gofumpt = true,
       },
     },
   },
