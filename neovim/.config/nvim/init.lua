@@ -240,55 +240,59 @@ function OrgImports(wait_ms)
 end
 
 -- LSP settings
-local on_attach = function(client, _)
-  mapx.cmdbang('LspRename', 'lua vim.lsp.buf.rename()')
-  mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
-  mapx.cmdbang('LspDefinition', 'lua vim.lsp.buf.definition()')
-  mapx.cmdbang('LspTypeDefinition', 'lua vim.lsp.buf.type_definition()')
-  mapx.cmdbang('LspReferences', 'lua vim.lsp.buf.references()')
-  mapx.cmdbang('LspImplementation', 'lua vim.lsp.buf.implementation()')
+local default_on_attach = function(client, bufnr)
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-  mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
-  mapx.cmdbang('LspHover', 'lua vim.lsp.buf.hover()')
-  mapx.cmdbang('LspSignatureHelp', 'lua vim.lsp.buf.signature_help()')
+  mapx.group({ buffer = bufnr }, function()
+    mapx.cmdbang('LspRename', 'lua vim.lsp.buf.rename()')
+    mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
+    mapx.cmdbang('LspDefinition', 'lua vim.lsp.buf.definition()')
+    mapx.cmdbang('LspTypeDefinition', 'lua vim.lsp.buf.type_definition()')
+    mapx.cmdbang('LspReferences', 'lua vim.lsp.buf.references()')
+    mapx.cmdbang('LspImplementation', 'lua vim.lsp.buf.implementation()')
 
-  mapx.cmdbang('LspAddWorkspaceFolder', 'lua vim.lsp.buf.add_workspace_folder()')
-  mapx.cmdbang('LspRemoveWorkspaceFolder', 'lua vim.lsp.buf.remove_workspace_folder()')
-  mapx.cmdbang('LspListWorkspaceFolders', 'lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))')
+    mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
+    mapx.cmdbang('LspHover', 'lua vim.lsp.buf.hover()')
+    mapx.cmdbang('LspSignatureHelp', 'lua vim.lsp.buf.signature_help()')
 
-  mapx.cmdbang('LspDocumentSymbols', 'lua require("telescope.builtin").lsp_document_symbols()')
-  mapx.cmdbang('LspWorkspaceSymbols', 'lua require("telescope.builtin").lsp_dynamic_workspace_symbols()')
+    mapx.cmdbang('LspAddWorkspaceFolder', 'lua vim.lsp.buf.add_workspace_folder()')
+    mapx.cmdbang('LspRemoveWorkspaceFolder', 'lua vim.lsp.buf.remove_workspace_folder()')
+    mapx.cmdbang('LspListWorkspaceFolders', 'lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))')
 
-  -- formatting
-  if client.resolved_capabilities.document_formatting then
-    mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.formatting()')
-    mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
-    vim.api.nvim_command [[augroup Format]]
-    vim.api.nvim_command [[autocmd! * <buffer>]]
-    vim.api.nvim_command [[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_seq_sync()]]
-    vim.api.nvim_command [[autocmd BufWritePre *.go lua OrgImports(1000)]]
-    vim.api.nvim_command [[augroup END]]
-  end
+    mapx.cmdbang('LspDocumentSymbols', 'lua require("telescope.builtin").lsp_document_symbols()')
+    mapx.cmdbang('LspWorkspaceSymbols', 'lua require("telescope.builtin").lsp_dynamic_workspace_symbols()')
 
-  mapx.group("silent", "buffer", function()
-    mapx.nnoremap('<leader>rn', '<cmd>LspRename<CR>', 'LspRename')
-    mapx.nnoremap('gD', '<cmd>LspDeclaration<CR>', 'LspDeclaration')
-    mapx.nnoremap('gd', '<cmd>LspDefinition<CR>', 'LspDefinition')
-    mapx.nnoremap('<leader>D', '<cmd>LspTypeDefinition<CR>', 'LspTypeDefinition')
-    mapx.nnoremap('gr', '<cmd>LspReferences<CR>', 'LspReferences')
-    mapx.nnoremap('gi', '<cmd>LspImplementation<CR>', 'LspImplementation')
+    -- formatting
+    if client.resolved_capabilities.document_formatting then
+      mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.formatting()')
+      mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
+      vim.api.nvim_command [[augroup Format]]
+      vim.api.nvim_command [[autocmd! * <buffer>]]
+      vim.api.nvim_command [[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_seq_sync()]]
+      vim.api.nvim_command [[autocmd BufWritePre *.go lua OrgImports(1000)]]
+      vim.api.nvim_command [[augroup END]]
+    end
 
-    mapx.nnoremap('<leader>ca', '<cmd>LspCodeAction<CR>', 'LspCodeAction')
-    mapx.nnoremap('K', '<cmd>LspHover<CR>', 'LspHover')
-    mapx.nnoremap('<C-k>', '<cmd>LspSignatureHelp<CR>', 'LspSignatureHelp')
+    mapx.group("silent", function()
+      mapx.nnoremap('<leader>rn', '<cmd>LspRename<CR>', 'LspRename')
+      mapx.nnoremap('gD', '<cmd>LspDeclaration<CR>', 'LspDeclaration')
+      mapx.nnoremap('gd', '<cmd>LspDefinition<CR>', 'LspDefinition')
+      mapx.nnoremap('<leader>D', '<cmd>LspTypeDefinition<CR>', 'LspTypeDefinition')
+      mapx.nnoremap('gr', '<cmd>LspReferences<CR>', 'LspReferences')
+      mapx.nnoremap('gi', '<cmd>LspImplementation<CR>', 'LspImplementation')
 
-    mapx.nnoremap('<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', 'LspAddWorkspaceFolder')
-    mapx.nnoremap('<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', 'LspRemoveWorkspaceFolder')
-    mapx.nnoremap('<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', 'LspListWorkspaceFolders')
+      mapx.nnoremap('<leader>ca', '<cmd>LspCodeAction<CR>', 'LspCodeAction')
+      mapx.nnoremap('K', '<cmd>LspHover<CR>', 'LspHover')
+      mapx.nnoremap('<C-k>', '<cmd>LspSignatureHelp<CR>', 'LspSignatureHelp')
 
-    mapx.nnoremap('<leader>so', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
-    mapx.nnoremap('<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
-    mapx.nnoremap('<m-p>', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+      mapx.nnoremap('<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', 'LspAddWorkspaceFolder')
+      mapx.nnoremap('<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', 'LspRemoveWorkspaceFolder')
+      mapx.nnoremap('<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', 'LspListWorkspaceFolders')
+
+      mapx.nnoremap('<leader>so', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
+      mapx.nnoremap('<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+      mapx.nnoremap('<m-p>', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+    end)
   end)
 end
 
@@ -357,10 +361,20 @@ local servers = {
 
 -- Loop through the servers listed above and set them up. If a server is
 -- not already installed, install it.
-for server_name, server_opts in pairs(servers) do
+for server_name, server_specific_opts in pairs(servers) do
   local capabilities = cmp_lsp.update_capabilities(vim.lsp.protocol.make_client_capabilities())
-  server_opts["on_attach"] = on_attach
-  server_opts["capabilities"] = capabilities
+  local server_opts = {
+    on_attach = default_on_attach,
+    capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 150,
+    },
+  }
+
+  for k,v in pairs(server_specific_opts) do
+    server_opts[k] = v
+  end
+
 
   local server_available, server = lsp_installer_servers.get_server(server_name)
   if server_available then
