@@ -136,6 +136,11 @@ alias tf=terraform
 alias ..='cd ..'
 alias ../..='cd ../..'
 
+# time aliases
+alias zur='TZ=Europe/Zurich date'
+alias pst='TZ=Etc/GMT-8 date'
+alias utc='TZ=Etc/UTC date'
+
 if command -v nvim >/dev/null; then
     alias vim='nvim'
     export EDITOR='nvim'
