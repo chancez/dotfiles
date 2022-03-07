@@ -29,12 +29,9 @@
   amend = commit --amend -C HEAD
   undo = reset --soft HEAD^
   count = shortlog -sn
-  commit = commit
-    #commit = commit -v
   conflicts = diff --name-only --diff-filter=U
   addnw=!sh -c 'git diff -U0 -w --no-color "$@" | git apply --cached --ignore-whitespace --unidiff-zero -'
-
-    # golang.org code review aliases
+  # golang.org code review aliases
   change = codereview change
   gofmt = codereview gofmt
   mail = codereview mail
