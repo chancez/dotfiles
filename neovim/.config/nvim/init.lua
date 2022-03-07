@@ -138,6 +138,7 @@ packer.startup(function(use)
   use 'chr4/nginx.vim'
   use 'hashivim/vim-terraform'
   use 'fladson/vim-kitty'
+  use 'towolf/vim-helm'
 
   if PACKER_BOOTSTRAP then
     require("packer").sync()
