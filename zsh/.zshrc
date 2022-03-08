@@ -26,6 +26,8 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 typeset -gU cdpath fpath mailpath path manpath infopath
 
 export HOMEBREW_PREFIX="/opt/homebrew";
+export GOPATH="$HOME/go"
+export GOBIN="$GOPATH/bin"
 
 # Set the the list of directories that cd searches.
 cdpath=(
@@ -39,7 +41,7 @@ cdpath=(
 # Set the list of directories that Zsh searches for programs.
 path=(
   $HOME/.local/bin
-  $GOPATH/bin
+  $GOBIN
   $HOMEBREW_PREFIX/{bin,sbin}
   /usr/local/{bin,sbin}
   "$HOME/.krew/bin"
@@ -189,8 +191,6 @@ fi
 
 export HISTSIZE=20000
 export SAVEHIST=100000
-export GOPATH="$HOME/go"
-export GOBIN="$GOPATH/bin"
 export HOMEBREW_NO_INSTALL_CLEANUP=true
 export BC_ENV_ARGS="$HOME/.bc"
 
