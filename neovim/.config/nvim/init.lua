@@ -344,7 +344,7 @@ local servers = {
     settings = {
       gopls = {
         env = {
-          GOFLAGS="-tags=e2e_tests",
+          GOFLAGS="-tags=e2e_tests,linux",
         },
         completeUnimported = true,
         analyses = {
