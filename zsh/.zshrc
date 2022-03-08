@@ -128,6 +128,8 @@ if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
   source_if_exists "$HOME/.asdf/asdf.sh"
 fi
 
+source_if_exists "$HOME/.zshrc_work"
+
 alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com A3-GERNM3-T7F7QX-WEQCD-5PARX-F59D6-AMGG7)'
 alias gst='git status'
 alias k=kubectl
