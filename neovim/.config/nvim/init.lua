@@ -368,7 +368,7 @@ local servers = {
       default_on_attach(client, bufnr)
 
       if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
-        vim.diagnostic.disable()
+        vim.diagnostic.disable(bufnr)
       end
     end,
   },
