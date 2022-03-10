@@ -9,4 +9,5 @@ vim
   :disableForApp('zoom.us')
   :enterWithSequence('jk')
   :bindHotKeys({ enter = { {'ctrl'}, ';'} })
+  :bindHotKeys({ enter = { {'ctrl'}, 'escape'} })
   -- :bindHotKeys({ enter = { {}, 'escape'} })
