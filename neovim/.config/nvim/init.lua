@@ -368,7 +368,8 @@ local servers = {
       default_on_attach(client, bufnr)
 
       if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm" then
-        vim.diagnostic.disable(bufnr)
+        local namespace = vim.lsp.diagnostic.get_namespace(client.id)
+        vim.diagnostic.disable(bufnr, namespace)
       end
     end,
   },
