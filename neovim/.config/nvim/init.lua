@@ -351,7 +351,7 @@ local servers = {
           unusedparams = true,
         },
         staticcheck = true,
-        gofumpt = true,
+        -- gofumpt = true,
       },
     },
   },
