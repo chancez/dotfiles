@@ -656,6 +656,10 @@ require('telescope').setup {
     find_files = {
       find_command = { 'rg', '--files', '--hidden', '--no-binary' },
     },
+    buffers = {
+      ignore_current_buffer = true,
+      sort_mru = true,
+    },
   },
 }
 
