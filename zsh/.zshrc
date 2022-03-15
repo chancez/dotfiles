@@ -147,6 +147,10 @@ alias zur='TZ=Europe/Zurich date'
 alias pst='TZ=Etc/GMT-8 date'
 alias utc='TZ=Etc/UTC date'
 
+# https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
+alias ssh="kitty +kitten ssh"
+
+
 if command -v nvim >/dev/null; then
     alias vim='nvim'
     export EDITOR='nvim'
