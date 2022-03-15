@@ -7,7 +7,7 @@ vim
   :disableForApp('kitty')
   :disableForApp('iTerm2')
   :disableForApp('zoom.us')
-  :enterWithSequence('jk')
+  -- :enterWithSequence('jk')
   :bindHotKeys({ enter = { {'ctrl'}, ';'} })
   :bindHotKeys({ enter = { {'ctrl'}, 'escape'} })
   -- :bindHotKeys({ enter = { {}, 'escape'} })
