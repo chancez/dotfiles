@@ -729,8 +729,6 @@ vim.cmd [[
 
 -- JQ formats JSON in the current buffer
 vim.cmd [[
-  function! JQFun(...)
-    execute '%!jq .'
-  endfunction
-  command! -nargs=* -complete=file JQ call JQFun( '<f-args>' )
+  " command! -nargs=* JQ execute '%!jq "<args>"'
+  command! -nargs=* JQ execute '%!jq <args>'
 ]]
