@@ -41,6 +41,7 @@ cdpath=(
 # Set the list of directories that Zsh searches for programs.
 path=(
   $HOME/.local/bin
+  $HOME/.rd/bin
   $GOBIN
   $HOMEBREW_PREFIX/{bin,sbin}
   /usr/local/{bin,sbin}
