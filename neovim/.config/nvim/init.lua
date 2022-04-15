@@ -697,6 +697,9 @@ vim.g.VM_custom_remaps = {
   ['<c-p>'] = 'Q', -- map c-p to previous
   ['<c-x>'] = 'q', -- map c-x to skip
 }
+vim.g.VM_maps = {
+  ["I BS"] = '', -- disable backspace mapping
+}
 
 -- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
 vim.cmd([[
