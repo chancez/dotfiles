@@ -132,19 +132,18 @@ else
   # fallback
   source_if_exists "$HOME/.fzf.zsh"
 fi
-
 if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
   # fallback
   source_if_exists "$HOME/.asdf/asdf.sh"
 fi
-
 source_if_exists "$HOME/.asdf/plugins/java/set-java-home.zsh"
-
 source_if_exists "$HOME/.zshrc_work"
 source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 
 alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com A3-GERNM3-T7F7QX-WEQCD-5PARX-F59D6-AMGG7)'
 alias gst='git status'
+alias git-prune-squash-merged='git checkout -q master && git for-each-ref refs/heads/ "--format=%(refname:short)" | while read branch; do mergeBase=$(git merge-base master $branch) && [[ $(git cherry master $(git commit-tree $(git rev-parse "$branch^{tree}") -p $mergeBase -m _)) == "-"* ]] && git branch -D $branch; done'
+alias git-prune-squash-merged-dry='git checkout -q master && git for-each-ref refs/heads/ "--format=%(refname:short)" | while read branch; do mergeBase=$(git merge-base master $branch) && [[ $(git cherry master $(git commit-tree $(git rev-parse "$branch^{tree}") -p $mergeBase -m _)) == "-"* ]] && echo git branch -D $branch; done'
 alias k=kubectl
 alias kc=kubectx
 alias kns=kubens
@@ -218,3 +217,8 @@ PROMPT='$(kube_ps1) '$PROMPT
 
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
+
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/chancezibolski/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
