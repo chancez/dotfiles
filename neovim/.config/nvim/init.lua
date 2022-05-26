@@ -530,6 +530,10 @@ mapx.tnoremap('<A-l>', '<C-\\><C-n><C-w>l')
 mapx.nmap('<m-]>', ':bnext<CR>', 'Next buffer')
 mapx.nmap('<m-[>', ':bprev<CR>', 'Previous buffer')
 
+-- Indenting Move to next/previous line with same indentation
+mapx.nnoremap('<M-,>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%<' . line('.') . 'l\S', 'be')<CR>]], 'Move to next line with same indentation')
+mapx.nnoremap('<M-.>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%>' . line('.') . 'l\S', 'e')<CR>]], 'Move to previous line with same indentation')
+
 -- Wrapped lines goes down/up to next row, rather than next line in file.
 mapx.nnoremap('j', 'gj')
 mapx.nnoremap('k', 'gk')
