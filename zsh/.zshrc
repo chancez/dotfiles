@@ -50,7 +50,9 @@ path=(
   $HOME/.local/bin
   $HOME/.rd/bin
   $GOBIN
+  $HOMEBREW_PREFIX/opt/openssl@3/bin
   $HOMEBREW_PREFIX/{bin,sbin}
+  $HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
   /usr/local/{bin,sbin}
   "$HOME/.krew/bin"
   /usr/local/opt/curl/bin
@@ -139,6 +141,7 @@ fi
 source_if_exists "$HOME/.asdf/plugins/java/set-java-home.zsh"
 
 source_if_exists "$HOME/.zshrc_work"
+source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 
 alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com A3-GERNM3-T7F7QX-WEQCD-5PARX-F59D6-AMGG7)'
 alias gst='git status'
