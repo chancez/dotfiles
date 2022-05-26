@@ -48,6 +48,7 @@ cdpath=(
 # Set the list of directories that Zsh searches for programs.
 path=(
   $HOME/.local/bin
+  $HOME/.local/custom_bins
   $HOME/.rd/bin
   $GOBIN
   $HOMEBREW_PREFIX/opt/openssl@3/bin
