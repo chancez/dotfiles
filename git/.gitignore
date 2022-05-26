@@ -161,3 +161,4 @@ tags.tmp
 venv
 .venv
 .venv/*
+.tool-versions
