@@ -684,7 +684,11 @@ mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<c
 
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained",
+  ensure_installed = {
+    "c", "lua", "go", "rust", "python", "javascript", "typescript", "comment",
+    "dockerfile", "gomod", "gowork", "hcl", "html", "java", "json", "latex",
+    "make", "proto", "regex", "toml", "vim", "yaml",
+  },
   highlight = { enable = true },
 }
 
