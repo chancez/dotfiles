@@ -356,6 +356,7 @@ local servers = {
       },
     },
   },
+  golangci_lint_ls = {},
   yamlls = {
     settings = {
       yaml = {
