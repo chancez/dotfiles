@@ -358,9 +358,13 @@ local servers = {
         },
         completeUnimported = true,
         analyses = {
+          nilness = true,
           unusedparams = true,
+          unusedwrite = true,
         },
         staticcheck = true,
+        usePlaceholders = true,
+        experimentalUseInvalidMetadata = true,
         -- gofumpt = true,
       },
     },
