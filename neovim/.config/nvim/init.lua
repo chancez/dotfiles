@@ -354,7 +354,7 @@ local servers = {
     settings = {
       gopls = {
         env = {
-          GOFLAGS="-tags=e2e_tests,linux,go1.17",
+          GOFLAGS="-tags=e2e_tests,linux,go1.17,e2e",
         },
         completeUnimported = true,
         analyses = {
