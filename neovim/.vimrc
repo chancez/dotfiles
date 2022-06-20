@@ -278,10 +278,16 @@ set undolevels=1000
 set history=1000
 
 " These are the directories
+
+if !isdirectory($HOME."/.vim/tmp")
+    silent! execute "!mkdir -p ~/.vim/tmp/{undo,backup,swap}"
+endif
+
 set undodir=~/.vim/tmp/undo/
 set backupdir=~/.vim/tmp/backup/
 set directory=~/.vim/tmp/swap/
 set backup
+
 
 " Auto complete settings
 set wildmenu
