@@ -218,8 +218,3 @@ PROMPT='$(kube_ps1) '$PROMPT
 
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
-
-
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/chancezibolski/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
