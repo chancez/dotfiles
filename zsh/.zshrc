@@ -32,7 +32,17 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path manpath infopath
 
-export HOMEBREW_PREFIX="/opt/homebrew";
+
+if [[ -d "/opt/homebrew" ]]; then
+    export HOMEBREW_PREFIX="/opt/homebrew";
+fi
+if [[ -d "$HOME/.linuxbrew" ]]; then
+    export HOMEBREW_PREFIX="$HOME/.linuxbrew";
+fi
+if [[ -d "/home/linuxbrew/.linuxbrew" ]]; then
+    export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew";
+fi
+
 export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
 
