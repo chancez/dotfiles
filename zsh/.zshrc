@@ -129,6 +129,8 @@ function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
 
 if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
   source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+elif source_if_exists "/usr/share/doc/fzf/examples/completion.zsh"; then
+   source_if_exists  "/usr/share/doc/fzf/examples/key-bindings.zsh"
 else
   # fallback
   source_if_exists "$HOME/.fzf.zsh"
