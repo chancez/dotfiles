@@ -361,6 +361,7 @@ local servers = {
           nilness = true,
           unusedparams = true,
           unusedwrite = true,
+          shadow = true,
         },
         staticcheck = true,
         usePlaceholders = true,
