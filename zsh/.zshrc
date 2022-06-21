@@ -226,7 +226,9 @@ export HOMEBREW_NO_INSTALL_CLEANUP=true
 export BC_ENV_ARGS="$HOME/.bc"
 
 # Add kube-ps1 to prompt
-PROMPT='$(kube_ps1) '$PROMPT
+if command -v kubectl >/dev/null; then
+  PROMPT='$(kube_ps1) '$PROMPT
+fi
 
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
