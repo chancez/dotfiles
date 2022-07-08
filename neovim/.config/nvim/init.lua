@@ -313,6 +313,28 @@ local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
+-- see if the file exists
+function FileExists(file)
+  local f = io.open(file, "rb")
+  if f then f:close() end
+  return f ~= nil
+end
+
+-- Get the value of the module name from go.mod in PWD
+function GetGoModuleName()
+  if not FileExists("go.mod") then return nil end
+  for line in io.lines("go.mod") do
+    if vim.startswith(line, "module") then
+      local items = vim.split(line, " ")
+      local module_name = vim.trim(items[2])
+      return module_name
+    end
+  end
+  return nil
+end
+
+GO_MODULE = GetGoModuleName()
+
 local servers = {
   clangd = {},
   rust_analyzer = {},
@@ -366,6 +388,7 @@ local servers = {
         staticcheck = true,
         usePlaceholders = true,
         experimentalUseInvalidMetadata = true,
+        ["local"] = GO_MODULE,
         -- gofumpt = true,
       },
     },
