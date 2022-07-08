@@ -186,8 +186,7 @@ alias pst='TZ=Etc/GMT-8 date'
 alias utc='TZ=Etc/UTC date'
 
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
-command -v kitty >/dev/null && alias ssh="kitty +kitten ssh"
-
+command -v kitty >/dev/null && alias kssh="kitty +kitten ssh"
 
 if command -v nvim >/dev/null; then
     alias vim='nvim'
