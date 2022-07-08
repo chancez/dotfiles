@@ -94,6 +94,7 @@ packer.startup(function(use)
     },
   }
 
+
   -- snippets
   use {
     'saadparwaiz1/cmp_luasnip', -- Snippets source for nvim-cmp
@@ -475,6 +476,8 @@ cmp.setup {
     end,
   },
   mapping = {
+    ['<Up>'] = cmp.mapping.select_prev_item(),
+    ['<Down>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-k>'] = cmp.mapping.select_prev_item(),
@@ -515,12 +518,20 @@ cmp.setup {
 -- Use buffer source for `/`
 cmp.setup.cmdline('/', {
   sources = {
-    { name = 'buffer' }
+    { name = 'buffer' },
   }
 })
 
 -- Use cmdline & path source for ':'
 cmp.setup.cmdline(':', {
+  mapping = {
+    ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
+    ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
+    ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
+    ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
+    ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
+    ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
+  },
   sources = {
     { name = 'path' },
     { name = 'cmdline' },
