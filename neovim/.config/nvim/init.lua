@@ -185,6 +185,8 @@ vim.opt.undofile = true
 -- Allow undos and history to be persistant
 vim.opt.undolevels = 1000
 vim.opt.history = 1000
+vim.opt.backup = true
+vim.opt.backupdir = os.getenv('HOME') .. '/.local/share/nvim/backup'
 -- show the effects of a command incrementally as you type.
 vim.opt.inccommand = 'nosplit'
 vim.opt.grepprg = 'rg --vimgrep --no-heading --smart-case'
