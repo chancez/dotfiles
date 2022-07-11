@@ -56,14 +56,20 @@ cdpath=(
 )
 
 # Set the list of directories that Zsh searches for programs.
+brew_paths=()
+if [[ -n "${HOMEBREW_PREFIX}" ]]; then
+  brew_paths=(
+    $HOMEBREW_PREFIX/opt/openssl@3/bin
+    $HOMEBREW_PREFIX/{bin,sbin}
+    $HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+  )
+fi
 path=(
   $HOME/.local/bin
   $HOME/.local/custom_bins
   $HOME/.rd/bin
   $GOBIN
-  $HOMEBREW_PREFIX/opt/openssl@3/bin
-  $HOMEBREW_PREFIX/{bin,sbin}
-  $HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
+  $brew_paths
   /usr/local/{bin,sbin}
   "$HOME/.krew/bin"
   /usr/local/opt/curl/bin
@@ -71,20 +77,18 @@ path=(
 )
 
 # Add shell functions to zsh function path, this is needed for completition
-fpath=(
-  $HOMEBREW_PREFIX/share/zsh/site-functions
-  $fpath
-)
+if [[ -n "${HOMEBREW_PREFIX}" ]]; then
+  fpath=( $HOMEBREW_PREFIX/share/zsh/site-functions $fpath)
+fi
 
-manpath=(
-  $HOMEBREW_PREFIX/share/man
-  $infopath
-)
+if [[ -n "${HOMEBREW_PREFIX}" ]]; then
+  manpath=( $HOMEBREW_PREFIX/share/man $manpath )
+fi
 
-infopath=(
-  $HOMEBREW_PREFIX/share/info
-  $infopath
-)
+infopath=()
+if [[ -n "${HOMEBREW_PREFIX}" ]]; then
+  infopath=( $HOMEBREW_PREFIX/share/info $manpath)
+fi
 
 # load zgenom only after fpath is set, as it runs compinit
 source "$ZGEN_DIR/zgenom.zsh"
