@@ -151,7 +151,9 @@ else
 fi
 if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
   # fallback
-  source_if_exists "$HOME/.asdf/asdf.sh"
+  if source_if_exists "$HOME/.asdf/asdf.sh"; then
+      fpath=( "$HOME/.asdf/completions" $fpath )
+  fi
 fi
 source_if_exists "$HOME/.asdf/plugins/java/set-java-home.zsh"
 source_if_exists "$HOME/.zshrc_work"
@@ -200,6 +202,7 @@ else
 fi
 export VISUAL="$EDITOR"
 export GIT_EDITOR="$EDITOR"
+export SUDO_EDITOR="$(which "$EDITOR")"
 export PAGER='less'
 
 # Set the default Less options.
