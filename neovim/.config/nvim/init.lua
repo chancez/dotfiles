@@ -54,6 +54,7 @@ packer.startup(function(use)
     },
   }
   use "lukas-reineke/indent-blankline.nvim"
+  use { 'nvim-treesitter/nvim-treesitter-context', requires = { 'nvim-treesitter/nvim-treesitter' }}
 
   -- search
   use {
@@ -66,7 +67,7 @@ packer.startup(function(use)
     },
   }
 
-  -- highlights
+  -- treesitter
   use {
     'nvim-treesitter/nvim-treesitter',
     requires = {
