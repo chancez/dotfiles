@@ -392,7 +392,7 @@ local servers = {
         staticcheck = true,
         usePlaceholders = true,
         experimentalUseInvalidMetadata = true,
-        ["local"] = GO_MODULE,
+        -- ["local"] = GO_MODULE,
         -- gofumpt = true,
       },
     },
@@ -403,7 +403,7 @@ local servers = {
       yaml = {
         schemas = {
           ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
-          kubernetes = "*.yaml",
+          -- kubernetes = "/install/kubernetes/**.yaml",
         },
       }
     },
