@@ -17,7 +17,7 @@
 [diff]
   compactionHeuristic = true
   algorithm = histogram
-  renameLimit = 500
+  renameLimit = 2000
 [alias]
   ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
   ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
