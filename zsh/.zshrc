@@ -161,8 +161,6 @@ source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud
 
 alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com A3-GERNM3-T7F7QX-WEQCD-5PARX-F59D6-AMGG7)'
 alias gst='git status'
-alias git-prune-squash-merged='git checkout -q master && git for-each-ref refs/heads/ "--format=%(refname:short)" | while read branch; do mergeBase=$(git merge-base master $branch) && [[ $(git cherry master $(git commit-tree $(git rev-parse "$branch^{tree}") -p $mergeBase -m _)) == "-"* ]] && git branch -D $branch; done'
-alias git-prune-squash-merged-dry='git checkout -q master && git for-each-ref refs/heads/ "--format=%(refname:short)" | while read branch; do mergeBase=$(git merge-base master $branch) && [[ $(git cherry master $(git commit-tree $(git rev-parse "$branch^{tree}") -p $mergeBase -m _)) == "-"* ]] && echo git branch -D $branch; done'
 
 function git-prune-branches-list() {
   git fetch --prune --prune-tags && (
@@ -175,7 +173,7 @@ function git-prune-branches-dry() {
 }
 
 function git-prune-branches() {
-  git-prune-branches-list | git branch -D
+  git-prune-branches-list | xargs git branch -D
 }
 
 alias k=kubectl
