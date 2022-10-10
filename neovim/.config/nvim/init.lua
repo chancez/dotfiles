@@ -698,7 +698,7 @@ require'lualine'.setup {
     lualine_a = {
       {
         'buffers',
-        mode = 2,
+        mode = 4,
       }
     },
     lualine_b = {},
