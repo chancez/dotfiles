@@ -796,6 +796,27 @@ require'nvim-treesitter.configs'.setup {
   highlight = { enable = true },
 }
 
+require("treesitter-context").setup({
+	enable = true,
+	patterns = {
+		json = {
+			"object",
+			"pair",
+		},
+		yaml = {
+			"block_mapping_pair",
+			"block_sequence_item",
+		},
+		toml = {
+			"table",
+			"pair",
+		},
+		markdown = {
+			"section",
+		},
+	},
+})
+
 -- Autopairs
 require('nvim-autopairs').setup{
   check_ts = true,
