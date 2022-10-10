@@ -92,6 +92,7 @@ fi
 
 # load zgenom only after fpath is set, as it runs compinit
 source "$ZGEN_DIR/zgenom.zsh"
+autoload -U +X bashcompinit && bashcompinit
 
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
@@ -137,6 +138,7 @@ command -v oc >/dev/null && source <(oc completion zsh)
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 command -v fasd >/dev/null && eval "$(fasd --init auto)"
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
+command -v mc >/dev/null && complete -o nospace -C /opt/homebrew/bin/mc mc
 
 # source a script, if it exists
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
