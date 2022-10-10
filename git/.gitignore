@@ -145,7 +145,6 @@ static/dexconfig/emailer-mailgun.json
 domain_migration
 
 aws.env
-license.txt
 pull_secret.json
 
 manifests_revised
@@ -162,6 +161,3 @@ venv
 .venv
 .venv/*
 .tool-versions
-
-/cilium
-/hubble
