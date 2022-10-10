@@ -95,7 +95,6 @@ packer.startup(function(use)
     },
   }
 
-
   -- snippets
   use {
     'saadparwaiz1/cmp_luasnip', -- Snippets source for nvim-cmp
@@ -127,6 +126,15 @@ packer.startup(function(use)
   use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
   use 'akinsho/toggleterm.nvim'
   use 'szw/vim-maximizer'
+  use {
+    "nvim-neotest/neotest",
+    requires = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-neotest/neotest-go",
+    }
+  }
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -540,6 +548,38 @@ cmp.setup.cmdline(':', {
     { name = 'cmdline' },
   }
 })
+-- https://github.com/nvim-neotest/neotest-go#installation
+-- The vim.diagnostic.config is optional but recommended if you
+-- enabled the diagnostic option of neotest. Especially testify makes heavy use
+-- of tabs and newlines in the error messages, which reduces the readability of
+-- the generated virtual text otherwise.
+--
+-- get neotest namespace (api call creates or returns namespace)
+local neotest_ns = vim.api.nvim_create_namespace("neotest")
+vim.diagnostic.config({
+  virtual_text = {
+    format = function(diagnostic)
+      local message = diagnostic.message
+      :gsub("\n", " ")
+      :gsub("\t", " ")
+      :gsub("%s+", " ")
+      :gsub("^%s+", "")
+      return message
+    end,
+  },
+}, neotest_ns)
+
+require('neotest').setup({
+  adapters = {
+    require('neotest-go'),
+  },
+  icons = {
+    passed = "",
+    running = "",
+    skipped = "",
+    unknown = "",
+  },
+})
 
 -- mappings
 
@@ -620,6 +660,18 @@ mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- symbols outline
 mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
+
+-- neotest
+mapx.cmdbang('TestNearest', 'lua require("neotest").run.run()')
+mapx.cmdbang('TestFile', 'lua require("neotest").run.run(vim.fn.expand("%"))')
+mapx.cmdbang('TestDirectory', 'lua require("neotest").run.run(vim.fn.expand("%:p:h"))')
+mapx.cmdbang('TestSuite', 'lua require("neotest").run.run(vim.fn.getcwd())')
+mapx.cmdbang('TestOpen', 'lua require("neotest").output.open()')
+mapx.map('gtn', ':TestNearest<CR>', 'silent')
+mapx.map('gtf', ':TestFile<CR>', 'silent')
+mapx.map('gtd', ':TestDirectory<CR>', 'silent')
+mapx.map('gts', ':TestSuite<CR>', 'silent')
+mapx.map('gto', ':TestOpen<CR>', 'silent')
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
