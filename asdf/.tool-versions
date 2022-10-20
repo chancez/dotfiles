@@ -6,3 +6,4 @@ java adoptopenjdk-jre-17.0.2+8
 kubectl 1.24.1
 ruby 3.1.2
 neovim 0.7.2
+rust stable
