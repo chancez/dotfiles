@@ -158,6 +158,7 @@ if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
       fpath=( "$HOME/.asdf/completions" $fpath )
   fi
 fi
+alias fix-yarn='corepack enable && asdf reshim nodejs'
 source_if_exists "$HOME/.asdf/plugins/java/set-java-home.zsh"
 source_if_exists "$HOME/.zshrc_work"
 source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
