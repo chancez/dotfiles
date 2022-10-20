@@ -84,6 +84,7 @@ packer.startup(function(use)
   use 'onsails/lspkind-nvim'
   use 'simrat39/symbols-outline.nvim'
   use 'williamboman/nvim-lsp-installer'
+  use 'j-hui/fidget.nvim'
 
   -- autocomplete
   use {
@@ -467,6 +468,9 @@ require('lsp_signature').setup {
   toggle_key = "<M-x>",
   floating_window_off_x = 60,
 }
+
+-- show LSP loading status
+require"fidget".setup{}
 
 -- luasnip setup
 local luasnip = require 'luasnip'
