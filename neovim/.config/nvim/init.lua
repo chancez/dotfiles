@@ -55,6 +55,7 @@ packer.startup(function(use)
   }
   use "lukas-reineke/indent-blankline.nvim"
   use { 'nvim-treesitter/nvim-treesitter-context', requires = { 'nvim-treesitter/nvim-treesitter' }}
+  use 'chentoast/marks.nvim'
 
   -- search
   use {
@@ -711,6 +712,10 @@ require'lualine'.setup {
 
 -- nvim-tree
 require 'nvim-tree'.setup()
+
+require('marks').setup {
+  default_mappings = false,
+}
 
 -- symbols-outline
 vim.g.symbols_outline = {
