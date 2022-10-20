@@ -431,7 +431,7 @@ local servers = {
 -- Loop through the servers listed above and set them up. If a server is
 -- not already installed, install it.
 for server_name, server_specific_opts in pairs(servers) do
-  local capabilities = cmp_lsp.update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  local capabilities = cmp_lsp.default_capabilities()
   local server_opts = {
     on_attach = default_on_attach,
     capabilities = capabilities,
