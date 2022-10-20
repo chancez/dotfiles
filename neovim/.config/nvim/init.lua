@@ -224,12 +224,6 @@ vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.list = true
 vim.opt.listchars:append("space:⋅")
 
-require("indent_blankline").setup {
-  space_char_blankline = " ",
-  show_current_context = true,
-  show_current_context_start = false,
-}
-
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
 
@@ -735,6 +729,12 @@ require'lualine'.setup {
 
 -- nvim-tree
 require 'nvim-tree'.setup()
+
+require("indent_blankline").setup {
+  space_char_blankline = " ",
+  show_current_context = true,
+  show_current_context_start = false,
+}
 
 require('marks').setup {
   default_mappings = false,
