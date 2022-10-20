@@ -314,6 +314,7 @@ local default_on_attach = function(client, bufnr)
 
       mapx.nnoremap('<leader>so', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
       mapx.nnoremap('<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
+      mapx.nnoremap('<m-O>', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
       mapx.nnoremap('<m-p>', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
     end)
   end)
