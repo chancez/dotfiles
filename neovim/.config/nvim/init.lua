@@ -86,6 +86,11 @@ packer.startup(function(use)
   use 'williamboman/nvim-lsp-installer'
   use 'j-hui/fidget.nvim'
 
+  -- debug adapter protocol
+  use 'mfussenegger/nvim-dap'
+  use { 'leoluz/nvim-dap-go', requires = { 'mfussenegger/nvim-dap' } }
+  use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'} }
+
   -- autocomplete
   use {
     'hrsh7th/nvim-cmp', -- Autocompletion plugin
@@ -472,6 +477,10 @@ require('lsp_signature').setup {
 -- show LSP loading status
 require"fidget".setup{}
 
+-- debug adapter
+require('dap-go').setup()
+require("dapui").setup()
+
 -- luasnip setup
 local luasnip = require 'luasnip'
 luasnip.config.set_config {
@@ -665,6 +674,16 @@ mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
 -- symbols outline
 mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
+
+-- nvim-dap
+-- mapx.cmdbang('DapStepBack', 'lua require("dap").step_back()')
+-- mapx.cmdbang('DapStepInto', 'lua require("dap").step_into()')
+-- mapx.cmdbang('DapStepOver', 'lua require("dap").step_over()')
+-- mapx.cmdbang('DapToggleBreakpoint', 'lua require("dap").toggle_breakpoint()')
+mapx.cmdbang('DapGoTest', 'lua require("dap-go").debug_test()')
+mapx.cmdbang('DapUIOpen', 'lua require("dapui").open()')
+mapx.cmdbang('DapUIClose', 'lua require("dapui").close()')
+mapx.cmdbang('DapUIToggle', 'lua require("dapui").toggle()')
 
 -- neotest
 mapx.cmdbang('TestNearest', 'lua require("neotest").run.run()')
