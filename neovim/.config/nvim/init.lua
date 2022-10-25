@@ -538,6 +538,14 @@ cmp.setup {
 
 -- Use buffer source for `/`
 cmp.setup.cmdline('/', {
+  mapping = {
+    ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
+    ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
+    ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
+    ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
+    ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
+    ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
+  },
   sources = {
     { name = 'buffer' },
   }
