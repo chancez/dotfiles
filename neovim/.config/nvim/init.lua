@@ -438,37 +438,26 @@ require("mason").setup({
   }
 })
 
-local function get_keys(t)
-  local keys={}
-  for key,_ in pairs(t) do
-    table.insert(keys, key)
-  end
-  return keys
-end
-
 require("mason-lspconfig").setup({
-  ensure_installed = get_keys(servers),
+  -- ensure_installed = get_keys(servers),
+  automatic_installation = true,
 })
 
-require("mason-lspconfig").setup_handlers({
-  -- The first entry (without a key) will be the default handler
-  function (server_name)
-      local capabilities = cmp_lsp.default_capabilities()
-      local server_opts = {
-        on_attach = default_on_attach,
-        capabilities = capabilities,
-        flags = {
-          debounce_text_changes = 150,
-        },
-      }
-      local server_specific_opts = servers[server_name]
-      for k,v in pairs(server_specific_opts) do
-        server_opts[k] = v
-      end
+for server_name, server_specific_opts in pairs(servers) do
+  local capabilities = cmp_lsp.default_capabilities()
+  local server_opts = {
+    on_attach = default_on_attach,
+    capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 150,
+    },
+  }
+  for k,v in pairs(server_specific_opts) do
+    server_opts[k] = v
+  end
 
-      require("lspconfig")[server_name].setup(server_opts)
-  end,
-})
+  require("lspconfig")[server_name].setup(server_opts)
+end
 
 -- lsp signature
 require('lsp_signature').setup {
