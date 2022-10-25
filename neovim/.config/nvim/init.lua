@@ -83,8 +83,9 @@ packer.startup(function(use)
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
   use 'simrat39/symbols-outline.nvim'
-  use 'williamboman/nvim-lsp-installer'
   use 'j-hui/fidget.nvim'
+  use { 'williamboman/mason.nvim' }
+  use { 'williamboman/mason-lspconfig.nvim' , requires = { 'williamboman/mason.nvim' }}
 
   -- debug adapter protocol
   use 'mfussenegger/nvim-dap'
@@ -320,8 +321,6 @@ local default_on_attach = function(client, bufnr)
   end)
 end
 
-local lsp_installer_servers = require('nvim-lsp-installer.servers')
-
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
@@ -428,35 +427,48 @@ local servers = {
   },
 }
 
--- Loop through the servers listed above and set them up. If a server is
--- not already installed, install it.
-for server_name, server_specific_opts in pairs(servers) do
-  local capabilities = cmp_lsp.default_capabilities()
-  local server_opts = {
-    on_attach = default_on_attach,
-    capabilities = capabilities,
-    flags = {
-      debounce_text_changes = 150,
-    },
+
+require("mason").setup({
+  ui = {
+    icons = {
+      package_installed = "✓",
+      package_pending = "➜",
+      package_uninstalled = "✗"
+    }
   }
+})
 
-  for k,v in pairs(server_specific_opts) do
-    server_opts[k] = v
+local function get_keys(t)
+  local keys={}
+  for key,_ in pairs(t) do
+    table.insert(keys, key)
   end
-
-
-  local server_available, server = lsp_installer_servers.get_server(server_name)
-  if server_available then
-      if not server:is_installed() then
-        print("Installing " .. server_name)
-        -- Queue the server to be installed.
-        server:install()
-      end
-      server:on_ready(function ()
-        server:setup(server_opts)
-      end)
-  end
+  return keys
 end
+
+require("mason-lspconfig").setup({
+  ensure_installed = get_keys(servers),
+})
+
+require("mason-lspconfig").setup_handlers({
+  -- The first entry (without a key) will be the default handler
+  function (server_name)
+      local capabilities = cmp_lsp.default_capabilities()
+      local server_opts = {
+        on_attach = default_on_attach,
+        capabilities = capabilities,
+        flags = {
+          debounce_text_changes = 150,
+        },
+      }
+      local server_specific_opts = servers[server_name]
+      for k,v in pairs(server_specific_opts) do
+        server_opts[k] = v
+      end
+
+      require("lspconfig")[server_name].setup(server_opts)
+  end,
+})
 
 -- lsp signature
 require('lsp_signature').setup {
