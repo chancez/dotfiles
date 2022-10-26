@@ -143,6 +143,7 @@ packer.startup(function(use)
       "nvim-neotest/neotest-go",
     }
   }
+  use {"~/projects/resize-mode.nvim"}
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -601,6 +602,21 @@ require('neotest').setup({
   },
 })
 
+require("resize-mode").setup {
+  horizontal_amount = 9,
+  vertical_amount = 5,
+  resize_keys = {
+      "h", -- increase to the left
+      "j", -- increase to the bottom
+      "k", -- increase to the top
+      "l", -- increase to the right
+      "H", -- decrease to the left
+      "J", -- decrease to the bottom
+      "K", -- decrease to the top
+      "L"  -- decrease to the right
+  },
+}
+
 -- mappings
 
 -- Whichkey
@@ -702,6 +718,9 @@ mapx.map('gtf', ':TestFile<CR>', 'silent')
 mapx.map('gtd', ':TestDirectory<CR>', 'silent')
 mapx.map('gts', ':TestSuite<CR>', 'silent')
 mapx.map('gto', ':TestOpen<CR>', 'silent')
+
+-- resize-mode
+mapx.cmdbang('ResizeMode', function() require("resize-mode").start() end, {nargs = 0})
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
