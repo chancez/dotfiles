@@ -65,6 +65,7 @@ packer.startup(function(use)
       'nvim-telescope/telescope-frecency.nvim',
       'nvim-lua/plenary.nvim',
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
+      "nvim-telescope/telescope-file-browser.nvim",
     },
   }
 
@@ -778,7 +779,28 @@ require('telescope').setup {
       override_generic_sorter = true,
       override_file_sorter = true,
       case_mode = "smart_case",
-    }
+    },
+    file_browser = {
+      theme = "ivy",
+      -- disables netrw and use telescope-file-browser in its place
+      hijack_netrw = true,
+      mappings = {
+        i = {
+          ["<C-k>"] = actions.move_selection_previous,
+          ["<C-j>"] = actions.move_selection_next,
+          ["<M-k>"] = actions.preview_scrolling_up,
+          ["<M-j>"] = actions.preview_scrolling_down,
+          ["<C-u>"] = false,
+          ["<C-d>"] = false,
+          ["<esc>"] = actions.close,
+
+        },
+        n = {
+          ["<C-k>"] = "move_selection_previous",
+          ["<C-j>"] = "move_selection_next",
+        },
+      },
+    },
   },
  defaults = require('telescope.themes').get_ivy {
     layout_config = {
@@ -813,6 +835,7 @@ require('telescope').setup {
 }
 
 require('telescope').load_extension('fzf')
+require("telescope").load_extension "file_browser"
 
 mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
