@@ -289,7 +289,7 @@ local default_on_attach = function(client, bufnr)
     mapx.cmdbang('LspOutgoingCalls', 'lua require("telescope.builtin").lsp_outgoing_calls()')
 
     -- formatting
-    if client.resolved_capabilities.document_formatting then
+    if client.server_capabilities.documentFormattingProvider then
       mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.formatting()')
       mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
       vim.api.nvim_command [[augroup Format]]
