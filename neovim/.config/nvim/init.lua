@@ -270,10 +270,10 @@ local default_on_attach = function(client, bufnr)
   mapx.group({ buffer = bufnr }, function()
     mapx.cmdbang('LspRename', 'lua vim.lsp.buf.rename()')
     mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
-    mapx.cmdbang('LspDefinition', 'lua vim.lsp.buf.definition()')
-    mapx.cmdbang('LspTypeDefinition', 'lua vim.lsp.buf.type_definition()')
-    mapx.cmdbang('LspReferences', 'lua vim.lsp.buf.references()')
-    mapx.cmdbang('LspImplementation', 'lua vim.lsp.buf.implementation()')
+    mapx.cmdbang('LspDefinition', 'lua require("telescope.builtin").lsp_definitions()')
+    mapx.cmdbang('LspTypeDefinition', 'lua require("telescope.builtin").lsp_type_definitions()')
+    mapx.cmdbang('LspReferences', 'lua require("telescope.builtin").lsp_references()')
+    mapx.cmdbang('LspImplementation', 'lua require("telescope.builtin").lsp_implementations()')
 
     mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
     mapx.cmdbang('LspHover', 'lua vim.lsp.buf.hover()')
@@ -285,6 +285,8 @@ local default_on_attach = function(client, bufnr)
 
     mapx.cmdbang('LspDocumentSymbols', 'lua require("telescope.builtin").lsp_document_symbols()')
     mapx.cmdbang('LspWorkspaceSymbols', 'lua require("telescope.builtin").lsp_dynamic_workspace_symbols()')
+    mapx.cmdbang('LspIncomingCalls', 'lua require("telescope.builtin").lsp_incoming_calls()')
+    mapx.cmdbang('LspOutgoingCalls', 'lua require("telescope.builtin").lsp_outgoing_calls()')
 
     -- formatting
     if client.resolved_capabilities.document_formatting then
