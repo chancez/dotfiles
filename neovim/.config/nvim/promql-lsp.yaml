@@ -1,0 +1,3 @@
+ # Change this adress to the address of the prometheus server you want to use for metadata
+ # prometheus_url: http://localhost:9090
+ # rpc_trace: text

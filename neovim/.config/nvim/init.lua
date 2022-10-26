@@ -409,6 +409,7 @@ local servers = {
     },
   },
   golangci_lint_ls = {},
+  promql = {},
   yamlls = {
     settings = {
       yaml = {
@@ -445,6 +446,27 @@ require("mason-lspconfig").setup({
   automatic_installation = true,
 })
 
+local lspconfig = require("lspconfig")
+local lspconfig_configs = require("lspconfig.configs")
+local lspconfig_utils = require 'lspconfig.util'
+
+lspconfig_configs["promql"] = {
+  default_config = {
+    cmd = { 'promql-langserver', '--config-file', vim.fn.stdpath "config" .. "/promql-lsp.yaml" },
+    filetypes = { 'yaml' },
+    root_dir = lspconfig_utils.find_git_ancestor,
+  },
+  docs = {
+    description = [[
+https://github.com/prometheus-community/promql-langserver
+]],
+    default_config = {
+      root_dir = [[util.find_git_ancestor]],
+    },
+  }
+}
+
+-- Configure each LSP
 for server_name, server_specific_opts in pairs(servers) do
   local capabilities = cmp_lsp.default_capabilities()
   local server_opts = {
@@ -458,7 +480,7 @@ for server_name, server_specific_opts in pairs(servers) do
     server_opts[k] = v
   end
 
-  require("lspconfig")[server_name].setup(server_opts)
+  lspconfig[server_name].setup(server_opts)
 end
 
 -- lsp signature
