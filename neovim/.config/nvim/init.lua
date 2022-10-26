@@ -816,7 +816,7 @@ require('telescope').load_extension('fzf')
 
 mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
-mapx.nnoremap('<c-_>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>", 'Telescope current_buffer_fuzzy_find') -- ctrl-/
+mapx.nnoremap('<c-b>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>", 'Telescope current_buffer_fuzzy_find')
 mapx.nnoremap('<c-g>', "<cmd>lua require('telescope.builtin').grep_string()<cr>", 'Telescope grep_string')
 mapx.nnoremap('<m-;>', "<cmd>lua require('telescope.builtin').command_history()<cr>", 'Telescope command_history')
 
