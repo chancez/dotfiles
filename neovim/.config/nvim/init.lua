@@ -433,6 +433,7 @@ local servers = {
       end
     end,
   },
+  tilt_ls = {},
 }
 
 
@@ -926,6 +927,8 @@ fun! StripTrailingWhitespace()
 endfun
 autocmd BufWritePre * call StripTrailingWhitespace()
 ]])
+
+vim.cmd [[autocmd! BufNewFile,BufRead Tiltfile set filetype=tiltfile syntax=python]]
 
 -- Highlight on yank
 vim.cmd [[
