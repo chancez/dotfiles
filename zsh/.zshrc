@@ -67,7 +67,6 @@ fi
 path=(
   $HOME/.local/bin
   $HOME/.local/custom_bins
-  $HOME/.rd/bin
   $GOBIN
   $brew_paths
   /usr/local/{bin,sbin}
@@ -192,6 +191,7 @@ alias ../..='cd ../..'
 alias zur='TZ=Europe/Zurich date'
 alias pst='TZ=Etc/GMT-8 date'
 alias utc='TZ=Etc/UTC date'
+alias cppwd="pwd | tee /dev/stderr | tr -d '\n' | pbcopy"
 
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
 command -v kitty >/dev/null && alias kssh="kitty +kitten ssh"
