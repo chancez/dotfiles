@@ -840,22 +840,6 @@ require('telescope').setup {
       theme = "ivy",
       -- disables netrw and use telescope-file-browser in its place
       hijack_netrw = true,
-      mappings = {
-        i = {
-          ["<C-k>"] = actions.move_selection_previous,
-          ["<C-j>"] = actions.move_selection_next,
-          ["<M-k>"] = actions.preview_scrolling_up,
-          ["<M-j>"] = actions.preview_scrolling_down,
-          ["<C-u>"] = false,
-          ["<C-d>"] = false,
-          ["<esc>"] = actions.close,
-
-        },
-        n = {
-          ["<C-k>"] = "move_selection_previous",
-          ["<C-j>"] = "move_selection_next",
-        },
-      },
     },
   },
  defaults = require('telescope.themes').get_ivy {
@@ -868,14 +852,19 @@ require('telescope').setup {
         ["<C-j>"] = actions.move_selection_next,
         ["<M-k>"] = actions.preview_scrolling_up,
         ["<M-j>"] = actions.preview_scrolling_down,
+        -- we want ctrl-u to be clear the prompt, so disable the default binding
         ["<C-u>"] = false,
+        -- disable c-d because we don't have c-u mapped
         ["<C-d>"] = false,
         ["<esc>"] = actions.close,
+        ["<C-h>"] = "which_key",
+        ["<C-s>"] = actions.cycle_previewers_next,
+        ["<C-a>"] = actions.cycle_previewers_prev,
 
       },
       n = {
-        ["<C-k>"] = "move_selection_previous",
-        ["<C-j>"] = "move_selection_next",
+        ["<C-k>"] = actions.move_selection_previous,
+        ["<C-j>"] = actions.move_selection_next,
       },
     }
   },
