@@ -244,14 +244,6 @@ vim.g.node_host_prog = '~/.asdf/shims/node'
 -- nvim-cmp supports additional completion capabilities
 local cmp_lsp = require('cmp_nvim_lsp')
 
--- Diagnostic keymaps
-mapx.group("silent", function()
-  mapx.nnoremap('<leader>d', '<cmd>lua vim.diagnostic.open_float()<CR>', 'LSP Diagnostics')
-  mapx.nnoremap('[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', 'Diagnostics goto previous')
-  mapx.nnoremap(']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', 'Diagnostics goto next')
-  mapx.nnoremap('<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', 'Diagnostics loclist')
-end)
-
 function OrgImports(wait_ms)
   local params = vim.lsp.util.make_range_params()
   params.context = {only = {"source.organizeImports"}}
@@ -326,6 +318,16 @@ local default_on_attach = function(client, bufnr)
     end)
   end)
 end
+
+-- Diagnostic keymaps
+mapx.cmdbang('Diagnostics', 'lua require("telescope.builtin").diagnostics()')
+mapx.group("silent", function()
+  mapx.nnoremap('<leader>d', '<cmd>Diagnostics<CR>', 'Diagnostics')
+  mapx.nnoremap('[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', 'Diagnostics goto previous')
+  mapx.nnoremap(']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', 'Diagnostics goto next')
+  mapx.nnoremap('<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', 'Diagnostics loclist')
+end)
+
 
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
