@@ -688,18 +688,6 @@ mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 -- symbols outline
 mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
 
--- nvim-dap
-mapx.cmdbang('DapStepBack', 'lua require("dap").step_back()')
-mapx.cmdbang('DapStepInto', 'lua require("dap").step_into()')
-mapx.cmdbang('DapStepOver', 'lua require("dap").step_over()')
-mapx.cmdbang('DapStepOut', 'lua require("dap").step_out()')
-mapx.cmdbang('DapContinue', 'lua require("dap").continue()')
-mapx.cmdbang('DapToggleBreakpoint', 'lua require("dap").toggle_breakpoint()')
-mapx.cmdbang('DapListBreakpoints', 'lua require("dap").list_breakpoints()')
-mapx.cmdbang('DapClearBreakpoints', 'lua require("dap").clear_breakpoints()')
-mapx.cmdbang('DapREPLOpen', 'lua require("dap").repl.open()')
-mapx.cmdbang('DapREPLClose', 'lua require("dap").repl.close()')
-mapx.cmdbang('DapREPLToggle', 'lua require("dap").repl.toggle()')
 -- dap-go
 mapx.cmdbang('DapGoTest', 'lua require("dap-go").debug_test()')
 mapx.cmdbang('DapUIOpen', 'lua require("dapui").open()')
