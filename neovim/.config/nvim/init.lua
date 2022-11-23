@@ -101,6 +101,7 @@ packer.startup(function(use)
       'hrsh7th/cmp-nvim-lsp', -- LSP source
       'hrsh7th/cmp-path', -- path source
       'hrsh7th/cmp-buffer', -- buffer source
+      {'tzachar/cmp-fuzzy-path', requires = {'tzachar/fuzzy.nvim'}} -- fuzzy path source
     },
   }
 
@@ -534,7 +535,7 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
-    { name = 'path' },
+    { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '20', '-p', '--no-ignore'}} },
     { name = 'buffer' },
   },
 }
@@ -565,7 +566,7 @@ cmp.setup.cmdline(':', {
     ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
   },
   sources = {
-    { name = 'path' },
+    { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '20', '-p', '--no-ignore'}} },
     { name = 'cmdline' },
   }
 })
