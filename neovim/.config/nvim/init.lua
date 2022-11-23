@@ -765,9 +765,59 @@ vim.g.symbols_outline = {
 }
 
 -- toggleterm
-require("toggleterm").setup {
+local toggleterm = require("toggleterm")
+toggleterm.setup {
   open_mapping = '<c-t>',
 }
+
+local toggletermutils = require("toggleterm.utils")
+--- @param selection_type string
+--- @param trim_spaces boolean
+--- @param cmd_data table<string, any>
+function ToggleTerm_send_lines_to_terminal(selection_type, trim_spaces, cmd_data)
+  local id = tonumber(cmd_data.args) or 1
+  trim_spaces = trim_spaces == nil or trim_spaces
+
+  vim.validate({
+    selection_type = { selection_type, "string", true },
+    trim_spaces = { trim_spaces, "boolean", true },
+    terminal_id = { id, "number", true },
+  })
+
+  local current_window = vim.api.nvim_get_current_win() -- save current window
+
+  local lines = {}
+  -- Beginning of the selection: line number, column number
+  local start_line, start_col
+  if selection_type == "single_line" then
+    start_line, start_col = unpack(vim.api.nvim_win_get_cursor(0))
+    table.insert(lines, vim.fn.getline(start_line))
+  elseif selection_type == "visual_lines" then
+    local res = toggletermutils.get_line_selection("visual")
+    start_line, start_col = unpack(res.start_pos)
+    lines = res.selected_lines
+  elseif selection_type == "visual_selection" then
+    local res = toggletermutils.get_line_selection("visual")
+    start_line, start_col = unpack(res.start_pos)
+    lines = toggletermutils.get_visual_selection(res)
+  elseif selection_type == "current_buffer" then
+    start_line, start_col = unpack(vim.api.nvim_win_get_cursor(0))
+    lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  end
+
+  if not lines or not next(lines) then return end
+
+  for _, line in ipairs(lines) do
+    local l = trim_spaces and line:gsub("^%s+", ""):gsub("%s+$", "") or line
+    toggleterm.exec(l, id)
+  end
+
+  -- Jump back with the cursor where we were at the beginning of the selection
+  vim.api.nvim_set_current_win(current_window)
+  vim.api.nvim_win_set_cursor(current_window, { start_line, start_col })
+end
+
+mapx.cmdbang('ToggleTermSendCurrentBuffer', function(args) ToggleTerm_send_lines_to_terminal("current_buffer", false, args) end)
 
 -- gitsigns
 require('gitsigns').setup()
