@@ -66,6 +66,8 @@ packer.startup(function(use)
       'nvim-lua/plenary.nvim',
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       "nvim-telescope/telescope-file-browser.nvim",
+      { "nvim-telescope/telescope-dap.nvim", requires = { 'mfussenegger/nvim-dap' }},
+      'nvim-telescope/telescope-symbols.nvim',
     },
   }
 
@@ -836,7 +838,8 @@ require('telescope').setup {
 }
 
 require('telescope').load_extension('fzf')
-require("telescope").load_extension "file_browser"
+require("telescope").load_extension('file_browser')
+require('telescope').load_extension('dap')
 
 mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
 mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
@@ -846,10 +849,12 @@ mapx.nnoremap('<m-;>', "<cmd>lua require('telescope.builtin').command_history()<
 
 mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
 mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>", 'Telescope live_grep')
-mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
+mapx.nnoremap('<leader>fB', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
 mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>", 'Telescope help_tags')
 mapx.nnoremap('<leader>fr', "<cmd>lua require('telescope.builtin').registers()<cr>", 'Telescope registers')
 mapx.nnoremap('<leader>fm', "<cmd>lua require('telescope.builtin').marks()<cr>", 'Telescope marks')
+
+mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope').extensions.file_browser.file_browser()<cr>", 'Telescope file_browser')
 
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
