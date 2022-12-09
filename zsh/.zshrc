@@ -166,7 +166,7 @@ alias opsignin='eval $(op signin chancez.1password.com chance.zibolski@gmail.com
 alias gst='git status'
 
 function git-prune-branches-list() {
-  git fetch --prune --prune-tags && (
+  git fetch --prune && (
     git branch -vv | grep -F ": gone]" | awk '{print $1}'
   )
 }
