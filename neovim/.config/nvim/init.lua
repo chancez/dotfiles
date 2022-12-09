@@ -485,7 +485,7 @@ require"fidget".setup{}
 
 -- debug adapter
 require('dap-go').setup()
-require("dapui").setup()
+require("dapui").setup({})
 
 -- luasnip setup
 local luasnip = require 'luasnip'
@@ -887,6 +887,7 @@ mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'T
 mapx.nnoremap('<c-b>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>", 'Telescope current_buffer_fuzzy_find')
 mapx.nnoremap('<c-g>', "<cmd>lua require('telescope.builtin').grep_string()<cr>", 'Telescope grep_string')
 mapx.nnoremap('<m-;>', "<cmd>lua require('telescope.builtin').command_history()<cr>", 'Telescope command_history')
+mapx.nnoremap('<m-c>', "<cmd>lua require('telescope.builtin').commands()<cr>", 'Telescope commands')
 
 mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
 mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>", 'Telescope live_grep')
