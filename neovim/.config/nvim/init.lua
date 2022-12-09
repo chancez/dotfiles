@@ -691,10 +691,11 @@ mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
 
 -- dap-go
 mapx.cmdbang('DapGoTest', 'lua require("dap-go").debug_test()')
-mapx.cmdbang('DapUIOpen', 'lua require("dapui").open()')
+mapx.cmdbang('DapUIOpen', 'lua require("dapui").open({reset=true})')
 -- dap-ui
 mapx.cmdbang('DapUIClose', 'lua require("dapui").close()')
 mapx.cmdbang('DapUIToggle', 'lua require("dapui").toggle()')
+mapx.cmdbang('DapUIEval', 'lua require("dapui").eval()')
 
 -- neotest
 mapx.cmdbang('TestNearest', 'lua require("neotest").run.run()')
