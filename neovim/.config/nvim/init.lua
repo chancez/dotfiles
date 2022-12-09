@@ -172,6 +172,7 @@ require'mapx'.setup { whichkey = true }
 local mapx = require'mapx'
 
 -- misc global opts
+vim.opt.spell = true
 vim.opt.mouse = 'a'
 vim.opt.colorcolumn = '80,100'
 vim.opt.cursorline = true
