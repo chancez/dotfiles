@@ -841,7 +841,7 @@ require('telescope').setup {
       hijack_netrw = true,
     },
   },
- defaults = require('telescope.themes').get_ivy {
+  defaults = require('telescope.themes').get_ivy {
     layout_config = {
       scroll_speed = 5,
     },
