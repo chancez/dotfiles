@@ -88,22 +88,7 @@ bundler_stubs/
 
 *.sublime-*
 
-.env
-dev.env
-quay.env
-salesforce.env
-zendesk.env
-mail.env
 
-slack.env
-stripe.env
-account.json
-contact.json
-sync.env
-json_files
-tectonic_compute.sql
-_mocks
-.agignore
 TAGS
 .TAGS
 !TAGS/
@@ -122,38 +107,12 @@ cscope.out
 cscope.in.out
 cscope.po.out
 
-.dexconfig/
-
 Session.vim
 
-.vimrc
-
-dev/coreupdate
-dev/quay-enterprise
-
-.glide/*
-
-.tern-project
-
-static/tectonic-signing-key.staging.pem.txt
-static/tectonic-signing-key.staging.pub.txt
-static/dexconfig/emailer-fake.json
-static/dexconfig/emailer-mailgun.json
-
-.secrets
-
-domain_migration
-
-aws.env
-pull_secret.json
-
-manifests_revised
-examples_revised
 .envrc
 
 *@neomake*
 
-chargeback_reports/*
 tags.tmp
 /scratch/
 .gvm_local
