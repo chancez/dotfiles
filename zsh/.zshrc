@@ -182,6 +182,11 @@ function git-prune-branches() {
   git-prune-branches-list | xargs git branch -D
 }
 
+function kssm() {
+  node=$1
+  kubectl get nodes "${node}" -o yaml | yq '.spec.providerID | split("/") | .[-1]' | xargs -ot -I{} aws ssm start-session --target {}
+}
+
 alias k=kubectl
 alias kc=kubectx
 alias kns=kubens
