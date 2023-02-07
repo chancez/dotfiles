@@ -58,10 +58,9 @@
 [fetch]
   prune = true
 [http]
-  cookiefile = ~/.gitcookies
+	cookiefile = /Users/chancezibolski/.gitcookies
 [rebase]
   autosquash = true
-	updateRefs = true
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
