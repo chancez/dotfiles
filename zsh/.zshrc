@@ -154,7 +154,7 @@ else
   # fallback
   source_if_exists "$HOME/.fzf.zsh"
 fi
-if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/asdf.sh"; then
+if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/libexec/asdf.sh"; then
   # fallback
   if source_if_exists "$HOME/.asdf/asdf.sh"; then
       fpath=( "$HOME/.asdf/completions" $fpath )
