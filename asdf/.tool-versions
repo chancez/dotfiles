@@ -1,5 +1,5 @@
-python 3.9.16 2.7.18
-golang 1.18.2
+python 3.10.9 2.7.18
+golang 1.19.5
 terraform 1.1.4
 nodejs 18.9.0
 java adoptopenjdk-jre-17.0.2+8
