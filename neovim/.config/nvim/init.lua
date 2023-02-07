@@ -288,12 +288,12 @@ local default_on_attach = function(client, bufnr)
 
     -- formatting
     if client.server_capabilities.documentFormattingProvider then
-      mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.formatting()')
+      mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.format()')
       mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
       vim.api.nvim_command [[augroup Format]]
       vim.api.nvim_command [[autocmd! * <buffer>]]
       vim.api.nvim_command [[autocmd BufWritePre *.go lua OrgImports(1000)]]
-      vim.api.nvim_command [[autocmd BufWritePre *.go lua vim.lsp.buf.formatting_seq_sync(nil, 2000)]]
+      vim.api.nvim_command [[autocmd BufWritePre *.go lua vim.lsp.buf.format({timeout_ms=2000})]]
       vim.api.nvim_command [[augroup END]]
     end
 
