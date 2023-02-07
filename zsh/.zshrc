@@ -20,7 +20,10 @@ setopt EXTENDED_HISTORY
 setopt APPEND_HISTORY
 # immediately add to history
 setopt INC_APPEND_HISTORY
-
+# number of entries in history file
+export SAVEHIST=500000
+# number of entries loaded from history file into memory
+export HISTSIZE=50000
 
 # autocd interfers with trying to call binaries that have the same name as a directory in CDPATH, so disable it.
 unsetopt autocd
