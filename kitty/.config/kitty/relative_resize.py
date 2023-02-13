@@ -21,7 +21,9 @@ def handle_result(args, result, target_window_id, boss):
 
     # has a neighbor on both sides
     if direction == 'left' and (left_neighbors and right_neighbors):
+        # boss.active_tab.set_active_window(left_neighbors[0])
         boss.active_tab.resize_window('narrower', 1)
+        # boss.active_tab.set_active_window(current_window_id)
     # only has left neighbor
     elif direction == 'left' and left_neighbors:
         boss.active_tab.resize_window('wider', 1)
@@ -31,7 +33,9 @@ def handle_result(args, result, target_window_id, boss):
 
     # has a neighbor on both sides
     elif direction == 'right' and (left_neighbors and right_neighbors):
+        # boss.active_tab.set_active_window(left_neighbors[0])
         boss.active_tab.resize_window('wider', 1)
+        # boss.active_tab.set_active_window(current_window_id)
     # only has left neighbor
     elif direction == 'right' and left_neighbors:
         boss.active_tab.resize_window('narrower', 1)
@@ -41,7 +45,9 @@ def handle_result(args, result, target_window_id, boss):
 
     # has a neighbor above and below
     elif direction == 'up' and (top_neighbors and bottom_neighbors):
-        boss.active_tab.resize_window('taller', 1)
+        # boss.active_tab.set_active_window(top_neighbors[0])
+        boss.active_tab.resize_window('shorter', 1)
+        # boss.active_tab.set_active_window(current_window_id)
     # only has top neighbor
     elif direction == 'up' and top_neighbors:
         boss.active_tab.resize_window('taller', 1)
@@ -51,7 +57,9 @@ def handle_result(args, result, target_window_id, boss):
 
     # has a neighbor above and below
     elif direction == 'down' and (top_neighbors and bottom_neighbors):
-        boss.active_tab.resize_window('shorter', 1)
+        # boss.active_tab.set_active_window(top_neighbors[0])
+        boss.active_tab.resize_window('taller', 1)
+        # boss.active_tab.set_active_window(current_window_id)
     # only has top neighbor
     elif direction == 'down' and top_neighbors:
         boss.active_tab.resize_window('shorter', 1)
