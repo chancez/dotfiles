@@ -184,7 +184,10 @@ function git-prune-branches() {
 
 function kssm() {
   node=$1
-  kubectl get nodes "${node}" -o yaml | yq '.spec.providerID | split("/") | .[-1]' | xargs -ot -I{} aws ssm start-session --target {}
+  INSTANCE_ID=$(kubectl get nodes "${node}" -o yaml | yq '.spec.providerID | split("/") | .[-1]')
+  CMD=(aws ssm start-session --target "$INSTANCE_ID")
+  echo "${CMD[@]}"
+  "${CMD[@]}"
 }
 
 alias k=kubectl
