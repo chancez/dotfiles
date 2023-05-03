@@ -359,14 +359,16 @@ end
 GO_MODULE = GetGoModuleName()
 
 local servers = {
-  clangd = {},
+  clangd = {
+    filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }, -- remove proto, handled by bufls
+  },
   rust_analyzer = {},
   pyright = {},
   tsserver  = {},
   bashls  = {},
   dockerls  = {},
   jsonnet_ls = {},
-  sqls = {},
+  sqlls = {},
   terraformls = {},
   esbonio = {}, -- Sphinx/RestructuredText
   jdtls  = {},
@@ -437,6 +439,7 @@ local servers = {
     end,
   },
   tilt_ls = {},
+  bufls = {},
 }
 
 
@@ -622,7 +625,6 @@ require('smart-splits').setup({
   ignored_buftypes = { 'NvimTree' },
   -- the default number of lines/columns to resize by at a time
   default_amount = 3,
-  wrap_at_edge = true,
   -- enable or disable the tmux integration
   tmux_integration = false,
 
@@ -934,9 +936,29 @@ mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope').extensions.file_brows
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    "c", "lua", "go", "rust", "python", "javascript", "typescript", "comment",
-    "dockerfile", "gomod", "gowork", "hcl", "html", "java", "json", "latex",
-    "markdown", "make", "proto", "regex", "toml", "vim", "yaml",
+    "c",
+    "comment",
+    "dockerfile",
+    "go",
+    "gomod",
+    "gowork",
+    "hcl",
+    "html",
+    "java",
+    "javascript",
+    "json",
+    "latex",
+    "lua",
+    "make",
+    "markdown",
+    "proto",
+    "python",
+    "regex",
+    "rust",
+    "toml",
+    "typescript",
+    "vim",
+    "yaml",
   },
   highlight = { enable = true },
 }
