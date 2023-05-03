@@ -237,10 +237,6 @@ if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.cli
 -- leader
 vim.g.mapleader = ','
 
-vim.g.python_host_prog = '~/.asdf/shims/python2'
-vim.g.python3_host_prog = '~/.asdf/shims/python3'
-vim.g.node_host_prog = '~/.asdf/shims/node'
-
 -- language server
 
 -- nvim-cmp supports additional completion capabilities
