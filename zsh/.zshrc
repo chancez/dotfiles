@@ -103,6 +103,8 @@ zgenom autoupdate
 if ! zgenom saved; then
   echo "Creating a zgenom save"
 
+  zgenom compdef
+
   # extensions
   zgenom load jandamm/zgenom-ext-eval
 
