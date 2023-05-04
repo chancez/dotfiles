@@ -155,7 +155,7 @@ if ! zgenom saved; then
   # zsh plugins
   zgenom load jonmosco/kube-ps1
   zgenom load zsh-users/zsh-autosuggestions
-  zgenom load unixorn/fzf-zsh-plugin
+  # zgenom load unixorn/fzf-zsh-plugin
   zgenom load zdharma-continuum/fast-syntax-highlighting
 
   # custom extensions
@@ -168,6 +168,17 @@ if ! zgenom saved; then
 
   # generate the init script from plugins above
   zgenom save
+fi
+
+function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
+
+if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
+  source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+elif source_if_exists "/usr/share/doc/fzf/examples/completion.zsh"; then
+   source_if_exists  "/usr/share/doc/fzf/examples/key-bindings.zsh"
+else
+  # fallback
+  source_if_exists "$HOME/.fzf.zsh"
 fi
 
 alias gst='git status'
