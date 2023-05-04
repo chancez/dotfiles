@@ -125,6 +125,10 @@ if ! zgenom saved; then
   # extensions
   zgenom load jandamm/zgenom-ext-eval
 
+  # ohmyzsh plugins
+  zgenom ohmyzsh
+  zgenom ohmyzsh plugins/gcloud
+
   # prezto options
   zgenom prezto prompt theme 'sorin'
   zgenom prezto editor key-bindings 'vi'
@@ -132,7 +136,6 @@ if ! zgenom saved; then
   zgenom prezto ssh:load identities 'id_rsa'
   zgenom prezto '*:*' case-sensitive 'no'
   zgenom prezto '*:*' color 'yes'
-  zgenom prezto 'module:syntax-highlighting' highlighters 'main' 'brackets' 'pattern' 'cursor'
 
   # prezto plugins
   zgenom prezto
@@ -145,13 +148,9 @@ if ! zgenom saved; then
   zgenom prezto utility
   zgenom prezto git
   zgenom prezto prompt
-  zgenom prezto syntax-highlighting
   zgenom prezto completion
   zgenom prezto history-substring-search
   zgenom prezto ssh
-
-  # ohmyzsh plugins
-  zgenom ohmyzsh plugins/gcloud
 
   # zsh plugins
   zgenom load jonmosco/kube-ps1
