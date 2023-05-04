@@ -120,4 +120,5 @@ venv
 .venv
 .venv/*
 .tool-versions
+.rtx.toml
 tf-plan

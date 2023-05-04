@@ -1,9 +1,0 @@
-python 3.10.9 2.7.18
-golang 1.19.5
-terraform 1.4.6
-nodejs 18.9.0
-java adoptopenjdk-jre-17.0.2+8
-kubectl 1.24.1
-ruby 3.1.2
-neovim 0.8.3
-rust stable

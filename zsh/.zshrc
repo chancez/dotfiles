@@ -143,6 +143,7 @@ command -v fasd >/dev/null && eval "$(fasd --init auto)"
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
 command -v mc >/dev/null && complete -o nospace -C /opt/homebrew/bin/mc mc
 command -v jump >/dev/null && eval "$(jump shell)"
+command -v rtx >/dev/null && eval "$(rtx activate zsh)"
 
 # source a script, if it exists
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
@@ -155,14 +156,6 @@ else
   # fallback
   source_if_exists "$HOME/.fzf.zsh"
 fi
-if ! source_if_exists "$HOMEBREW_PREFIX/opt/asdf/libexec/asdf.sh"; then
-  # fallback
-  if source_if_exists "$HOME/.asdf/asdf.sh"; then
-      fpath=( "$HOME/.asdf/completions" $fpath )
-  fi
-fi
-alias fix-yarn='corepack enable && asdf reshim nodejs'
-source_if_exists "$HOME/.asdf/plugins/java/set-java-home.zsh"
 source_if_exists "$HOME/.zshrc_work"
 source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 
