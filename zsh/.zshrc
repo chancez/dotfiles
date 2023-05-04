@@ -117,7 +117,7 @@ if ! zgenom saved; then
   zgenom prezto '*:*' color 'yes'
   zgenom prezto 'module:syntax-highlighting' highlighters 'main' 'brackets' 'pattern' 'cursor'
 
-  # zgenom plugins
+  # prezto plugins
   zgenom prezto
   zgenom prezto environment
   zgenom prezto terminal
@@ -133,8 +133,14 @@ if ! zgenom saved; then
   zgenom prezto history-substring-search
   zgenom prezto ssh
 
+  # ohmyzsh plugins
+  zgenom ohmyzsh plugins/gcloud
+
+  # zsh plugins
   zgenom load jonmosco/kube-ps1
   zgenom load zsh-users/zsh-autosuggestions
+  zgenom load unixorn/fzf-zsh-plugin
+  zgenom load zdharma-continuum/fast-syntax-highlighting
 
   command -v direnv >/dev/null && zgenom eval --name direnv < <(direnv hook zsh)
   command -v hubble >/dev/null && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
@@ -150,16 +156,7 @@ fi
 # source a script, if it exists
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
 
-if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
-  source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
-elif source_if_exists "/usr/share/doc/fzf/examples/completion.zsh"; then
-   source_if_exists  "/usr/share/doc/fzf/examples/key-bindings.zsh"
-else
-  # fallback
-  source_if_exists "$HOME/.fzf.zsh"
-fi
 source_if_exists "$HOME/.zshrc_work"
-source_if_exists "$HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 
 alias gst='git status'
 
