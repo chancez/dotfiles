@@ -135,9 +135,7 @@ if ! zgenom saved; then
   zgenom save
 fi
 
-command -v kubectl >/dev/null && source <(kubectl completion zsh | sed '/"-f"/d')
 command -v hubble >/dev/null && source <(hubble completion zsh)
-command -v oc >/dev/null && source <(oc completion zsh)
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 command -v fasd >/dev/null && eval "$(fasd --init auto)"
 command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
