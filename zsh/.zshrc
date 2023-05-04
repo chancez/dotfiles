@@ -103,6 +103,9 @@ zgenom autoupdate
 if ! zgenom saved; then
   echo "Creating a zgenom save"
 
+  # extensions
+  zgenom load jandamm/zgenom-ext-eval
+
   # prezto options
   zgenom prezto prompt theme 'sorin'
   zgenom prezto editor key-bindings 'vi'
@@ -131,17 +134,16 @@ if ! zgenom saved; then
   zgenom load jonmosco/kube-ps1
   zgenom load zsh-users/zsh-autosuggestions
 
+  command -v direnv >/dev/null && zgenom eval --name direnv < <(direnv hook zsh)
+  command -v hubble >/dev/null && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
+  command -v fasd >/dev/null && zgenom eval --name fasd < <(fasd --init auto)
+  command -v jump >/dev/null && zgenom eval --name jump < <(jump shell)
+  command -v rtx >/dev/null && zgenom eval --name rtx < <(rtx activate zsh)
+  command -v kitty >/dev/null && zgenom eval --name kitty < <(kitty + complete setup zsh)
+
   # generate the init script from plugins above
   zgenom save
 fi
-
-command -v hubble >/dev/null && source <(hubble completion zsh)
-command -v direnv >/dev/null && eval "$(direnv hook zsh)"
-command -v fasd >/dev/null && eval "$(fasd --init auto)"
-command -v kitty >/dev/null && kitty + complete setup zsh | source /dev/stdin
-command -v mc >/dev/null && complete -o nospace -C /opt/homebrew/bin/mc mc
-command -v jump >/dev/null && eval "$(jump shell)"
-command -v rtx >/dev/null && eval "$(rtx activate zsh)"
 
 # source a script, if it exists
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
