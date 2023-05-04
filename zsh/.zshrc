@@ -96,6 +96,23 @@ fi
 source "$ZGEN_DIR/zgenom.zsh"
 autoload -U +X bashcompinit && bashcompinit
 
+function zgenom-eval-if-exists() {
+  name="${1:?name must be provided}"
+  file="${2:?file must be provided}"
+  if [[ -s ${@[$#]} ]]; then
+    zgenom eval --name "$name" < "$file"
+    return 0
+  else
+    return 1
+  fi
+}
+
+function zgenom-eval-if-command() {
+  cmd="${1:?cmd must be provided}"
+  shift
+  (( $+commands[$cmd] )) && zgenom eval --name "$cmd" "$@"
+}
+
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
@@ -142,21 +159,17 @@ if ! zgenom saved; then
   zgenom load unixorn/fzf-zsh-plugin
   zgenom load zdharma-continuum/fast-syntax-highlighting
 
-  command -v direnv >/dev/null && zgenom eval --name direnv < <(direnv hook zsh)
-  command -v hubble >/dev/null && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
-  command -v fasd >/dev/null && zgenom eval --name fasd < <(fasd --init auto)
-  command -v jump >/dev/null && zgenom eval --name jump < <(jump shell)
-  command -v rtx >/dev/null && zgenom eval --name rtx < <(rtx activate zsh)
-  command -v kitty >/dev/null && zgenom eval --name kitty < <(kitty + complete setup zsh)
+  # custom extensions
+  zgenom eval-if-command direnv < <(direnv hook zsh)
+  zgenom eval-if-command hubble < <(hubble completion zsh; echo compdef _hubble hubble)
+  zgenom eval-if-command jump < <(jump shell)
+  zgenom eval-if-command rtx < <(rtx activate zsh)
+  zgenom eval-if-command kitty < <(kitty + complete setup zsh)
+  zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
 
   # generate the init script from plugins above
   zgenom save
 fi
-
-# source a script, if it exists
-function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
-
-source_if_exists "$HOME/.zshrc_work"
 
 alias gst='git status'
 
