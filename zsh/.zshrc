@@ -107,12 +107,6 @@ function zgenom-eval-if-exists() {
   fi
 }
 
-function zgenom-eval-if-command() {
-  cmd="${1:?cmd must be provided}"
-  shift
-  (( $+commands[$cmd] )) && zgenom eval --name "$cmd" "$@"
-}
-
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
@@ -159,11 +153,11 @@ if ! zgenom saved; then
   zgenom load zdharma-continuum/fast-syntax-highlighting
 
   # custom extensions
-  zgenom eval-if-command direnv < <(direnv hook zsh)
-  zgenom eval-if-command hubble < <(hubble completion zsh; echo compdef _hubble hubble)
-  zgenom eval-if-command jump < <(jump shell)
-  zgenom eval-if-command rtx < <(rtx activate zsh)
-  zgenom eval-if-command kitty < <(kitty + complete setup zsh)
+  (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
+  (( $+commands[hubble] )) && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
+  (( $+commands[jump] )) && zgenom eval --name jump < <(jump shell)
+  (( $+commands[rtx] )) && zgenom eval --name rtx < <(rtx activate zsh; rtx hook-env)
+  (( $+commands[kitty] )) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
 
   # generate the init script from plugins above
