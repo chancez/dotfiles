@@ -11,5 +11,4 @@ neovim = '0.8'
 rust = 'stable'
 
 [settings]
-legacy_version_file = true
-asdf_compat = true
+legacy_version_file = false
