@@ -265,7 +265,7 @@ local default_on_attach = function(client, bufnr)
     mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
     mapx.cmdbang('LspDefinition', 'lua require("telescope.builtin").lsp_definitions({fname_width=75})')
     mapx.cmdbang('LspTypeDefinition', 'lua require("telescope.builtin").lsp_type_definitions()')
-    mapx.cmdbang('LspReferences', 'lua require("telescope.builtin").lsp_references()')
+    mapx.cmdbang('LspReferences', 'lua require("telescope.builtin").lsp_references({fname_width=75})')
     mapx.cmdbang('LspImplementation', 'lua require("telescope.builtin").lsp_implementations()')
 
     mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
