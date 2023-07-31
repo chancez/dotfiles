@@ -928,10 +928,30 @@ mapx.nnoremap('<leader>fm', "<cmd>lua require('telescope.builtin').marks()<cr>",
 
 mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope').extensions.file_browser.file_browser()<cr>", 'Telescope file_browser')
 
+-- Custom parsers
+local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+parser_config.cel = {
+  install_info = {
+    url = "https://github.com/bufbuild/tree-sitter-cel.git",
+    files = {"src/parser.c"},
+    branch = "main",
+    generate_requires_npm = false,
+    requires_generate_from_grammar = false,
+  },
+  filetype = "cel",
+}
+
+vim.filetype.add({
+  extension = {
+    cel = 'cel',
+  },
+})
+
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     "c",
+    "cel",
     "comment",
     "dockerfile",
     "go",
