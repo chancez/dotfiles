@@ -408,7 +408,6 @@ local servers = {
         },
         staticcheck = true,
         usePlaceholders = true,
-        experimentalUseInvalidMetadata = true,
         -- ["local"] = GO_MODULE,
         -- gofumpt = true,
       },
