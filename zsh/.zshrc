@@ -151,6 +151,7 @@ if ! zgenom saved; then
   zgenom load zsh-users/zsh-autosuggestions
   # zgenom load unixorn/fzf-zsh-plugin
   zgenom load zdharma-continuum/fast-syntax-highlighting
+  zgenom load djui/alias-tips
 
   # custom extensions
   (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
