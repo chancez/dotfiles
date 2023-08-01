@@ -86,7 +86,7 @@ packer.startup(function(use)
   use 'ray-x/lsp_signature.nvim'
   use 'onsails/lspkind-nvim'
   use 'simrat39/symbols-outline.nvim'
-  use 'j-hui/fidget.nvim'
+  use { 'j-hui/fidget.nvim', tag = 'legacy' }
   use { 'williamboman/mason.nvim' }
   use { 'williamboman/mason-lspconfig.nvim' , requires = { 'williamboman/mason.nvim' }}
 
