@@ -40,10 +40,6 @@ packer.startup(function(use)
   use 'norcalli/nvim-colorizer.lua'
   use 'preservim/tagbar'
   use {
-    'kyazdani42/nvim-tree.lua',
-    requires = { 'kyazdani42/nvim-web-devicons', opt = true },
-  }
-  use {
     'nvim-lualine/lualine.nvim',
     requires = {'kyazdani42/nvim-web-devicons', opt = true}
   }
@@ -707,9 +703,6 @@ mapx.nmap('ga', '<Plug>(EasyAlign)', 'Easy align')
 mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
 mapx.vmap('<M-/>', ':Commentary<CR>', 'silent')
 
--- nvim-tree
-mapx.map('<C-e>', ':NvimTreeToggle<CR>', 'silent')
-
 -- tagbar
 mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
 
@@ -774,9 +767,6 @@ require'lualine'.setup {
     lualine_z = {'tabs'}
   }
 }
-
--- nvim-tree
-require 'nvim-tree'.setup()
 
 require("indent_blankline").setup {
   space_char_blankline = " ",
