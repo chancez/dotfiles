@@ -144,6 +144,7 @@ packer.startup(function(use)
     }
   }
   use('mrjones2014/smart-splits.nvim')
+  use 'danth/pathfinder.vim'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -734,6 +735,9 @@ mapx.cmdbang('ResizeMode', function() require("smart-splits").start_resize_mode(
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
+
+-- pathfinder
+mapx.nnoremap('<leader>pe', ':PathfinderExplain<CR>', 'Explain pathfinder suggestions')
 
 -- colorscheme
 require('onedark').setup {
