@@ -223,6 +223,10 @@ alias pst='TZ=Etc/GMT-8 date'
 alias utc='TZ=Etc/UTC date'
 alias cppwd="pwd | tee /dev/stderr | tr -d '\n' | pbcopy"
 
+if [[ -e "/Applications/Tailscale.app/Contents/MacOS/Tailscale" ]]; then
+  alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+fi
+
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
 command -v kitty >/dev/null && alias kssh="kitty +kitten ssh"
 
