@@ -230,7 +230,7 @@ fi
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
 command -v kitty >/dev/null && alias kssh="kitty +kitten ssh"
 
-if command -v nvim >/dev/null; then
+if (( $+commands[nvim] )); then
     alias vim='nvim'
     export EDITOR='nvim'
 else
