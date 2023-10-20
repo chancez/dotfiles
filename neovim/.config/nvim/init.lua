@@ -195,7 +195,6 @@ vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.copyindent = true
-vim.opt.visualbell = true
 vim.opt.wrap = true
 vim.opt.visualbell = true
 vim.opt.wrapscan = true
