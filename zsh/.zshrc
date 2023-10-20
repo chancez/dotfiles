@@ -306,7 +306,7 @@ export HOMEBREW_NO_INSTALL_CLEANUP=true
 export BC_ENV_ARGS="$HOME/.bc"
 
 # Add kube-ps1 to prompt
-if command -v kubectl >/dev/null; then
+if (( $+commands[kubectl] )); then
   PROMPT='$(kube_ps1) '$PROMPT
 fi
 
