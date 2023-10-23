@@ -161,6 +161,7 @@ if ! zgenom saved; then
   (( $+commands[rtx] )) && zgenom eval --name rtx < <(rtx activate zsh; rtx hook-env)
   (( $+commands[kitty] )) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
+  (( $+commands[crc] )) && zgenom eval --name crc < <(crc completion zsh)
 
   # generate the init script from plugins above
   zgenom save
