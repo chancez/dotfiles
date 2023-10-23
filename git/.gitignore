@@ -115,6 +115,7 @@ Session.vim
 
 tags.tmp
 /scratch/
+/.scratch/
 .gvm_local
 venv
 .venv
