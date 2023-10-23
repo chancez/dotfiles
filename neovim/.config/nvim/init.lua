@@ -144,6 +144,7 @@ packer.startup(function(use)
     }
   }
   use('mrjones2014/smart-splits.nvim')
+  use 'nicwest/vim-camelsnek'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
