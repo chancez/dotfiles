@@ -144,7 +144,6 @@ packer.startup(function(use)
     }
   }
   use('mrjones2014/smart-splits.nvim')
-  use 'danth/pathfinder.vim'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
