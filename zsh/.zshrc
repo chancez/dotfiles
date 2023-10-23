@@ -311,6 +311,7 @@ fi
 
 export HOMEBREW_NO_INSTALL_CLEANUP=true
 export BC_ENV_ARGS="$HOME/.bc"
+export LIMA_INSTANCE=docker
 
 # Add kube-ps1 to prompt
 if (( $+commands[kubectl] )); then
