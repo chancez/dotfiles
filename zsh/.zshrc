@@ -48,6 +48,7 @@ fi
 
 export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
+export GOTOOLCHAIN=local
 
 # Set the the list of directories that cd searches.
 cdpath=(
