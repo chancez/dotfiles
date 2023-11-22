@@ -162,6 +162,7 @@ if ! zgenom saved; then
   (( $+commands[kitty] )) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
   (( $+commands[crc] )) && zgenom eval --name crc < <(crc completion zsh)
+  (( $+commands[switcher] )) && zgenom eval --name switcher < <(switcher init zsh; echo alias s=switch; echo compdef _switcher switch)
 
   # generate the init script from plugins above
   zgenom save
@@ -217,8 +218,8 @@ function kssm() {
 }
 
 alias k=kubectl
-alias kc=kubectx
-alias kns=kubens
+alias kc='switch'
+alias kns='switch namespace'
 alias tf=terraform
 # we disable autocd so this is an alternative for common path changes
 alias ..='cd ..'
