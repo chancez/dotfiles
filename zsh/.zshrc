@@ -64,6 +64,7 @@ brew_paths=()
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   brew_paths=(
     $HOMEBREW_PREFIX/opt/openssl@3/bin
+    $HOMEBREW_PREFIX/opt/curl/bin
     $HOMEBREW_PREFIX/{bin,sbin}
     $HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
   )
@@ -158,7 +159,7 @@ if ! zgenom saved; then
   (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
   (( $+commands[hubble] )) && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
   (( $+commands[jump] )) && zgenom eval --name jump < <(jump shell)
-  (( $+commands[rtx] )) && zgenom eval --name rtx < <(rtx activate zsh; rtx hook-env)
+  (( $+commands[mise] )) && zgenom eval --name mise < <(mise activate zsh; mise hook-env)
   (( $+commands[kitty] )) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
   (( $+commands[crc] )) && zgenom eval --name crc < <(crc completion zsh)
