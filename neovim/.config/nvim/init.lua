@@ -431,6 +431,7 @@ local servers = {
   },
   tilt_ls = {},
   bufls = {},
+  kotlin_language_server = {},
 }
 
 
@@ -955,6 +956,7 @@ require'nvim-treesitter.configs'.setup {
     "java",
     "javascript",
     "json",
+    "kotlin",
     "latex",
     "lua",
     "make",
