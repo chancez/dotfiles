@@ -72,10 +72,11 @@ fi
 path=(
   $HOME/.local/bin
   $HOME/.local/custom_bins
+  "$HOME/.krew/bin"
   $GOBIN
   $brew_paths
+  /snap/bin
   /usr/local/{bin,sbin}
-  "$HOME/.krew/bin"
   /usr/local/opt/curl/bin
   $path
 )
