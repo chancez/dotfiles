@@ -791,6 +791,7 @@ vim.g.symbols_outline = {
 local toggleterm = require("toggleterm")
 toggleterm.setup {
   open_mapping = '<c-t>',
+  start_in_insert = true,
 }
 
 local toggletermutils = require("toggleterm.utils")
