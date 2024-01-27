@@ -123,3 +123,4 @@ venv
 .tool-versions
 .rtx.toml
 tf-plan
+kls_database.db
