@@ -2,13 +2,13 @@
 # you can set these with `rtx use -g`
 node = ['lts', '20', '19', '18', '17', '16']
 python = ['3.10', '2.7']
-golang = 'prefix:1.21'
+golang = 'prefix:1.22'
 terraform = '1.4.6'
 java = '20'
 kubectl = '1.27'
 ruby = '3.1'
-neovim = "0.9.5"
+neovim = "0.9"
 rust = 'stable'
 
 [settings]
-legacy_version_file = false
+experimental = true
