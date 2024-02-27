@@ -14,10 +14,12 @@
 [merge]
   tool = nvim
   log = true
+  conflictstyle = zdiff3
 [diff]
   compactionHeuristic = true
   algorithm = histogram
   renameLimit = 2000
+  submodule = log
 [alias]
   ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
   ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
@@ -42,9 +44,9 @@
   fixup = "!sh -c '(git diff-files --quiet || (echo Unstaged changes, please commit or stash with --keep-index; exit 1)) && COMMIT=$(git rev-parse $1) && git commit --fixup=$COMMIT && git rebase -i --autosquash $COMMIT~1' -"
 [push]
   default = current
+  autoSetupRemote = true
 [pull]
   default = current
-  ff = only
   rebase = true
 [help]
   autocorrect = 3
@@ -67,13 +69,18 @@
   process = git-lfs filter-process
   required = true
 [init]
+  defaultBranch = main
   templateDir = ~/.git-template
-
 [includeIf "gitdir:~/projects/work/"]
   path = ~/.gitconfig-work
-
 [url "ssh://git@github.com/"]
   insteadOf = https://github.com/
 [advice]
 	statusHints = false
 	skippedCherryPicks = false
+[rerere]
+  enabled = true
+[status]
+  submoduleSummary = true
+[submodule]
+  recurse = true
