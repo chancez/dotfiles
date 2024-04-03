@@ -211,21 +211,23 @@ fbr() {
 }
 alias gco=fbr
 
+echoerr() { echo "$@" 1>&2; }
+
 function kssm() {
   local node=${1:?Usage: kssm <k8s-node_name>}
   shift
   local INSTANCE_ID=$(kubectl get nodes "${node}" -o yaml | yq '.spec.providerID | split("/") | .[-1]')
   if [[ -z "$INSTANCE_ID" ]]; then
-    echo "Unable to get instance ID for $node"
+    echoerr "Unable to get instance ID for $node"
     return 1
   fi
   local AWS_REGION=$(kubectl get nodes "${node}" -o json | jq '.metadata.labels["topology.kubernetes.io/region"]' -r)
   if [[ -z "$AWS_REGION" ]]; then
-    echo "Unable to get region for $node"
+    echoerr "Unable to get region for $node"
     return 1
   fi
   local CMD=(aws ssm start-session --target "$INSTANCE_ID" $@)
-  echo "${CMD[@]}"
+  echoerr "${CMD[@]}"
   # subshell to scope export
   (
     export AWS_REGION
@@ -236,10 +238,40 @@ function kssm() {
 function kssm-exec() {
   local node=${1:?Usage: kssm-exec <k8s-node_name> <args>}
   shift
-  PARAMETERS="$(jq -rnc '{command: $ARGS.positional}' --args $@)"
-  CMD=(kssm "${node}" --document-name AWS-StartNonInteractiveCommand --parameters "${PARAMETERS}")
-  echo "${CMD[@]}"
+  PARAMETERS="$(jq -rnc '{command: $ARGS.positional}' --args "$@")"
+  CMD=(kssm "${node}" --document-name AWS-StartInteractiveCommand --parameters "${PARAMETERS}")
+  echoerr "${CMD[@]}"
   "${CMD[@]}"
+}
+
+function kssm-ssh-copy-id() {
+  local node=${1:?Usage: kssm-exec <k8s-node_name> <key>}
+  local key_file=${2:-"${HOME}/.ssh/id_rsa.pub"}
+
+  KEY="$(cat "${key_file}")"
+  kssm-exec "${node}" "sudo [ ! -f /home/ec2-user/.ssh/authorized_keys ] || ! sudo grep -q '$KEY' /home/ec2-user/.ssh/authorized_keys && echo '$KEY' | sudo tee -a /home/ec2-user/.ssh/authorized_keys && echo key added || echo key already exists"
+}
+
+function kssm-ssh() {
+  local node=${1:?Usage: kssm-exec <k8s-node_name>}
+  shift
+  local INSTANCE_ID=$(kubectl get nodes "${node}" -o yaml | yq '.spec.providerID | split("/") | .[-1]')
+  if [[ -z "$INSTANCE_ID" ]]; then
+    echoerr "Unable to get instance ID for $node"
+    return 1
+  fi
+  local AWS_REGION=$(kubectl get nodes "${node}" -o json | jq '.metadata.labels["topology.kubernetes.io/region"]' -r)
+  if [[ -z "$AWS_REGION" ]]; then
+    echoerr "Unable to get region for $node"
+    return 1
+  fi
+  local CMD=(ssh "ec2-user@$INSTANCE_ID" "$@")
+  echoerr "${CMD[@]}"
+  # subshell to scope export
+  (
+    export AWS_REGION
+    "${CMD[@]}"
+  )
 }
 
 alias k=kubectl
@@ -261,7 +293,7 @@ if [[ -e "/Applications/Tailscale.app/Contents/MacOS/Tailscale" ]]; then
 fi
 
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
-command -v kitty >/dev/null && alias kssh="kitty +kitten ssh"
+command -v kitty >/dev/null && alias kittyssh="kitty +kitten ssh"
 
 if (( $+commands[nvim] )); then
     alias vim='nvim'
