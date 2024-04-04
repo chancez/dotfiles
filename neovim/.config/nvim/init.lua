@@ -430,7 +430,6 @@ local servers = {
       end
     end,
   },
-  tilt_ls = {},
   bufls = {},
   kotlin_language_server = {},
 }
