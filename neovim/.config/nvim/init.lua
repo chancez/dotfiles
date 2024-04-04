@@ -452,7 +452,7 @@ require("mason").setup({
 })
 
 require("mason-lspconfig").setup({
-  -- ensure_installed = get_keys(servers),
+  ensure_installed = vim.tbl_keys(servers),
   automatic_installation = true,
 })
 
