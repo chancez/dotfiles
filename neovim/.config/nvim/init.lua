@@ -393,9 +393,9 @@ local servers = {
     cmd = {"gopls", "serve"},
     settings = {
       gopls = {
-        env = {
-          GOFLAGS="-tags=e2e_tests,integration,linux,go1.17,e2e,hubble_cli_e2e",
-        },
+        -- env = {
+        --   GOFLAGS="-tags=e2e_tests,integration,linux,go1.17,e2e,hubble_cli_e2e",
+        -- },
         completeUnimported = true,
         analyses = {
           nilness = true,
