@@ -432,6 +432,12 @@ local servers = {
   },
   bufls = {},
   kotlin_language_server = {},
+  graphql = {
+    filetypes = { "typescript", "typescriptreact", "graphql" },
+    settings = {
+      ["graphql-config.load.legacy"] = true,
+    }
+  },
 }
 
 
