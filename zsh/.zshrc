@@ -72,7 +72,8 @@ fi
 path=(
   $HOME/.local/bin
   $HOME/.local/custom_bins
-  "$HOME/.krew/bin"
+  $HOME/.krew/bin
+  $HOME/.cargo/bin
   $GOBIN
   $brew_paths
   /snap/bin
@@ -180,6 +181,9 @@ else
   # fallback
   source_if_exists "$HOME/.fzf.zsh"
 fi
+
+
+source_if_exists "$HOME/.cargo/env"
 
 alias gst='git status'
 

@@ -8,7 +8,8 @@ java = '20'
 kubectl = '1.27'
 ruby = '3.1'
 neovim = "0.9"
-rust = 'stable'
+"npm:jwt-cli" = "latest"
+"go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.57.2"
 
 [settings]
 experimental = true
