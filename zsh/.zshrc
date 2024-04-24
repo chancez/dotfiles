@@ -279,6 +279,9 @@ function kssm-ssh() {
 }
 
 alias k=kubectl
+if command -v kubecolor >/dev/null 2>&1; then
+  alias kubectl="kubecolor"
+fi
 alias kc='switch'
 alias kns='switch namespace'
 alias tf=terraform
