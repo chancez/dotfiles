@@ -89,7 +89,7 @@ packer.startup(function(use)
   -- debug adapter protocol
   use 'mfussenegger/nvim-dap'
   use { 'leoluz/nvim-dap-go', requires = { 'mfussenegger/nvim-dap' } }
-  use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'} }
+  use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, "nvim-neotest/nvim-nio" }
 
   -- autocomplete
   use {
@@ -141,6 +141,7 @@ packer.startup(function(use)
       "nvim-treesitter/nvim-treesitter",
       "antoinemadec/FixCursorHold.nvim",
       "nvim-neotest/neotest-go",
+      "nvim-neotest/nvim-nio"
     }
   }
   use('mrjones2014/smart-splits.nvim')
