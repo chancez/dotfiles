@@ -1,4 +1,6 @@
 # Show the ~/Library folder
+set -x
+
 chflags nohidden ~/Library
 
 # Finder: Display full path in Finder title window
@@ -25,8 +27,6 @@ defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 defaults write com.apple.finder FXRemoveOldTrashItems -bool "true"
 # Don't show warning when changing extension
 defaults write com.apple.finder FXEnableExtensionChangeWarning -bool "false"
-# Show icon in finder title bar
-defaults write com.apple.universalaccess showWindowTitlebarIcons -bool "true"
 
 # Save screenshots in ~/screenshots
 mkdir -p "$HOME/screenshots"
@@ -35,16 +35,9 @@ defaults write com.apple.screencapture location -string "$HOME/screenshots"
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 
-# Safari: Enable the Develop menu and the Web Inspector
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
-# Safari: Show full URL
-defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool "true"
-
-# Trackpad: Enable two/three finger swipe between pages and four fingers between full screen apps/workspaces
-defaults write Apple Global Domain AppleEnableSwipeNavigateWithScrolls 1
-defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture 1
+# Trackpad: Two finger swipe for back/forth on pages (eg: Safari)
+defaults write "Apple Global Domain" AppleEnableSwipeNavigateWithScrolls 1
+# Trackpad: Four finger swipe to go between different workspaces
 defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerHorizSwipeGesture 2
 
 # Trackpad: speed
@@ -84,7 +77,7 @@ defaults write com.apple.dock magnification -int  1
 # mission control: Don’t automatically rearrange Spaces based on most recent use
 defaults write com.apple.dock mru-spaces -bool false
 # mission control: Displays have separate spaces
-defaults write com.apple.spaces spans-displays -bool true
+defaults write com.apple.spaces spans-displays -bool false
 
 # Hot corners
 # Possible values:
