@@ -43,7 +43,6 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool "true"
 
 # Trackpad: Enable two/three finger swipe between pages and four fingers between full screen apps/workspaces
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadFourFingerHorizSwipeGesture 2
 defaults write Apple Global Domain AppleEnableSwipeNavigateWithScrolls 1
 defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerHorizSwipeGesture 1
 defaults write com.apple.AppleMultitouchTrackpad TrackpadFourFingerHorizSwipeGesture 2
