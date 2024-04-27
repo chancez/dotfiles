@@ -751,6 +751,7 @@ vim.g.go_imports_autosave = 0
 vim.g.go_mod_fmt_autosave = 0
 vim.g.go_metalinter_enabled = {}
 vim.g.go_gopls_enabled = 0
+vim.g.go_def_mapping_enabled = 0
 
 -- pathfinder
 mapx.nnoremap('<leader>pe', ':PathfinderExplain<CR>', 'Explain pathfinder suggestions')
