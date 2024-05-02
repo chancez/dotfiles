@@ -10,6 +10,7 @@ ruby = '3.1'
 neovim = "0.9"
 "npm:jwt-cli" = "latest"
 "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.57.2"
+usage = "latest"
 
 [settings]
 experimental = true
