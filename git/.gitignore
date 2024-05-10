@@ -125,3 +125,4 @@ venv
 tf-plan
 kls_database.db
 .fuse_hidden*
+.aliases
