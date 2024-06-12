@@ -99,9 +99,12 @@ packer.startup(function(use)
       'hrsh7th/cmp-nvim-lsp', -- LSP source
       'hrsh7th/cmp-path', -- path source
       'hrsh7th/cmp-buffer', -- buffer source
-      {'tzachar/cmp-fuzzy-path', requires = {'tzachar/fuzzy.nvim'}} -- fuzzy path source
+      {'tzachar/cmp-fuzzy-path', requires = {'tzachar/fuzzy.nvim'}}, -- fuzzy path source
+      { 'zbirenbaum/copilot-cmp', requires = {'zbirenbaum/copilot.lua'}},
     },
   }
+
+  use 'zbirenbaum/copilot.lua'
 
   -- snippets
   use {
@@ -491,6 +494,18 @@ require"fidget".setup{}
 require('dap-go').setup()
 require("dapui").setup({})
 
+-- copilot.lua
+require("copilot").setup({
+  -- disable suggestions and panel since we're using cmp
+  suggestion = { enabled = false },
+  panel = { enabled = false },
+  filetypes = {
+    yaml = true,
+  },
+
+})
+require("copilot_cmp").setup()
+
 -- luasnip setup
 local luasnip = require 'luasnip'
 luasnip.config.set_config {
@@ -547,6 +562,7 @@ cmp.setup {
     { name = 'luasnip' },
     { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '20', '-p', '--no-ignore'}} },
     { name = 'buffer' },
+    { name = "copilot", group_index = 2 },
   },
 }
 
