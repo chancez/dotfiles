@@ -160,7 +160,6 @@ packer.startup(function(use)
   use 'hashivim/vim-terraform'
   use 'fladson/vim-kitty'
   use 'vito-c/jq.vim'
-  use 'fatih/vim-go'
 
   if PACKER_BOOTSTRAP then
     require("packer").sync()
@@ -743,15 +742,6 @@ mapx.cmdbang('ResizeMode', function() require("smart-splits").start_resize_mode(
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
-
--- vim-go
--- Disable most options on save/autocomplete since we're using lsp to handle these features.
-vim.g.go_code_completion_enabled = 0
-vim.g.go_imports_autosave = 0
-vim.g.go_mod_fmt_autosave = 0
-vim.g.go_metalinter_enabled = {}
-vim.g.go_gopls_enabled = 0
-vim.g.go_def_mapping_enabled = 0
 
 -- pathfinder
 mapx.nnoremap('<leader>pe', ':PathfinderExplain<CR>', 'Explain pathfinder suggestions')
