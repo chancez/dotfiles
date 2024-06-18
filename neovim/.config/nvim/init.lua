@@ -163,6 +163,7 @@ packer.startup(function(use)
   use 'hashivim/vim-terraform'
   use 'fladson/vim-kitty'
   use 'vito-c/jq.vim'
+  use 'HiPhish/jinja.vim'
 
   if PACKER_BOOTSTRAP then
     require("packer").sync()
