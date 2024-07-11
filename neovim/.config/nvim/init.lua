@@ -1069,8 +1069,11 @@ vim.cmd [[
 
 -- JQ formats JSON in the current buffer
 vim.cmd [[
-  " command! -nargs=* JQ execute '%!jq "<args>"'
   command! -nargs=* JQ execute '%!jq <args>'
+]]
+
+vim.cmd [[
+  command! -nargs=* YQ execute '%!yq <args>'
 ]]
 
 local function is_helm_file(path)
