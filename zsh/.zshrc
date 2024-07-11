@@ -278,6 +278,54 @@ function kssm-ssh() {
   )
 }
 
+function kube-get-pod-resources-json() {
+  kubectl get pods -o json "$@" \
+    | jq -r '
+      (
+        .items[]
+        | {
+          namespace: .metadata.namespace,
+                pod: .metadata.name,
+                resources: (
+                  .spec.containers[].resources
+                  | {
+                    memory_request: .requests.memory,
+                    cpu_request: .requests.cpu,
+                    memory_limit: .limits.memory
+                  }
+              )
+            }
+      )
+      '
+}
+
+function kube-get-pod-resources() {
+  kube-get-pod-resources-json $@ \
+    | jq -n -r '
+      ["NAMESPACE", "POD", "MEMORY_REQUEST", "CPU_REQUEST", "MEMORY_LIMIT"],
+      (
+        inputs
+        | [.namespace, .pod, (.resources | to_entries | map(.value // "unset"))[]]
+      )
+      | @tsv
+      ' \
+    | column -t -s $'\t'
+}
+
+function kube-get-pod-resources-missing() {
+  kube-get-pod-resources-json $@ \
+    | jq -n -r '
+      ["NAMESPACE", "POD", "MEMORY_REQUEST", "CPU_REQUEST", "MEMORY_LIMIT"],
+      (
+        inputs
+        | select(.resources | to_entries | select(any(.value==null)))
+        | [.namespace, .pod, (.resources | to_entries | map(.value // "unset"))[]]
+      )
+      | @tsv
+      ' \
+    | column -t -s $'\t'
+}
+
 alias k=kubectl
 if command -v kubecolor >/dev/null 2>&1; then
   alias kubectl="kubecolor"
