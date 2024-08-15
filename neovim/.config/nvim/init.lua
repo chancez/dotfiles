@@ -38,6 +38,8 @@ packer.startup(function(use)
   -- visual
   use 'navarasu/onedark.nvim'
   use 'norcalli/nvim-colorizer.lua'
+  use 'kyazdani42/nvim-web-devicons'
+
   use 'preservim/tagbar'
   use {
     'nvim-lualine/lualine.nvim',
@@ -131,8 +133,10 @@ packer.startup(function(use)
   use 'tpope/vim-commentary'
   use 'tpope/vim-eunuch'
   use 'junegunn/vim-easy-align'
-  use 'b0o/mapx.nvim'
-  use 'folke/which-key.nvim'
+  use {
+    'folke/which-key.nvim',
+    requires = {'kyazdani42/nvim-web-devicons', opt = true}
+  }
   use 'windwp/nvim-autopairs'
   use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
   use 'akinsho/toggleterm.nvim'
@@ -170,9 +174,7 @@ packer.startup(function(use)
   end
 end)
 
--- Load mapx and make it available
-require'mapx'.setup { whichkey = true }
-local mapx = require'mapx'
+local wk = require("which-key")
 
 -- misc global opts
 vim.opt.spell = true
@@ -224,7 +226,7 @@ vim.opt.foldopen = 'block,insert,jump,mark,percent,quickfix,search,tag,undo'
 vim.opt.foldenable = true
 vim.opt.foldlevelstart = 10 -- open most folds by default
 vim.opt.foldnestmax = 10 -- 10 nested fold max
-mapx.nnoremap('<space>', 'za', 'Toggle folds')
+wk.add({{'<space>', 'za', desc = 'Toggle folds', mode='n'}})
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
@@ -262,71 +264,66 @@ end
 local default_on_attach = function(client, bufnr)
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-  mapx.group({ buffer = bufnr }, function()
-    mapx.cmdbang('LspRename', 'lua vim.lsp.buf.rename()')
-    mapx.cmdbang('LspDeclaration', 'lua vim.lsp.buf.declaration()')
-    mapx.cmdbang('LspDefinition', 'lua require("telescope.builtin").lsp_definitions({fname_width=75})')
-    mapx.cmdbang('LspTypeDefinition', 'lua require("telescope.builtin").lsp_type_definitions()')
-    mapx.cmdbang('LspReferences', 'lua require("telescope.builtin").lsp_references({fname_width=75})')
-    mapx.cmdbang('LspImplementation', 'lua require("telescope.builtin").lsp_implementations()')
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspRename', function() vim.lsp.buf.rename() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspDeclaration', function() vim.lsp.buf.declaration() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspDefinition', function() require("telescope.builtin").lsp_definitions({fname_width=75}) end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspTypeDefinition', function() require("telescope.builtin").lsp_type_definitions() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspReferences', function() require("telescope.builtin").lsp_references({fname_width=75}) end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspImplementation', function() require("telescope.builtin").lsp_implementations() end, { bang = true })
 
-    mapx.cmdbang('LspCodeAction', 'lua vim.lsp.buf.code_action()')
-    mapx.cmdbang('LspHover', 'lua vim.lsp.buf.hover()')
-    mapx.cmdbang('LspSignatureHelp', 'lua vim.lsp.buf.signature_help()')
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspCodeAction', function() vim.lsp.buf.code_action() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspHover', function() vim.lsp.buf.hover() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspSignatureHelp', function() vim.lsp.buf.signature_help() end, { bang = true })
 
-    mapx.cmdbang('LspAddWorkspaceFolder', 'lua vim.lsp.buf.add_workspace_folder()')
-    mapx.cmdbang('LspRemoveWorkspaceFolder', 'lua vim.lsp.buf.remove_workspace_folder()')
-    mapx.cmdbang('LspListWorkspaceFolders', 'lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))')
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspAddWorkspaceFolder', function() vim.lsp.buf.add_workspace_folder() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspRemoveWorkspaceFolder', function() vim.lsp.buf.remove_workspace_folder() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspListWorkspaceFolders', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, { bang = true })
 
-    mapx.cmdbang('LspDocumentSymbols', 'lua require("telescope.builtin").lsp_document_symbols()')
-    mapx.cmdbang('LspWorkspaceSymbols', 'lua require("telescope.builtin").lsp_dynamic_workspace_symbols()')
-    mapx.cmdbang('LspIncomingCalls', 'lua require("telescope.builtin").lsp_incoming_calls()')
-    mapx.cmdbang('LspOutgoingCalls', 'lua require("telescope.builtin").lsp_outgoing_calls()')
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspDocumentSymbols', function() require("telescope.builtin").lsp_document_symbols() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspWorkspaceSymbols', function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end, { bang = true })
 
-    -- formatting
-    if client.server_capabilities.documentFormattingProvider then
-      mapx.cmdbang('LspFormat', 'lua vim.lsp.buf.format()')
-      mapx.cmdbang('LspOrgImports', 'lua OrgImports(3000)')
-      vim.api.nvim_command [[augroup Format]]
-      vim.api.nvim_command [[autocmd! * <buffer>]]
-      vim.api.nvim_command [[autocmd BufWritePre *.go lua OrgImports(1000)]]
-      vim.api.nvim_command [[autocmd BufWritePre *.go lua vim.lsp.buf.format({timeout_ms=2000})]]
-      vim.api.nvim_command [[augroup END]]
-    end
+  -- formatting
+  if client.server_capabilities.documentFormattingProvider then
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, { bang = true })
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() OrgImports(3000) end, { bang = true })
+    vim.api.nvim_create_autocmd({'BufWritePre'}, {
+      -- buffer = bufnr,
+      group = 'CodeFormat',
+      pattern = {"*.go"},
+      callback = function()
+        OrgImports(1000)
+        vim.lsp.buf.format({timeout_ms=2000})
+      end
+    })
+  end
 
-    mapx.group("silent", function()
-      mapx.nnoremap('<leader>rn', '<cmd>LspRename<CR>', 'LspRename')
-      mapx.nnoremap('gD', '<cmd>LspDeclaration<CR>', 'LspDeclaration')
-      mapx.nnoremap('gd', '<cmd>LspDefinition<CR>', 'LspDefinition')
-      mapx.nnoremap('<leader>D', '<cmd>LspTypeDefinition<CR>', 'LspTypeDefinition')
-      mapx.nnoremap('gr', '<cmd>LspReferences<CR>', 'LspReferences')
-      mapx.nnoremap('gi', '<cmd>LspImplementation<CR>', 'LspImplementation')
+  wk.add({
+    mode='n',
+    silent = true,
+    buffer = bufnr,
+    {'<leader>rn', '<cmd>LspRename<CR>', desc = 'LspRename'},
+    {'gD', '<cmd>LspDeclaration<CR>', desc = 'LspDeclaration'},
+    {'gd', '<cmd>LspDefinition<CR>', desc = 'LspDefinition'},
+    {'<leader>D', '<cmd>LspTypeDefinition<CR>', desc = 'LspTypeDefinition'},
+    {'gr', '<cmd>LspReferences<CR>', desc = 'LspReferences'},
+    {'gi', '<cmd>LspImplementation<CR>', desc = 'LspImplementation'},
 
-      mapx.nnoremap('<leader>ca', '<cmd>LspCodeAction<CR>', 'LspCodeAction')
-      mapx.nnoremap('K', '<cmd>LspHover<CR>', 'LspHover')
-      mapx.nnoremap('<C-k>', '<cmd>LspSignatureHelp<CR>', 'LspSignatureHelp')
+    {'<leader>ca', '<cmd>LspCodeAction<CR>', desc = 'LspCodeAction'},
+    {'K', '<cmd>LspHover<CR>', desc = 'LspHover'},
+    {'<C-k>', '<cmd>LspSignatureHelp<CR>', desc = 'LspSignatureHelp'},
 
-      mapx.nnoremap('<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', 'LspAddWorkspaceFolder')
-      mapx.nnoremap('<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', 'LspRemoveWorkspaceFolder')
-      mapx.nnoremap('<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', 'LspListWorkspaceFolders')
+    {'<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', desc = 'LspAddWorkspaceFolder'},
+    {'<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', desc = 'LspRemoveWorkspaceFolder'},
+    {'<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', desc = 'LspListWorkspaceFolders'},
 
-      mapx.nnoremap('<leader>so', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
-      mapx.nnoremap('<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
-      mapx.nnoremap('<m-O>', '<cmd>LspDocumentSymbols<CR>', 'LspDocumentSymbols')
-      mapx.nnoremap('<m-p>', '<cmd>LspWorkspaceSymbols<CR>', 'LspWorkspaceSymbols')
-    end)
-  end)
+    {'<leader>so', '<cmd>LspDocumentSymbols<CR>', desc = 'LspDocumentSymbols'},
+    {'<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', desc = 'LspWorkspaceSymbols'},
+    {'<m-O>', '<cmd>LspDocumentSymbols<CR>', desc = 'LspDocumentSymbols'},
+    {'<m-p>', '<cmd>LspWorkspaceSymbols<CR>', desc = 'LspWorkspaceSymbols'},
+  })
 end
-
--- Diagnostic keymaps
-mapx.cmdbang('Diagnostics', 'lua require("telescope.builtin").diagnostics()')
-mapx.group("silent", function()
-  mapx.nnoremap('<leader>d', '<cmd>Diagnostics<CR>', 'Diagnostics')
-  mapx.nnoremap('[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', 'Diagnostics goto previous')
-  mapx.nnoremap(']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', 'Diagnostics goto next')
-  mapx.nnoremap('<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', 'Diagnostics loclist')
-end)
-
 
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
@@ -660,114 +657,131 @@ require('smart-splits').setup({
 -- mappings
 
 -- Whichkey
-mapx.nmap('<leader>w', ':WhichKey<CR>', 'silent', 'Open WhichKey')
+wk.add({
+  {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
 
-mapx.nnoremap('<leader>ev', ':e $MYVIMRC<CR>', 'Edit neovim init.lua')
-mapx.nnoremap('<leader>sv', ':source $MYVIMRC<CR>', 'Reload neovim init.lua')
-mapx.nnoremap('<leader>ps', ':source $MYVIMRC<CR>:PackerSync<CR>', 'Reload init.lua and run PackerSync')
-mapx.nnoremap('<leader>pc', ':source $MYVIMRC<CR>:PackerCompile<CR>', 'Reload init.lua and run PackerCompile')
+  {'<leader>ev', ':e $MYVIMRC<CR>', desc = 'Edit neovim init.lua', mode='n'},
+  {'<leader>sv', ':source $MYVIMRC<CR>', desc = 'Reload neovim init.lua', mode='n'},
+  {'<leader>ps', ':source $MYVIMRC<CR>:PackerSync<CR>', desc = 'Reload init.lua and run PackerSync', mode='n'},
+  {'<leader>pc', ':source $MYVIMRC<CR>:PackerCompile<CR>', desc = 'Reload init.lua and run PackerCompile', mode='n'},
 
--- Get rid of annoying mistakes
-mapx.cmap('WQ', 'wq')
-mapx.cmap('wQ', 'wq')
-mapx.nnoremap(';', ':')
-mapx.vnoremap(';', ':')
-mapx.nnoremap(';;', ';')
-mapx.vnoremap(';;', ';')
-mapx.nnoremap(',,', ',')
-mapx.vnoremap(',,', ',')
-mapx.nnoremap(';', ':')
+  -- Get rid of annoying mistakes
+  {'WQ', 'wq', mode='c'},
+  {'wQ', 'wq', mode='c'},
+  {';', ':', mode={'n'}},
+  {';;', ';', mode={'n'}},
+  {',,', ',', mode={'n'}},
+  {';', ':', mode='n'},
 
--- window movement
-mapx.nmap('<A-h>', '<c-w>h')
-mapx.nmap('<A-j>', '<c-w>j')
-mapx.nmap('<A-k>', '<c-w>k')
-mapx.nmap('<A-l>', '<c-w>l')
+  -- window movement
+  {'<A-h>', '<c-w>h', mode='n'},
+  {'<A-j>', '<c-w>j', mode='n'},
+  {'<A-k>', '<c-w>k', mode='n'},
+  {'<A-l>', '<c-w>l', mode='n'},
 
--- this maps leader + esc to exit terminal mode
-mapx.tnoremap('<leader><Esc>', '<C-\\><C-n>')
--- This makes navigating windows the same no matter if they are displaying
--- a normal buffer or a terminal buffer
--- Move around windows in terminal
-mapx.tnoremap('<A-h>', '<C-\\><C-n><C-w>h')
-mapx.tnoremap('<A-j>', '<C-\\><C-n><C-w>j')
-mapx.tnoremap('<A-k>', '<C-\\><C-n><C-w>k')
-mapx.tnoremap('<A-l>', '<C-\\><C-n><C-w>l')
+  -- this maps leader + esc to exit terminal mode
+  {'<leader><Esc>', '<C-\\><C-n>', mode='t'},
+  -- This makes navigating windows the same no matter if they are displaying
+  -- a normal buffer or a terminal buffer
+  -- Move around windows in terminal
+  {'<A-h>', '<C-\\><C-n><C-w>h', mode='t'},
+  {'<A-j>', '<C-\\><C-n><C-w>j', mode='t'},
+  {'<A-k>', '<C-\\><C-n><C-w>k', mode='t'},
+  {'<A-l>', '<C-\\><C-n><C-w>l', mode='t'},
 
--- Buffer movement
-mapx.nmap('<m-]>', ':bnext<CR>', 'Next buffer')
-mapx.nmap('<m-[>', ':bprev<CR>', 'Previous buffer')
+  -- Buffer movement
+  {'<m-]>', ':bnext<CR>', desc = 'Next buffer', mode='n'},
+  {'<m-[>', ':bprev<CR>', desc = 'Previous buffer', mode='n'},
 
--- Indenting Move to next/previous line with same indentation
-mapx.nnoremap('<M-,>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%<' . line('.') . 'l\S', 'be')<CR>]], 'Move to next line with same indentation')
-mapx.nnoremap('<M-.>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%>' . line('.') . 'l\S', 'e')<CR>]], 'Move to previous line with same indentation')
+  -- Indenting Move to next/previous line with same indentation
+  {'<M-,>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%<' . line('.') . 'l\S', 'be')<CR>]], desc = 'Move to next line with same indentation', mode='n'},
+  {'<M-.>', [[:call search('^'. matchstr(getline('.'), '\(^\s*\)') .'\%>' . line('.') . 'l\S', 'e')<CR>]], desc = 'Move to previous line with same indentation', mode='n'},
 
--- Wrapped lines goes down/up to next row, rather than next line in file.
-mapx.nnoremap('j', 'gj')
-mapx.nnoremap('k', 'gk')
+  -- Wrapped lines goes down/up to next row, rather than next line in file.
+  {'j', 'gj', mode='n'},
+  {'k', 'gk', mode='n'},
 
--- Make Y behave like other capitals
-mapx.nnoremap('Y', 'y$')
+  -- Make Y behave like other capitals
+  {'Y', 'y$', mode='n'},
 
--- Reselect visual block after indent
-mapx.vnoremap('<', '<gv')
-mapx.vnoremap('>', '>gv')
+  -- Reselect visual block after indent
+  {'<', '<gv', mode='n'},
+  {'>', '>gv', mode='n'},
 
--- Escape insert by hitting jj
-mapx.inoremap('jj', '<ESC>')
--- Clear the current search highlights
-mapx.nmap('<leader>/', ':nohlsearch<CR>', 'silent', 'Clear search hightlights')
--- clear hlsearch on redraw
-mapx.nnoremap('<C-L>', ':nohlsearch<CR><C-L>', 'Clear search hightlights')
+  -- Escape insert by hitting jj
+  {'jj', '<ESC>', mode='i'},
+  --
+  -- Clear the current search highlights
+  {'<leader>/', ':nohlsearch<CR>', desc = 'Clear search hightlights', mode='n', { silent = true }},
+  -- clear hlsearch on redraw
+  {'<C-L>', ':nohlsearch<CR><C-L>', desc = 'Clear search hightlights', mode='n'},
 
--- easy align
-mapx.xmap('ga', '<Plug>(EasyAlign)', 'Easy align')
-mapx.nmap('ga', '<Plug>(EasyAlign)', 'Easy align')
+  -- easy align
+  {'ga', '<Plug>(EasyAlign)', desc = 'Easy align', mode={'n', 'x'}},
 
--- vim commentary
-mapx.nmap('<M-/>', ':Commentary<CR>', 'silent')
-mapx.vmap('<M-/>', ':Commentary<CR>', 'silent')
+  -- vim commentary
+  {'<M-/>', ':Commentary<CR>', mode={'n', 'v'}, { silent = true }},
 
--- tagbar
-mapx.map('<m-e>', ':TagbarToggle<CR>', 'silent')
+  -- tagbar
+  {'<m-e>', ':TagbarToggle<CR>', mode='nvo', { silent = true }},
 
--- symbols outline
-mapx.map('<m-r>', ':SymbolsOutline<CR>', 'silent')
+  -- symbols outline
+  {'<m-r>', ':SymbolsOutline<CR>', mode='nvo', { silent = true }},
+})
+
+-- dap commands
 
 -- dap-go
-mapx.cmdbang('DapGoTest', 'lua require("dap-go").debug_test()')
-mapx.cmdbang('DapUIOpen', 'lua require("dapui").open({reset=true})')
+local dapGo = require('dap-go')
+vim.api.nvim_create_user_command('DapGoTest', function() dapGo.debug_test() end, { bang = true })
+
 -- dap-ui
-mapx.cmdbang('DapUIClose', 'lua require("dapui").close()')
-mapx.cmdbang('DapUIToggle', 'lua require("dapui").toggle()')
-mapx.cmdbang('DapUIEval', 'lua require("dapui").eval()')
+local dapUI = require('dapui')
+vim.api.nvim_create_user_command('DapUIOpen', function() dapUI.open({reset=true}) end, { bang = true })
+vim.api.nvim_create_user_command('DapUIClose', function() dapUI.close() end, { bang = true })
+vim.api.nvim_create_user_command('DapUIToggle', function() dapUI.toggle() end, { bang = true })
+vim.api.nvim_create_user_command('DapUIEval', function() dapUI.eval() end, { bang = true })
 
 -- neotest
-mapx.cmdbang('TestNearest', 'lua require("neotest").run.run()')
-mapx.cmdbang('TestFile', 'lua require("neotest").run.run(vim.fn.expand("%"))')
-mapx.cmdbang('TestDirectory', 'lua require("neotest").run.run(vim.fn.expand("%:p:h"))')
-mapx.cmdbang('TestSuite', 'lua require("neotest").run.run(vim.fn.getcwd())')
-mapx.cmdbang('TestOpen', 'lua require("neotest").output.open()')
-mapx.map('gtn', ':TestNearest<CR>', 'silent')
-mapx.map('gtf', ':TestFile<CR>', 'silent')
-mapx.map('gtd', ':TestDirectory<CR>', 'silent')
-mapx.map('gts', ':TestSuite<CR>', 'silent')
-mapx.map('gto', ':TestOpen<CR>', 'silent')
+local neotest = require('neotest')
+vim.api.nvim_create_user_command('TestNearest', function() neotest.run.run() end, { bang = true })
+vim.api.nvim_create_user_command('TestFile', function() neotest.run.run(vim.fn.expand("%")) end, { bang = true })
+vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end, { bang = true })
+vim.api.nvim_create_user_command('TestSuite', function() neotest.run.run(vim.fn.getcwd()) end, { bang = true })
+vim.api.nvim_create_user_command('TestOpen', function() neotest.output.open() end, { bang = true })
+
+-- dap mappings
+wk.add({
+  silent = true,
+  mode = 'nvo',
+  {'gtn', ':TestNearest<CR>'},
+  {'gtf', ':TestFile<CR>'},
+  {'gtd', ':TestDirectory<CR>'},
+  {'gts', ':TestSuite<CR>'},
+  {'gto', ':TestOpen<CR>'},
+
+})
+
 
 -- resize-mode
-mapx.cmdbang('ResizeMode', function() require("smart-splits").start_resize_mode() end)
+local smartSplits = require("smart-splits")
+vim.api.nvim_create_user_command('ResizeMode', function() smartSplits.start_resize_mode() end, { bang = true })
 
 -- vim-maximizer
 vim.g.maximizer_default_mapping_key = '<c-w>0'
 
 -- pathfinder
-mapx.nnoremap('<leader>pe', ':PathfinderExplain<CR>', 'Explain pathfinder suggestions')
+wk.add({
+  {'<leader>pe', ':PathfinderExplain<CR>', desc = 'Explain pathfinder suggestions', mode='n'}
+})
 
 -- colorscheme
 require('onedark').setup {
   style = 'dark'
 }
 require('onedark').load()
+
+-- require'nvim-web-devicons'.setup()
 
 -- lualine
 require'lualine'.setup {
@@ -795,12 +809,8 @@ require'lualine'.setup {
     lualine_z = {'tabs'}
   }
 }
-require("ibl").setup {
-  -- indent = { char = " " },
-  -- space_char_blankline = " ",
-  -- show_current_context = true,
-  -- show_current_context_start = false,
-}
+
+require("ibl").setup {}
 
 require('marks').setup {
   default_mappings = false,
@@ -865,7 +875,7 @@ function ToggleTerm_send_lines_to_terminal(selection_type, trim_spaces, cmd_data
   vim.api.nvim_win_set_cursor(current_window, { start_line, start_col })
 end
 
-mapx.cmdbang('ToggleTermSendCurrentBuffer', function(args) ToggleTerm_send_lines_to_terminal("current_buffer", false, args) end)
+vim.api.nvim_create_user_command('ToggleTermSendCurrentBuffer', function(cmd) ToggleTerm_send_lines_to_terminal("current_buffer", false, cmd.args) end, { bang = true })
 
 -- gitsigns
 require('gitsigns').setup()
@@ -875,8 +885,10 @@ require('colorizer').setup()
 
 -- telescope
 local actions = require("telescope.actions")
+local telescope = require('telescope')
+local telescopeBuiltin = require('telescope.builtin')
 
-require('telescope').setup {
+telescope.setup {
   extensions = {
     fzf = {
       fuzzy = true,
@@ -927,25 +939,39 @@ require('telescope').setup {
   },
 }
 
-require('telescope').load_extension('fzf')
+telescope.load_extension('fzf')
 require("telescope").load_extension('file_browser')
-require('telescope').load_extension('dap')
+telescope.load_extension('dap')
 
-mapx.nnoremap('<c-p>', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
-mapx.nnoremap('<m-o>', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
-mapx.nnoremap('<c-b>', "<cmd>lua require('telescope.builtin').current_buffer_fuzzy_find()<cr>", 'Telescope current_buffer_fuzzy_find')
-mapx.nnoremap('<c-g>', "<cmd>lua require('telescope.builtin').grep_string()<cr>", 'Telescope grep_string')
-mapx.nnoremap('<m-;>', "<cmd>lua require('telescope.builtin').command_history()<cr>", 'Telescope command_history')
-mapx.nnoremap('<m-c>', "<cmd>lua require('telescope.builtin').commands()<cr>", 'Telescope commands')
+vim.api.nvim_create_user_command('Diagnostics', function() telescopeBuiltin.diagnostics() end, {})
+wk.add({
+  mode =  'n',
+  {'<c-p>', function() telescopeBuiltin.find_files() end, desc = 'Telescope find_files'},
+  {'<m-o>', function() telescopeBuiltin.buffers() end, desc = 'Telescope buffers'},
+  {'<c-b>', function() telescopeBuiltin.current_buffer_fuzzy_find() end, desc = 'Telescope current_buffer_fuzzy_find'},
+  {'<c-g>', function() telescopeBuiltin.grep_string() end, desc = 'Telescope grep_string'},
+  {'<m-;>', function() telescopeBuiltin.command_history() end, desc = 'Telescope command_history'},
+  {'<m-c>', function() telescopeBuiltin.commands() end, desc = 'Telescope commands'},
 
-mapx.nnoremap('<leader>ff', "<cmd>lua require('telescope.builtin').find_files()<cr>", 'Telescope find_files')
-mapx.nnoremap('<leader>fg', "<cmd>lua require('telescope.builtin').live_grep()<cr>", 'Telescope live_grep')
-mapx.nnoremap('<leader>fB', "<cmd>lua require('telescope.builtin').buffers()<cr>", 'Telescope buffers')
-mapx.nnoremap('<leader>fh', "<cmd>lua require('telescope.builtin').help_tags()<cr>", 'Telescope help_tags')
-mapx.nnoremap('<leader>fr', "<cmd>lua require('telescope.builtin').registers()<cr>", 'Telescope registers')
-mapx.nnoremap('<leader>fm', "<cmd>lua require('telescope.builtin').marks()<cr>", 'Telescope marks')
+  {'<leader>ff', function() telescopeBuiltin.find_files() end, desc = 'Telescope find_files'},
+  {'<leader>fg', function() telescopeBuiltin.live_grep() end, desc = 'Telescope live_grep'},
+  {'<leader>fB', function() telescopeBuiltin.buffers() end, desc = 'Telescope buffers'},
+  {'<leader>fh', function() telescopeBuiltin.help_tags() end, desc = 'Telescope help_tags'},
+  {'<leader>fr', function() telescopeBuiltin.registers() end, desc = 'Telescope registers'},
+  {'<leader>fm', function() telescopeBuiltin.marks() end, desc = 'Telescope marks'},
 
-mapx.nnoremap('<leader>fb', "<cmd>lua require('telescope').extensions.file_browser.file_browser()<cr>", 'Telescope file_browser')
+  {'<leader>fb', function() telescope.extensions.file_browser.file_browser() end, desc = 'Telescope file_browser'},
+})
+
+-- Diagnostic keymaps
+wk.add({
+  mode =  'n',
+  silent = true,
+  {'<leader>d', function() telescopeBuiltin.diagnostics() end, desc = 'Diagnostics'},
+  {'[d', function() vim.diagnostic.goto_prev() end, desc = 'Diagnostics goto previous'},
+  {']d', function() vim.diagnostic.goto_next() end, desc = 'Diagnostics goto next'},
+  {'<leader>q', function() vim.diagnostic.setloclist() end, desc = 'Diagnostics loclist'},
+})
 
 -- Custom parsers
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
