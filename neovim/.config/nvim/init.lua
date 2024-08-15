@@ -670,9 +670,9 @@ wk.add({
   -- Get rid of annoying mistakes
   {'WQ', 'wq', mode='c'},
   {'wQ', 'wq', mode='c'},
-  {';', ':', mode={'n'}},
-  {';;', ';', mode={'n'}},
-  {',,', ',', mode={'n'}},
+  {';', ':', mode={'n', 'v'}},
+  {';;', ';', mode={'n', 'v'}},
+  {',,', ',', mode={'n', 'v'}},
   {';', ':', mode='n'},
 
   -- window movement
@@ -707,8 +707,8 @@ wk.add({
   {'Y', 'y$', mode='n'},
 
   -- Reselect visual block after indent
-  {'<', '<gv', mode='n'},
-  {'>', '>gv', mode='n'},
+  {'<', '<gv', mode='v'},
+  {'>', '>gv', mode='v'},
 
   -- Escape insert by hitting jj
   {'jj', '<ESC>', mode='i'},
