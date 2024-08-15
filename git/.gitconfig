@@ -7,6 +7,7 @@
   ui = true
 [core]
   excludesfile = ~/.gitignore
+  untrackedCache = true
 [mergetool "nvim"]
   cmd = nvim -f -c \"Gvdiffsplit!\" \"$MERGED\"
 [mergetool]
