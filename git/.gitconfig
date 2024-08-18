@@ -15,7 +15,7 @@
 [merge]
   tool = nvim
   log = true
-  conflictstyle = zdiff3
+  # conflictstyle = zdiff3
 [diff]
   compactionHeuristic = true
   algorithm = histogram
