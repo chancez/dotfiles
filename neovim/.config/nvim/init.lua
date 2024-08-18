@@ -554,6 +554,9 @@ cmp.setup {
       end
     end,
   },
+  performance = {
+    fetching_timeout = 500,
+  },
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
