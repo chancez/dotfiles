@@ -287,6 +287,7 @@ local default_on_attach = function(client, bufnr)
   if client.server_capabilities.documentFormattingProvider then
     vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, { bang = true })
     vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() OrgImports(3000) end, { bang = true })
+    vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({'BufWritePre'}, {
       -- buffer = bufnr,
       group = 'CodeFormat',
