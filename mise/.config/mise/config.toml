@@ -9,7 +9,8 @@ kubectl = '1.28'
 ruby = '3.1'
 neovim = "0.10"
 "npm:jwt-cli" = "latest"
-"go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.60.3"
+golangci-lint = "latest"
+# "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.59.1"
 usage = "latest"
 go = "1.23"
 
