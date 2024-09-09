@@ -152,6 +152,7 @@ packer.startup(function(use)
   }
   use('mrjones2014/smart-splits.nvim')
   use 'nicwest/vim-camelsnek'
+  use 'stevearc/qf_helper.nvim'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -657,6 +658,17 @@ require('smart-splits').setup({
   },
 })
 
+-- quickfix
+require("qf_helper").setup()
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function(args)
+    wk.add({
+      {'dd', ':Reject<cr>', buffer=args.buf}
+    })
+    -- vim.keymap.set('n', 'dd', ':Reject<cr>', { buffer = args.buf })
+  end
+})
 -- mappings
 
 -- Whichkey
@@ -920,6 +932,10 @@ telescope.setup {
         -- disable c-d because we don't have c-u mapped
         ["<C-d>"] = false,
         ["<esc>"] = actions.close,
+        ["<S-esc>"] = function ()
+          -- exit insert mode
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-[>", true, false, true), "n", true)
+        end,
         ["<C-h>"] = "which_key",
         ["<C-s>"] = actions.cycle_previewers_next,
         ["<C-a>"] = actions.cycle_previewers_prev,
