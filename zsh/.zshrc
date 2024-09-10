@@ -61,7 +61,7 @@ cdpath=(
 
 # Add mise shims to $PATH instead of using mise activate/mise hook-env, as it interfers with kitten ssh
 mise_path=()
-if (( $+commands[mise] )); then
+if [[ -d "$HOME/.local/share/mise/shims" ]]; then
   mise_path=( "$HOME/.local/share/mise/shims" )
 fi
 
