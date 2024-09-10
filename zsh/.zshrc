@@ -59,6 +59,12 @@ cdpath=(
   $HOME/go/src/github.com
 )
 
+# Add mise shims to $PATH instead of using mise activate/mise hook-env, as it interfers with kitten ssh
+mise_path=()
+if (( $+commands[mise] )); then
+  mise_path=( "$HOME/.local/share/mise/shims" )
+fi
+
 # Set the list of directories that Zsh searches for programs.
 brew_paths=()
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
@@ -70,6 +76,7 @@ if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   )
 fi
 path=(
+  $mise_path
   $HOME/.local/bin
   $HOME/.local/custom_bins
   $HOME/.krew/bin
@@ -161,7 +168,6 @@ if ! zgenom saved; then
   (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
   (( $+commands[hubble] )) && zgenom eval --name hubble < <(hubble completion zsh; echo compdef _hubble hubble)
   (( $+commands[jump] )) && zgenom eval --name jump < <(jump shell)
-  (( $+commands[mise] )) && zgenom eval --name mise < <(mise activate zsh; mise hook-env)
   (( $+commands[kitty] )) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   zgenom eval-if-exists zsh_work "$HOME/.zshrc_work"
   (( $+commands[crc] )) && zgenom eval --name crc < <(crc completion zsh)
