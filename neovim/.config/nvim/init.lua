@@ -366,7 +366,7 @@ local servers = {
   },
   rust_analyzer = {},
   pyright = {},
-  tsserver  = {},
+  ts_ls  = {},
   bashls  = {},
   dockerls  = {},
   jsonnet_ls = {},
