@@ -153,6 +153,7 @@ packer.startup(function(use)
   use('mrjones2014/smart-splits.nvim')
   use 'nicwest/vim-camelsnek'
   use 'stevearc/qf_helper.nvim'
+  use 'ojroques/nvim-osc52'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
@@ -236,6 +237,12 @@ vim.opt.listchars:append("space:⋅")
 
 -- clipboard
 if vim.fn.has('unnamedplus') then vim.o.clipboard = 'unnamedplus' else vim.o.clipboard = 'unnamed' end
+
+local osc52 = require('osc52')
+wk.add({
+  {'<leader>c', function() osc52.copy_operator() end, desc = 'Copy to clipboard with OSC52'},
+  {'<leader>c', function() osc52.copy_visual() end, desc = 'Copy to clipboard with OSC52', mode='v'},
+})
 
 -- leader
 vim.g.mapleader = ','
@@ -594,7 +601,7 @@ cmp.setup.cmdline(':', {
     ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
   },
   sources = {
-    { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '20', '-p', '--no-ignore'}} },
+    { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '10', '-p', '--no-ignore'}} },
     { name = 'cmdline' },
   }
 })
