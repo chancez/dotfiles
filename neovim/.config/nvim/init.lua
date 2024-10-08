@@ -232,6 +232,8 @@ wk.add({{'<space>', 'za', desc = 'Toggle folds', mode='n'}})
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
+vim.cmd [[ packadd cfilter ]]
+
 -- indent-blankline
 vim.opt.list = true
 vim.opt.listchars:append("space:⋅")
@@ -404,9 +406,9 @@ local servers = {
     cmd = {"gopls", "serve"},
     settings = {
       gopls = {
-        -- env = {
-        --   GOFLAGS="-tags=e2e_tests,integration,linux,go1.17,e2e,hubble_cli_e2e",
-        -- },
+        buildFlags = {
+          "-tags=e2e_tests,integration,e2e,hubble_cli_e2e,enterprise_hubble_rbac_e2e,enterprise_integrated_timescape_e2e",
+        },
         completeUnimported = true,
         analyses = {
           nilness = true,
