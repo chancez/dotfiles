@@ -631,7 +631,13 @@ vim.diagnostic.config({
 
 require('neotest').setup({
   adapters = {
-    require('neotest-go'),
+    require('neotest-go')({
+      recursive_run = true,
+    }),
+  },
+  quickfix = {
+    enabled = true,
+    open = true
   },
   icons = {
     passed = "",
@@ -773,7 +779,9 @@ vim.api.nvim_create_user_command('TestNearest', function() neotest.run.run() end
 vim.api.nvim_create_user_command('TestFile', function() neotest.run.run(vim.fn.expand("%")) end, { bang = true })
 vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end, { bang = true })
 vim.api.nvim_create_user_command('TestSuite', function() neotest.run.run(vim.fn.getcwd()) end, { bang = true })
-vim.api.nvim_create_user_command('TestOpen', function() neotest.output.open() end, { bang = true })
+vim.api.nvim_create_user_command('TestOpen', function() neotest.output.toggle() end, { bang = true })
+vim.api.nvim_create_user_command('TestOutput', function() neotest.output_panel.toggle() end, { bang = true })
+vim.api.nvim_create_user_command('TestSummary', function() neotest.summary.toggle() end, { bang = true })
 
 -- dap mappings
 wk.add({
@@ -784,6 +792,8 @@ wk.add({
   {'gtd', ':TestDirectory<CR>'},
   {'gts', ':TestSuite<CR>'},
   {'gto', ':TestOpen<CR>'},
+  {'gtO', ':TestOutput<CR>'},
+  {'gtS', ':TestSummary<CR>'},
 
 })
 
