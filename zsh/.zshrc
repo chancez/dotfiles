@@ -177,6 +177,9 @@ if ! zgenom saved; then
   zgenom save
 fi
 
+# Disable warning when using > and >>
+unsetopt noclobber
+
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
 
 if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
