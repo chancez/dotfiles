@@ -154,6 +154,7 @@ packer.startup(function(use)
   use 'nicwest/vim-camelsnek'
   use 'stevearc/qf_helper.nvim'
   use 'ojroques/nvim-osc52'
+  use 'lambdalisue/vim-suda'
 
   -- multicursor support like sublime text
   use 'mg979/vim-visual-multi'
