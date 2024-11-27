@@ -81,6 +81,7 @@ path=(
   $HOME/.local/custom_bins
   $HOME/.krew/bin
   $HOME/.cargo/bin
+  "/Applications/Android Studio.app/Contents/MacOS"
   $GOBIN
   $brew_paths
   /snap/bin
