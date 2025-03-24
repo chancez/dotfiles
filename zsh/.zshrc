@@ -350,6 +350,7 @@ alias ../..='cd ../..'
 # time aliases
 alias zur='TZ=Europe/Zurich date'
 alias pst='TZ=Etc/GMT-8 date'
+alias est='TZ=Etc/GMT-5 date'
 alias utc='TZ=Etc/UTC date'
 alias cppwd="pwd | tee /dev/stderr | tr -d '\n' | pbcopy"
 
@@ -445,3 +446,27 @@ fi
 
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
+
+function correct_git_commands() {
+  local final_command=()
+  local changes_made=false
+  for arg in "$@"; do
+    # if arg starts with refs/heads or if it's a path then we don't need to modify it
+    if [[ "$arg" == refs/heads/* || "$arg" == */head* ]]; then
+      final_command+=("$arg")
+      continue
+    fi
+    # Use parameter substitution to replace 'head' with 'HEAD' in the argument
+    corrected_arg="${arg//head/HEAD}"
+    final_command+=("$corrected_arg")
+    if [[ "$corrected_arg" != "$arg" ]]; then
+      changes_made=true
+    fi
+  done
+  if $changes_made; then
+    echo "Executing corrected command: git ${final_command[*]}"
+  fi
+  command git "${final_command[@]}"
+}
+
+alias git=correct_git_commands
