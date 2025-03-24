@@ -983,6 +983,7 @@ require("telescope").load_extension('file_browser')
 telescope.load_extension('dap')
 
 vim.api.nvim_create_user_command('Diagnostics', function() telescopeBuiltin.diagnostics() end, {})
+vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end , {})
 wk.add({
   mode =  'n',
   {'<c-p>', function() telescopeBuiltin.find_files() end, desc = 'Telescope find_files'},
