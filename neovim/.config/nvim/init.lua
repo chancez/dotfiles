@@ -443,7 +443,7 @@ local servers = {
       end
     end,
   },
-  bufls = {},
+  buf_ls = {},
   kotlin_language_server = {},
   graphql = {
     filetypes = { "typescript", "typescriptreact", "graphql" },
