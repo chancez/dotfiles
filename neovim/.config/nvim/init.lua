@@ -77,7 +77,14 @@ require("lazy").setup({
     { 'onsails/lspkind-nvim' },
     { 'j-hui/fidget.nvim' },
     { 'williamboman/mason.nvim' },
-    { 'williamboman/mason-lspconfig.nvim' , dependencies = { 'williamboman/mason.nvim' } },
+    {
+        "mason-org/mason-lspconfig.nvim",
+        opts = {},
+        dependencies = {
+            { "mason-org/mason.nvim" },
+            "neovim/nvim-lspconfig",
+        },
+    },
 
     -- debug adapter protocol
     { 'mfussenegger/nvim-dap' },
