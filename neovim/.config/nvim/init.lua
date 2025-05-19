@@ -423,7 +423,6 @@ local servers = {
       },
     },
   },
-  golangci_lint_ls = {},
   yamlls = {
     filetypes = { 'yaml', 'yaml.docker-compose', 'helm.yaml' },
     settings = {
