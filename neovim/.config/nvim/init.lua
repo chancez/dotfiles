@@ -466,6 +466,7 @@ require("mason").setup({
 require("mason-lspconfig").setup({
   ensure_installed = vim.tbl_keys(servers),
   automatic_installation = true,
+  automatic_enable = false,
 })
 
 for server_name, server_specific_opts in pairs(servers) do
