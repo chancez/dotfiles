@@ -1,180 +1,165 @@
--- Automatically install packer
-local install_path = vim.fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-  PACKER_BOOTSTRAP = vim.fn.system {
-    "git",
-    "clone",
-    "--depth",
-    "1",
-    "https://github.com/wbthomason/packer.nvim",
-    install_path,
-  }
-  print "Installing packer close and reopen Neovim..."
-  vim.cmd [[packadd packer.nvim]]
-end
-
--- Use a protected call so we don't error out on first use
-local status_ok, packer = pcall(require, "packer")
-if not status_ok then
-  return
-end
-
--- Have packer use a popup window
-packer.init {
-  display = {
-    open_fn = function()
-      return require("packer.util").float { border = "rounded" }
-    end,
-  },
-}
-
-packer.startup(function(use)
-  -- package management
-  use 'wbthomason/packer.nvim'
-
-  -- performance
-  use 'lewis6991/impatient.nvim'
-
-  -- visual
-  use 'navarasu/onedark.nvim'
-  use 'norcalli/nvim-colorizer.lua'
-  use 'kyazdani42/nvim-web-devicons'
-
-  use 'preservim/tagbar'
-  use {
-    'nvim-lualine/lualine.nvim',
-    requires = {'kyazdani42/nvim-web-devicons', opt = true}
-  }
-  use {
-    'lewis6991/gitsigns.nvim',
-    requires = {
-      'nvim-lua/plenary.nvim'
-    },
-  }
-  use "lukas-reineke/indent-blankline.nvim"
-  use { 'nvim-treesitter/nvim-treesitter-context', requires = { 'nvim-treesitter/nvim-treesitter' }}
-  use 'chentoast/marks.nvim'
-
-  -- search
-  use {
-    'nvim-telescope/telescope.nvim',
-    requires = {
-      'nvim-lua/popup.nvim',
-      'nvim-telescope/telescope-frecency.nvim',
-      'nvim-lua/plenary.nvim',
-      {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-      "nvim-telescope/telescope-file-browser.nvim",
-      { "nvim-telescope/telescope-dap.nvim", requires = { 'mfussenegger/nvim-dap' }},
-      'nvim-telescope/telescope-symbols.nvim',
-    },
-  }
-
-  -- treesitter
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    requires = {
-      'nvim-treesitter/nvim-treesitter-refactor',
-      'nvim-treesitter/nvim-treesitter-textobjects',
-    },
-    run = ':TSUpdate',
-  }
-
-  -- LSP
-  use 'neovim/nvim-lspconfig'
-  use 'ray-x/lsp_signature.nvim'
-  use 'onsails/lspkind-nvim'
-  use { 'j-hui/fidget.nvim' }
-  use { 'williamboman/mason.nvim' }
-  use { 'williamboman/mason-lspconfig.nvim' , requires = { 'williamboman/mason.nvim' }}
-
-  -- debug adapter protocol
-  use 'mfussenegger/nvim-dap'
-  use { 'leoluz/nvim-dap-go', requires = { 'mfussenegger/nvim-dap' } }
-  use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap', "nvim-neotest/nvim-nio" } }
-
-  -- autocomplete
-  use {
-    'hrsh7th/nvim-cmp', -- Autocompletion plugin
-    requires = {
-      'hrsh7th/cmp-cmdline', -- cmdline source
-      'hrsh7th/cmp-nvim-lsp', -- LSP source
-      'hrsh7th/cmp-path', -- path source
-      'hrsh7th/cmp-buffer', -- buffer source
-      {'tzachar/cmp-fuzzy-path', requires = {'tzachar/fuzzy.nvim'}}, -- fuzzy path source
-      { 'zbirenbaum/copilot-cmp', requires = {'zbirenbaum/copilot.lua'}},
-    },
-  }
-
-  use 'zbirenbaum/copilot.lua'
-
-  -- snippets
-  use {
-    'saadparwaiz1/cmp_luasnip', -- Snippets source for nvim-cmp
-    after = "nvim-cmp",
-  }
-  use {
-    'L3MON4D3/LuaSnip',
-    config = function()
-      require("luasnip/loaders/from_vscode").lazy_load()
-    end,
-    requires = {
-      -- Snippet collections
-      "rafamadriz/friendly-snippets",
-    },
-  }
-
-  -- utilities that leverage vim verbs
-  use 'tpope/vim-repeat'
-  use 'tpope/vim-unimpaired'
-  use 'tpope/vim-surround'
-
-  -- utilities
-  use 'tpope/vim-commentary'
-  use 'tpope/vim-eunuch'
-  use 'junegunn/vim-easy-align'
-  use {
-    'folke/which-key.nvim',
-    requires = {'kyazdani42/nvim-web-devicons', opt = true}
-  }
-  use 'windwp/nvim-autopairs'
-  use { 'windwp/nvim-ts-autotag', requires = { 'nvim-treesitter/nvim-treesitter' }}
-  use 'akinsho/toggleterm.nvim'
-  use 'szw/vim-maximizer'
-  use {
-    "nvim-neotest/neotest",
-    requires = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/neotest-go",
-    }
-  }
-  use('mrjones2014/smart-splits.nvim')
-  use 'nicwest/vim-camelsnek'
-  use 'stevearc/qf_helper.nvim'
-  use 'ojroques/nvim-osc52'
-  use 'lambdalisue/vim-suda'
-
-  -- multicursor support like sublime text
-  use 'mg979/vim-visual-multi'
-
-  -- git
-  use 'tpope/vim-fugitive'
-  --
-  -- language/syntax integrations
-  use 'jjo/vim-cue'
-  use 'google/vim-jsonnet'
-  use 'chr4/nginx.vim'
-  use 'hashivim/vim-terraform'
-  use 'fladson/vim-kitty'
-  use 'vito-c/jq.vim'
-  use 'HiPhish/jinja.vim'
-
-  if PACKER_BOOTSTRAP then
-    require("packer").sync()
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
   end
-end)
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Setup lazy.nvim
+require("lazy").setup({
+  -- do not automatically check for plugin updates
+  checker = { enabled = false },
+
+  spec = {
+    -- performance
+    { 'lewis6991/impatient.nvim' },
+
+    -- visual
+    { 'navarasu/onedark.nvim' },
+    { 'norcalli/nvim-colorizer.lua' },
+    { 'kyazdani42/nvim-web-devicons' },
+
+    { 'preservim/tagbar' },
+
+    {
+      'nvim-lualine/lualine.nvim',
+      dependencies = { 'kyazdani42/nvim-web-devicons', lazy = true }
+    },
+
+    {
+      'lewis6991/gitsigns.nvim',
+      dependencies = {
+        'nvim-lua/plenary.nvim'
+      },
+    },
+
+    { 'lukas-reineke/indent-blankline.nvim' },
+    { 'nvim-treesitter/nvim-treesitter-context', dependencies = { 'nvim-treesitter/nvim-treesitter' }},
+    { 'chentoast/marks.nvim' },
+
+    -- search
+    {
+      'nvim-telescope/telescope.nvim',
+      dependencies = {
+        'nvim-lua/popup.nvim',
+        'nvim-telescope/telescope-frecency.nvim',
+        'nvim-lua/plenary.nvim',
+        { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+        "nvim-telescope/telescope-file-browser.nvim",
+        { "nvim-telescope/telescope-dap.nvim", dependencies = { 'mfussenegger/nvim-dap' }},
+        'nvim-telescope/telescope-symbols.nvim',
+      },
+    },
+
+    -- treesitter
+    {
+      'nvim-treesitter/nvim-treesitter',
+      dependencies = {
+        'nvim-treesitter/nvim-treesitter-refactor',
+        'nvim-treesitter/nvim-treesitter-textobjects',
+      },
+      build = ':TSUpdate',
+    },
+
+    -- LSP
+    { 'neovim/nvim-lspconfig' },
+    { 'ray-x/lsp_signature.nvim' },
+    { 'onsails/lspkind-nvim' },
+    { 'j-hui/fidget.nvim' },
+    { 'williamboman/mason.nvim' },
+    { 'williamboman/mason-lspconfig.nvim' , dependencies = { 'williamboman/mason.nvim' } },
+
+    -- debug adapter protocol
+    { 'mfussenegger/nvim-dap' },
+    { 'leoluz/nvim-dap-go', dependencies = { 'mfussenegger/nvim-dap' } },
+    { 'rcarriga/nvim-dap-ui', dependencies = {'mfussenegger/nvim-dap', "nvim-neotest/nvim-nio" } },
+
+    -- autocomplete
+    {
+      'hrsh7th/nvim-cmp', -- Autocompletion plugin
+      dependencies = {
+        'hrsh7th/cmp-cmdline', -- cmdline source
+        'hrsh7th/cmp-nvim-lsp', -- LSP source
+        'hrsh7th/cmp-path', -- path source
+        'hrsh7th/cmp-buffer', -- buffer source
+        { 'tzachar/cmp-fuzzy-path', dependencies = {'tzachar/fuzzy.nvim'} }, -- fuzzy path source
+        { 'zbirenbaum/copilot-cmp', dependencies = {'zbirenbaum/copilot.lua'} },
+        { 'saadparwaiz1/cmp_luasnip', dependencies = { 'L3MON4D3/LuaSnip' } }, -- Snippets source for nvim-cmp
+      },
+    },
+
+    { 'zbirenbaum/copilot.lua' },
+    {
+      'L3MON4D3/LuaSnip',
+      config = function()
+        require("luasnip/loaders/from_vscode").lazy_load()
+      end,
+      dependencies = {
+        -- Snippet collections
+        "rafamadriz/friendly-snippets",
+      },
+    },
+
+    -- utilities that leverage vim verbs
+    { 'tpope/vim-repeat' },
+    { 'tpope/vim-unimpaired' },
+    { 'tpope/vim-surround' },
+
+    -- utilities
+    { 'tpope/vim-commentary' },
+    { 'tpope/vim-eunuch' },
+    { 'junegunn/vim-easy-align' },
+    {
+      'folke/which-key.nvim',
+      dependencies = {'kyazdani42/nvim-web-devicons', opt = true}
+    },
+    { 'windwp/nvim-autopairs' },
+    { 'windwp/nvim-ts-autotag', dependencies = { 'nvim-treesitter/nvim-treesitter' } },
+    { 'akinsho/toggleterm.nvim' },
+    { 'szw/vim-maximizer' },
+    {
+      "nvim-neotest/neotest",
+      dependencies = {
+        "nvim-neotest/nvim-nio",
+        "nvim-lua/plenary.nvim",
+        "antoinemadec/FixCursorHold.nvim",
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-neotest/neotest-go",
+      }
+    },
+    { 'mrjones2014/smart-splits.nvim' },
+    { 'nicwest/vim-camelsnek' },
+    { 'stevearc/qf_helper.nvim' },
+    { 'ojroques/nvim-osc52' },
+    { 'lambdalisue/vim-suda' },
+
+    -- multicursor support like sublime text
+    { 'mg979/vim-visual-multi' },
+
+    -- git
+    { 'tpope/vim-fugitive' },
+    --
+    -- language/syntax integrations
+    { 'jjo/vim-cue' },
+    { 'google/vim-jsonnet' },
+    { 'chr4/nginx.vim' },
+    { 'hashivim/vim-terraform' },
+    { 'fladson/vim-kitty' },
+    { 'vito-c/jq.vim' },
+    { 'HiPhish/jinja.vim' },
+  },
+})
+
 
 local wk = require("which-key")
 
@@ -697,8 +682,7 @@ wk.add({
 
   {'<leader>ev', ':e $MYVIMRC<CR>', desc = 'Edit neovim init.lua', mode='n'},
   {'<leader>sv', ':source $MYVIMRC<CR>', desc = 'Reload neovim init.lua', mode='n'},
-  {'<leader>ps', ':source $MYVIMRC<CR>:PackerSync<CR>', desc = 'Reload init.lua and run PackerSync', mode='n'},
-  {'<leader>pc', ':source $MYVIMRC<CR>:PackerCompile<CR>', desc = 'Reload init.lua and run PackerCompile', mode='n'},
+  {'<leader>ps', ':source $MYVIMRC<CR>:Lazy sync<CR>', desc = 'Reload init.lua and run PackerSync', mode='n'},
 
   -- Get rid of annoying mistakes
   {'WQ', 'wq', mode='c'},
