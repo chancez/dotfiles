@@ -510,7 +510,11 @@ require("copilot").setup({
   filetypes = {
     yaml = true,
   },
-
+  copilot_node_command = 'mise-node-lts.sh',
+  server = {
+    type = 'nodejs',
+    custom_server_filepath = vim.fn.expand("~/.local/share/nvim/mason/bin/copilot-language-server"),
+  },
 })
 require("copilot_cmp").setup()
 
