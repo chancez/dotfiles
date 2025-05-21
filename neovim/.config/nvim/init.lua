@@ -699,6 +699,21 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 -- mappings
 
+-- GoToFile emulates how 'gf' works in Vim.
+-- It will search for the file under the cursor using the configured vim 'path' option.
+-- If it exists, it will open the existing file.
+-- If it does not exist, it will open a new file
+-- in the first directory that exists according to the 'vim' path option (found using :finddir).
+function GoToFile()
+  local cfile = vim.fn.findfile(vim.fn.expand("<cfile>"))
+  if cfile == "" then
+    local dir = vim.fn.finddir(vim.fn.expand("<cfile>:h"))
+    local tail = vim.fn.expand("<cfile>:t")
+    cfile = dir .. "/" .. tail
+  end
+  vim.cmd.edit(cfile)
+end
+
 -- Whichkey
 wk.add({
   {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
@@ -755,6 +770,9 @@ wk.add({
   {'<leader>/', ':nohlsearch<CR>', desc = 'Clear search hightlights', mode='n', { silent = true }},
   -- clear hlsearch on redraw
   {'<C-L>', ':nohlsearch<CR><C-L>', desc = 'Clear search hightlights', mode='n'},
+
+  -- set "gf" to create a new file if the one under the cursor does not exist
+  {'gf', function() GoToFile() end, desc = 'Go to file under cursor', mode={'n'}},
 
   -- vim-maximizer
   {'<c-w>0', ':MaximizerToggle<CR>', mode={'n'}},
