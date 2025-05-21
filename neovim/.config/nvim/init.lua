@@ -419,6 +419,7 @@ local servers = {
     filetypes = { 'yaml', 'yaml.docker-compose', 'helm.yaml' },
     settings = {
       yaml = {
+        validate = false,
         schemas = {
           ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
           -- kubernetes = "/install/kubernetes/**.yaml",
