@@ -150,6 +150,18 @@ require("lazy").setup({
     { 'ojroques/nvim-osc52' },
     { 'lambdalisue/vim-suda' },
 
+    {
+      'rmagatti/auto-session',
+      lazy = false,
+
+      ---enables autocomplete for opts
+      ---@module "auto-session"
+      ---@type AutoSession.Config
+      opts = {
+        suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
+      }
+    },
+
     -- multicursor support like sublime text
     { 'mg979/vim-visual-multi' },
 
@@ -223,6 +235,9 @@ vim.opt.foldnestmax = 10 -- 10 nested fold max
 wk.add({{'<space>', 'za', desc = 'Toggle folds', mode='n'}})
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+
+-- https://github.com/rmagatti/auto-session?tab=readme-ov-file#recommended-sessionoptions-config
+vim.opt.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.cmd [[ packadd cfilter ]]
 
