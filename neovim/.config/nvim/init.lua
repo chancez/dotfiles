@@ -689,8 +689,6 @@ wk.add({
   {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
 
   {'<leader>ev', ':e $MYVIMRC<CR>', desc = 'Edit neovim init.lua', mode='n'},
-  {'<leader>sv', ':source $MYVIMRC<CR>', desc = 'Reload neovim init.lua', mode='n'},
-  {'<leader>ps', ':source $MYVIMRC<CR>:Lazy sync<CR>', desc = 'Reload init.lua and run PackerSync', mode='n'},
 
   -- Get rid of annoying mistakes
   {'WQ', 'wq', mode='c'},
