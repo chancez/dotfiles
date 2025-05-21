@@ -15,15 +15,15 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- performance
+vim.loader.enable()
+
 -- Setup lazy.nvim
 require("lazy").setup({
   -- do not automatically check for plugin updates
   checker = { enabled = false },
 
   spec = {
-    -- performance
-    { 'lewis6991/impatient.nvim' },
-
     -- visual
     { 'navarasu/onedark.nvim' },
     { 'norcalli/nvim-colorizer.lua' },
