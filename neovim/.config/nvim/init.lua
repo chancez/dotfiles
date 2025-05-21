@@ -756,6 +756,9 @@ wk.add({
   -- clear hlsearch on redraw
   {'<C-L>', ':nohlsearch<CR><C-L>', desc = 'Clear search hightlights', mode='n'},
 
+  -- vim-maximizer
+  {'<c-w>0', ':MaximizerToggle<CR>', mode={'n'}},
+
   -- easy align
   {'ga', '<Plug>(EasyAlign)', desc = 'Easy align', mode={'n', 'x'}},
 
@@ -810,9 +813,6 @@ wk.add({
 -- resize-mode
 local smartSplits = require("smart-splits")
 vim.api.nvim_create_user_command('ResizeMode', function() smartSplits.start_resize_mode() end, { bang = true })
-
--- vim-maximizer
-vim.g.maximizer_default_mapping_key = '<c-w>0'
 
 -- pathfinder
 wk.add({
