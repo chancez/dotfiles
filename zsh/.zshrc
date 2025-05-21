@@ -164,6 +164,7 @@ if ! zgenom saved; then
   # zgenom load unixorn/fzf-zsh-plugin
   zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load djui/alias-tips
+  zgenom load so-fancy/diff-so-fancy
 
   # custom extensions
   (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
@@ -219,19 +220,41 @@ fbr() {
   fi
   local branches branch
   branches=$(git for-each-ref --count=30 --sort=-committerdate refs/heads/ --format="%(refname:short)") &&
-  branch=$(echo "$branches" |
-           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
-  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+
+  echo "$branches" |
+    fzf --no-sort --reverse --tiebreak=index --no-multi --ansi \
+    --preview='_viewGitLogLine {}' \
+    --header "enter to checkout, ctrl-e to view, ctrl-y to copy, ctrl-p to print -- branch" \
+    --bind 'enter:become(echo {} | sed "s/.* //" | sed "s#remotes/[^/]*/##" | xargs git checkout)' \
+    --bind 'ctrl-e:execute(_viewGitLogLine $(_gitLogLineToHash {}) | less -R)' \
+    --bind 'ctrl-y:become(echo {} | pbcopy)' \
+    --bind 'ctrl-p:accept'
 }
 alias gco=fbr
 
-# fcs - get git commit sha
-# example usage: git rebase -i `fcs`
+# fcs - checkout git commit
 fcs() {
   local commits commit
-  commits=$(git log --color=always --pretty=oneline --decorate --abbrev-commit --reverse) &&
-  commit=$(echo "$commits" | fzf --tac +s +m -e --ansi --reverse) &&
-  echo -n $(echo "$commit" | sed "s/ .*//")
+  commits=$(git log --color=always --pretty=oneline --decorate --abbrev-commit) &&
+  echo "$commits" |
+    fzf --no-sort --reverse --tiebreak=index --no-multi --ansi \
+    --preview='_viewGitLogLine $(gitLogLineToHash {})' \
+    --header "enter to checkout, ctrl-y to copy, ctrl-p to print -- hash" \
+    --bind 'enter:execute(_gitLogLineToHash {} | xargs git checkout)' \
+    --bind 'ctrl-y:become(_gitLogLineToHash {} | pbcopy)' \
+    --bind 'ctrl-p:become(_gitLogLineToHash {})'
+}
+alias gcoc=fcs
+
+# gshow - git commit browser with previews
+gshow() {
+  glNoGraph |
+    fzf --no-sort --reverse --tiebreak=index --no-multi --ansi \
+    --preview='_viewGitLogLine $(gitLogLineToHash {})' \
+    --header "enter to view, ctrl-y to copy, ctrl-p to print -- hash" \
+    --bind 'enter:execute(_viewGitLogLine $(_gitLogLineToHash {}) | less -R)' \
+    --bind 'ctrl-y:become(_gitLogLineToHash {} | pbcopy)' \
+    --bind 'ctrl-p:become(_gitLogLineToHash {})'
 }
 
 echoerr() { echo "$@" 1>&2; }
