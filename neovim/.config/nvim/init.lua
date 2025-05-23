@@ -785,9 +785,6 @@ wk.add({
 
   -- tagbar
   {'<m-e>', ':TagbarToggle<CR>', mode='nvo', { silent = true }},
-
-  -- symbols outline
-  {'<m-r>', ':SymbolsOutline<CR>', mode='nvo', { silent = true }},
 })
 
 
