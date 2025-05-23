@@ -790,6 +790,10 @@ wk.add({
   {'<m-r>', ':SymbolsOutline<CR>', mode='nvo', { silent = true }},
 })
 
+
+-- Open help in a new tab
+vim.api.nvim_create_user_command('Helptab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })
+
 -- dap commands
 
 -- dap-go
