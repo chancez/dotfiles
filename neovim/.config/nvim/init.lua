@@ -144,7 +144,6 @@ require("lazy").setup({
         "nvim-neotest/neotest-go",
       }
     },
-    { 'mrjones2014/smart-splits.nvim' },
     { 'nicwest/vim-camelsnek' },
     { 'stevearc/qf_helper.nvim' },
     { 'ojroques/nvim-osc52' },
@@ -659,33 +658,6 @@ require('neotest').setup({
   },
 })
 
-require('smart-splits').setup({
-  -- Ignored filetypes (only while resizing)
-  ignored_filetypes = {
-    'nofile',
-    'quickfix',
-    'prompt',
-  },
-  -- Ignored buffer types (only while resizing)
-  ignored_buftypes = { 'NvimTree' },
-  -- the default number of lines/columns to resize by at a time
-  default_amount = 3,
-  -- enable or disable the tmux integration
-  tmux_integration = false,
-
-  resize_mode = {
-    hooks = {
-      -- Bind q to exit in addition to escape
-      on_enter = function()
-        vim.keymap.set('n', 'q', ":lua require('smart-splits.resize-mode').end_resize_mode()<CR>", { silent = true })
-      end,
-      on_leave = function()
-        vim.api.nvim_del_keymap('n', 'q')
-      end,
-    },
-  },
-})
-
 -- quickfix
 require("qf_helper").setup()
 vim.api.nvim_create_autocmd("FileType", {
@@ -827,11 +799,6 @@ wk.add({
   {'gtS', ':TestSummary<CR>'},
 
 })
-
-
--- resize-mode
-local smartSplits = require("smart-splits")
-vim.api.nvim_create_user_command('ResizeMode', function() smartSplits.start_resize_mode() end, { bang = true })
 
 -- colorscheme
 require('onedark').setup {
