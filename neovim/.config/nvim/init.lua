@@ -833,11 +833,6 @@ wk.add({
 local smartSplits = require("smart-splits")
 vim.api.nvim_create_user_command('ResizeMode', function() smartSplits.start_resize_mode() end, { bang = true })
 
--- pathfinder
-wk.add({
-  {'<leader>pe', ':PathfinderExplain<CR>', desc = 'Explain pathfinder suggestions', mode='n'}
-})
-
 -- colorscheme
 require('onedark').setup {
   style = 'dark'
