@@ -763,6 +763,13 @@ wk.add({
 -- Open help in a new tab
 vim.api.nvim_create_user_command('Helptab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })
 
+function QuitNoSession()
+  vim.cmd(':SessionDelete')
+  vim.cmd(':qa')
+end
+
+vim.api.nvim_create_user_command('Qas', QuitNoSession, {})
+
 -- dap commands
 
 -- dap-go
