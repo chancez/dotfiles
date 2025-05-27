@@ -1031,6 +1031,8 @@ vim.filetype.add({
 
 -- setup treesitter
 require'nvim-treesitter.configs'.setup {
+  sync_install = false,
+  auto_install = true,
   ensure_installed = {
     "c",
     "cel",
@@ -1059,6 +1061,12 @@ require'nvim-treesitter.configs'.setup {
     "yaml",
   },
   highlight = { enable = true },
+  textobjects = {
+    enable = true,
+     select = {
+      enable = true,
+    },
+  },
 }
 
 require("treesitter-context").setup({
