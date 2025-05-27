@@ -242,7 +242,8 @@ fcs() {
     --header "enter to checkout, ctrl-y to copy, ctrl-p to print -- hash" \
     --bind 'enter:execute(_gitLogLineToHash {} | xargs git checkout)' \
     --bind 'ctrl-y:become(_gitLogLineToHash {} | pbcopy)' \
-    --bind 'ctrl-p:become(_gitLogLineToHash {})'
+    --bind 'ctrl-p:become(_gitLogLineToHash {})' \
+    --bind 'ctrl-v:execute(_viewGitLogLine $(_gitLogLineToHash {}) | less -R)'
 }
 alias gcoc=fcs
 
