@@ -212,8 +212,9 @@ function git-prune-branches() {
   git-prune-branches-list | xargs git branch -D
 }
 
-# fbr - checkout git branch (including remote branches), sorted by most recent commit, limit 30 last branches
-fbr() {
+# gco - checkout git branch (including remote branches), sorted by most recent commit, limit 30 last branches
+unalias gco
+gco() {
   if [  $# -ne 0 ]; then
     git checkout "$@"
     return $?
@@ -230,32 +231,30 @@ fbr() {
     --bind 'ctrl-y:become(echo {} | pbcopy)' \
     --bind 'ctrl-p:accept'
 }
-alias gco=fbr
 
-# fcs - checkout git commit
+# fcs - find git commit
 fcs() {
   local commits commit
   commits=$(git log --color=always --pretty=oneline --decorate --abbrev-commit) &&
   echo "$commits" |
     fzf --no-sort --reverse --tiebreak=index --no-multi --ansi \
-    --preview='_viewGitLogLine $(gitLogLineToHash {})' \
-    --header "enter to checkout, ctrl-y to copy, ctrl-p to print -- hash" \
-    --bind 'enter:execute(_gitLogLineToHash {} | xargs git checkout)' \
+    --preview='_viewGitLogLine "$(_gitLogLineToHash {})"' \
+    --header "enter to print, ctrl-y to copy, ctrl-v to view -- hash" \
+    --bind 'enter:become(_gitLogLineToHash {})' \
     --bind 'ctrl-y:become(_gitLogLineToHash {} | pbcopy)' \
-    --bind 'ctrl-p:become(_gitLogLineToHash {})' \
     --bind 'ctrl-v:execute(_viewGitLogLine $(_gitLogLineToHash {}) | less -R)'
 }
-alias gcoc=fcs
 
 # gshow - git commit browser with previews
 gshow() {
   glNoGraph |
     fzf --no-sort --reverse --tiebreak=index --no-multi --ansi \
-    --preview='_viewGitLogLine $(gitLogLineToHash {})' \
-    --header "enter to view, ctrl-y to copy, ctrl-p to print -- hash" \
+    --preview='_viewGitLogLine "$(_gitLogLineToHash {})"' \
+    --header "enter to view, ctrl-y to copy, ctrl-p to print, ctrl-v to checkout -- hash" \
     --bind 'enter:execute(_viewGitLogLine $(_gitLogLineToHash {}) | less -R)' \
     --bind 'ctrl-y:become(_gitLogLineToHash {} | pbcopy)' \
-    --bind 'ctrl-p:become(_gitLogLineToHash {})'
+    --bind 'ctrl-p:become(_gitLogLineToHash {})' \
+    --bind 'ctrl-v:execute(_gitLogLineToHash {} | xargs git checkout)'
 }
 
 echoerr() { echo "$@" 1>&2; }
