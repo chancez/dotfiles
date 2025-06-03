@@ -175,6 +175,7 @@ require("lazy").setup({
     { 'fladson/vim-kitty' },
     { 'vito-c/jq.vim' },
     { 'HiPhish/jinja.vim' },
+    { 'towolf/vim-helm', ft = 'helm' },
   },
 })
 
@@ -430,7 +431,7 @@ local servers = {
     },
   },
   yamlls = {
-    filetypes = { 'yaml', 'yaml.docker-compose', 'helm.yaml' },
+    filetypes = { 'yaml', 'yaml.docker-compose' },
     settings = {
       yaml = {
         validate = false,
@@ -440,15 +441,8 @@ local servers = {
         },
       }
     },
-    on_attach = function(client, bufnr)
-      default_on_attach(client, bufnr)
-
-      if vim.bo[bufnr].buftype ~= "" or vim.bo[bufnr].filetype == "helm.yaml" then
-        local namespace = vim.lsp.diagnostic.get_namespace(client.id)
-        vim.diagnostic.disable(bufnr, namespace)
-      end
-    end,
   },
+  helm_ls = {},
   buf_ls = {},
   kotlin_language_server = {},
   graphql = {
@@ -1146,40 +1140,3 @@ vim.cmd [[
 vim.cmd [[
   command! -nargs=* YQ execute '%!yq <args>'
 ]]
-
-local function is_helm_file(path)
-	local check = vim.fs.find("Chart.yaml", { path = vim.fs.dirname(path), upward = true })
-	return not vim.tbl_isempty(check)
-end
-
---@private
---@return string
-local function yaml_filetype(path, bufname)
-	return is_helm_file(path) and "helm.yaml" or "yaml"
-end
-
---@private
---@return string
-local function tmpl_filetype(path, bufname)
-	return is_helm_file(path) and "helm.tmpl" or "template"
-end
-
---@private
---@return string
-local function tpl_filetype(path, bufname)
-	return is_helm_file(path) and "helm.tmpl" or "smarty"
-end
-
--- handle helm
-vim.filetype.add({
-  extension = {
-    yaml = yaml_filetype,
-    yml = yaml_filetype,
-    tmpl = tmpl_filetype,
-    tpl = tpl_filetype
-  },
-  filename = {
-    ["Chart.yaml"] = "yaml",
-    ["Chart.lock"] = "yaml",
-  }
-})
