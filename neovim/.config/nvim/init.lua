@@ -414,7 +414,7 @@ local servers = {
     settings = {
       gopls = {
         buildFlags = {
-          "-tags=e2e_tests,integration,e2e,hubble_cli_e2e,enterprise_hubble_rbac_e2e,enterprise_integrated_timescape_e2e",
+          "-tags=e2e_tests,integration,e2e,hubble_cli_e2e,enterprise_hubble_rbac_e2e,enterprise_integrated_timescape_e2e,helm",
         },
         completeUnimported = true,
         analyses = {
