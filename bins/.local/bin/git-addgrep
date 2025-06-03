@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+# Renamed a file or method? Use this to add all files matching that regex pattern.
+
+# check if grepdiff is installed
+
+if ! command -v grepdiff &> /dev/null; then
+  echo "grepdiff is not installed. Please install it first."
+  # On MacOS you can install grepdiff via brew install patchutils
+  if command -v brew &> /dev/null; then
+    echo "You can install it via 'brew install patchutils'."
+  fi
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  echo "Usage: git addgrep <regex>"
+  echo "Adds all files or hunks matching the regex to the staging area."
+  exit 1
+fi
+
+echo "(staging matching hunks)"
+git diff -U0 | grepdiff -E "$*" --output-matching=hunk | git apply --cached --unidiff-zero
