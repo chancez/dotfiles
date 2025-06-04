@@ -1166,15 +1166,15 @@ vim.api.nvim_create_autocmd({'BufWritePre'}, {
   end,
 })
 
-vim.cmd [[autocmd! BufNewFile,BufRead Tiltfile set filetype=tiltfile syntax=python]]
 
 -- Highlight on yank
-vim.cmd [[
-  augroup YankHighlight
-    autocmd!
-    autocmd TextYankPost * silent! lua vim.highlight.on_yank()
-  augroup end
-]]
+vim.api.nvim_create_autocmd({'TextYankPost'}, {
+  pattern = '*',
+  callback = function()
+    vim.highlight.on_yank({higroup='IncSearch', timeout=300})
+  end,
+})
+
 
 -- JQ formats JSON in the current buffer
 vim.cmd [[
