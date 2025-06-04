@@ -537,7 +537,7 @@ require"fidget".setup{}
 
 -- debug adapter
 require('dap-go').setup()
-require("dapui").setup({})
+require("dapui").setup()
 
 -- copilot.lua
 require("copilot").setup({
@@ -841,8 +841,6 @@ require('onedark').setup {
   style = 'dark'
 }
 require('onedark').load()
-
--- require'nvim-web-devicons'.setup()
 
 -- lualine
 require'lualine'.setup {
