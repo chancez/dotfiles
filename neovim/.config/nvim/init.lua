@@ -847,12 +847,17 @@ require'lualine'.setup {
   options = {theme = 'onedark'},
   extensions = {'toggleterm'},
   sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'diagnostics'},
     lualine_c = {
       {
         'filename',
         path = 1,
       }
     },
+    lualine_x = {'filetype', 'lsp_status'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
   },
   tabline = {
     lualine_a = {
