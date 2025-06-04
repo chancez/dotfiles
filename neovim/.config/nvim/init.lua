@@ -1139,26 +1139,32 @@ vim.g.VM_maps = {
   ["I BS"] = '', -- disable backspace mapping
 }
 
--- show trailing whitespace https://vim.fandom.com/wiki/Highlight_unwanted_spaces
-vim.cmd([[
-  autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
-  match ExtraWhitespace /\s\+$/
-  autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-  autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-  autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-]])
+vim.api.nvim_create_autocmd({'FileType'}, {
+  pattern = '*',
+  command = [[
+    highlight ExtraWhitespace guibg=red
+    match ExtraWhitespace /\s\+$/
+    autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+    autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+    autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+  ]]
+})
+
+
+function StripTrailingWhitespace()
+  vim.fn.substitute('%', '\\s\\+$', '', 'e')
+end
 
 -- strip trailing whitespace
-vim.cmd([[
-fun! StripTrailingWhitespace()
-    " Only strip if the b:noStripeWhitespace variable isn't set
-    if exists('b:noStripWhitespace')
-        return
-    endif
-    %s/\s\+$//e
-endfun
-autocmd BufWritePre * call StripTrailingWhitespace()
-]])
+vim.api.nvim_create_autocmd({'BufWritePre'}, {
+  pattern = '*',
+  callback = function()
+    -- Only strip if the b:noStripWhitespace variable isn't set
+    if not vim.b.noStripWhitespace then
+      StripTrailingWhitespace()
+    end
+  end,
+})
 
 vim.cmd [[autocmd! BufNewFile,BufRead Tiltfile set filetype=tiltfile syntax=python]]
 
