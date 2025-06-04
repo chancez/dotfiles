@@ -1175,12 +1175,39 @@ vim.api.nvim_create_autocmd({'TextYankPost'}, {
   end,
 })
 
+function RunCommand(binary, input, args)
+  local cmd = {binary, args}
+
+  vim.system(cmd, { stdin = input, text = true }, function(result)
+    vim.schedule(function()
+      if result.code == 0 then
+        ReplaceBufferLines(vim.split(result.stdout, '\n'))
+      else
+        local cmd_str = table.concat(cmd, ' ')
+        vim.api.nvim_err_writeln(string.format("Error running %q: %s", cmd_str, result.stderr))
+      end
+    end)
+  end)
+end
+
+function ReplaceBufferLines(content)
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, content)
+end
+
+function GetBufferLines()
+  return vim.api.nvim_buf_get_lines(0, 0, -1, true)
+end
 
 -- JQ formats JSON in the current buffer
-vim.cmd [[
-  command! -nargs=* JQ execute '%!jq <args>'
-]]
+vim.api.nvim_create_user_command('JQ', function(cmd)
+  local input = GetBufferLines()
+  local args = cmd.args or '.'
+  RunCommand('jq', input, args)
+end, { nargs = '*', bang = true })
 
-vim.cmd [[
-  command! -nargs=* YQ execute '%!yq <args>'
-]]
+-- YQ formats YAML in the current buffer
+vim.api.nvim_create_user_command('YQ', function(cmd)
+  local input = GetBufferLines()
+  local args = cmd.args or '.'
+  RunCommand('yq', input, args)
+end, { nargs = '*', bang = true })
