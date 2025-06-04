@@ -314,7 +314,7 @@ end
 
 -- LSP settings
 local default_on_attach = function(client, bufnr)
-  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+  vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
   vim.api.nvim_buf_create_user_command(bufnr, 'LspRename', function() vim.lsp.buf.rename() end, { bang = true })
   vim.api.nvim_buf_create_user_command(bufnr, 'LspDeclaration', function() vim.lsp.buf.declaration() end, { bang = true })
