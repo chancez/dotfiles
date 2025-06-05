@@ -1200,7 +1200,7 @@ function RunCommand(binary, input, args)
         ReplaceBufferString(result.stdout)
       else
         local cmd_str = table.concat(cmd, ' ')
-        vim.api.nvim_err_writeln(string.format("Error running %q: %s", cmd_str, result.stderr))
+        vim.api.nvim_echo({ { string.format("Error running %q: %s", cmd_str, result.stderr) } }, false, { err = true })
       end
     end)
   end)
