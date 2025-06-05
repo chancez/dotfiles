@@ -1152,7 +1152,7 @@ vim.api.nvim_create_autocmd({'FileType'}, {
 
 
 function StripTrailingWhitespace()
-  vim.fn.substitute('%', '\\s\\+$', '', 'e')
+  vim.cmd([[ :%s/\s\+$//e ]])
 end
 
 -- strip trailing whitespace
