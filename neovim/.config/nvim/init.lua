@@ -1151,6 +1151,22 @@ vim.api.nvim_create_autocmd({'FileType'}, {
 })
 
 
+function ReplaceBufferLines(content)
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, content)
+end
+
+function ReplaceBufferString(content)
+  ReplaceBufferLines(vim.split(content, '\n'))
+end
+
+function GetBufferLines()
+  return vim.api.nvim_buf_get_lines(0, 0, -1, true)
+end
+
+function GetBufferString()
+  return table.concat(GetBufferLines(), '\n')
+end
+
 function StripTrailingWhitespace()
   vim.cmd([[ :%s/\s\+$//e ]])
 end
@@ -1181,21 +1197,13 @@ function RunCommand(binary, input, args)
   vim.system(cmd, { stdin = input, text = true }, function(result)
     vim.schedule(function()
       if result.code == 0 then
-        ReplaceBufferLines(vim.split(result.stdout, '\n'))
+        ReplaceBufferString(result.stdout)
       else
         local cmd_str = table.concat(cmd, ' ')
         vim.api.nvim_err_writeln(string.format("Error running %q: %s", cmd_str, result.stderr))
       end
     end)
   end)
-end
-
-function ReplaceBufferLines(content)
-  vim.api.nvim_buf_set_lines(0, 0, -1, false, content)
-end
-
-function GetBufferLines()
-  return vim.api.nvim_buf_get_lines(0, 0, -1, true)
 end
 
 -- JQ formats JSON in the current buffer
