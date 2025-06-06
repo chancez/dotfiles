@@ -1118,7 +1118,8 @@ end
 local whitespaceIgnoreFileTypes = {
   'terminal',
   'lazy',
-  'mcphub'
+  'mcphub',
+  'markdown',
 }
 
 vim.api.nvim_create_autocmd({'FileType'}, {
