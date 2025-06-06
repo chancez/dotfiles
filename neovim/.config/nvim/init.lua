@@ -104,42 +104,8 @@ require("lazy").setup({
       },
     },
 
+    -- AI
     { 'zbirenbaum/copilot.lua' },
-    {
-      "yetone/avante.nvim",
-      event = "VeryLazy",
-      version = false, -- Never set this value to "*"! Never!
-      opts = {
-        provider = "copilot",
-        providers = {
-          copilot = {
-            extra_request_body = {
-              max_tokens = 8192,
-            },
-          },
-          ollama = {
-            endpoint = "http://localhost:11434",
-            model = "deepseek-r1:8b",
-          },
-        },
-        behaviour = {
-          auto_suggestions = false,
-        },
-      },
-      -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-      build = "make",
-      dependencies = {
-        "nvim-treesitter/nvim-treesitter",
-        "stevearc/dressing.nvim",
-        "nvim-lua/plenary.nvim",
-        "MunifTanjim/nui.nvim",
-        --- The below dependencies are optional,
-        "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-        "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-        "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-        "zbirenbaum/copilot.lua", -- for providers='copilot'
-      },
-    },
 
     {
       'L3MON4D3/LuaSnip',
@@ -1196,7 +1162,6 @@ vim.api.nvim_create_autocmd({'BufWritePre'}, {
     end
   end,
 })
-
 
 -- Highlight on yank
 vim.api.nvim_create_autocmd({'TextYankPost'}, {
