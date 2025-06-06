@@ -1139,15 +1139,30 @@ vim.g.VM_maps = {
   ["I BS"] = '', -- disable backspace mapping
 }
 
-vim.api.nvim_create_autocmd({'FileType'}, {
-  pattern = '*',
-  command = [[
+function HighlightWhitespace()
+  vim.cmd [[
     highlight ExtraWhitespace guibg=red
     match ExtraWhitespace /\s\+$/
-    autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-    autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-    autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+    autocmd BufWinEnter <buffer> match ExtraWhitespace /\s\+$/
+    autocmd InsertEnter <buffer> match ExtraWhitespace /\s\+\%#\@<!$/
+    autocmd InsertLeave <buffer> match ExtraWhitespace /\s\+$/
   ]]
+end
+
+local whitespaceIgnoreFileTypes = {
+  'terminal',
+  'lazy',
+  'mcphub'
+}
+
+vim.api.nvim_create_autocmd({'FileType'}, {
+  pattern = '*',
+  callback = function()
+    if vim.tbl_contains(whitespaceIgnoreFileTypes, vim.bo.filetype) then
+      return
+    end
+    HighlightWhitespace()
+  end
 })
 
 
