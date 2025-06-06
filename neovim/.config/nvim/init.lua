@@ -1149,9 +1149,25 @@ function GetBufferString()
   return table.concat(GetBufferLines(), '\n')
 end
 
+
 function StripTrailingWhitespace()
-  vim.cmd([[ :%s/\s\+$//e ]])
+  -- Get all lines in the buffer
+  local lines = GetBufferLines()
+  local changed = false
+
+  for i, line in ipairs(lines) do
+    local stripped = line:gsub("%s+$", "")
+    if stripped ~= line then
+      lines[i] = stripped
+      changed = true
+    end
+  end
+
+  if changed then
+    ReplaceBufferLines(lines)
+  end
 end
+
 
 -- strip trailing whitespace
 vim.api.nvim_create_autocmd({'BufWritePre'}, {
