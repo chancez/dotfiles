@@ -1,0 +1,14 @@
+{
+  "nativeMCPServers": [
+
+  ],
+  "mcpServers": {
+    "kubernetes": {
+      "command": "npx",
+      "disabled": false,
+      "args": [
+        "mcp-server-kubernetes@v2.3.0"
+      ]
+    }
+  }
+}
