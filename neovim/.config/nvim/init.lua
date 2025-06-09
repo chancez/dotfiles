@@ -22,6 +22,9 @@ vim.loader.enable()
 require("lazy").setup({
   -- do not automatically check for plugin updates
   checker = { enabled = false },
+  rocks = {
+    enabled = false
+  },
 
   spec = {
     -- visual
