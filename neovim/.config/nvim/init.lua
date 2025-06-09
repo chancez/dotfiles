@@ -276,6 +276,8 @@ wk.add({{'<space>', 'za', desc = 'Toggle folds', mode='n'}})
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
+vim.opt.exrc = true
+
 -- https://github.com/rmagatti/auto-session?tab=readme-ov-file#recommended-sessionoptions-config
 vim.opt.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
