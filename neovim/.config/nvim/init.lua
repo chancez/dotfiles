@@ -352,7 +352,7 @@ local lspAttach = function(client, bufnr)
       pattern = {"*.go"},
       callback = function()
         OrgImports(1000)
-        vim.lsp.buf.format({timeout_ms=2000})
+        vim.lsp.buf.format({bufnr = bufnr, id = client.id, timeout_ms=2000})
       end
     })
   end
