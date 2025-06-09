@@ -139,6 +139,9 @@ require("lazy").setup({
         "nvim-treesitter/nvim-treesitter",
         {
           "ravitemer/mcphub.nvim",
+          opts = {
+            cmd = 'mcp-hub'
+          }
         },
       },
     },
