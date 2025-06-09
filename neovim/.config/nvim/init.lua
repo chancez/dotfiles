@@ -515,12 +515,6 @@ require("mason").setup({
   }
 })
 
-require("mason-lspconfig").setup({
-  ensure_installed = vim.tbl_keys(servers),
-  automatic_installation = true,
-  automatic_enable = false,
-})
-
 for server_name, server_specific_opts in pairs(servers) do
   local capabilities = cmp_lsp.default_capabilities()
   local server_opts = {
@@ -533,10 +527,16 @@ for server_name, server_specific_opts in pairs(servers) do
     server_opts[k] = v
   end
 
-    -- Server-specific settings. See `:help lsp-quickstart`
+  -- Server-specific settings. See `:help lsp-quickstart`
   vim.lsp.config(server_name, server_opts)
-  vim.lsp.enable(server_name)
 end
+
+
+require("mason-lspconfig").setup({
+  ensure_installed = vim.tbl_keys(servers),
+  automatic_installation = true,
+  automatic_enable = true,
+})
 
 -- lsp signature
 require('lsp_signature').setup {
