@@ -318,7 +318,7 @@ function OrgImports(wait_ms)
 end
 
 -- LSP settings
-local default_on_attach = function(client, bufnr)
+local lspAttach = function(client, bufnr)
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
   vim.api.nvim_buf_create_user_command(bufnr, 'LspRename', function() vim.lsp.buf.rename() end, { bang = true })
@@ -382,6 +382,17 @@ local default_on_attach = function(client, bufnr)
     {'<m-p>', '<cmd>LspWorkspaceSymbols<CR>', desc = 'LspWorkspaceSymbols'},
   })
 end
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(ev)
+    local bufnr = ev.buf
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if not client then
+      return
+    end
+    lspAttach(client, bufnr)
+  end
+})
 
 -- Insert runtime_path of neovim lua files for LSP
 local runtime_path = vim.split(package.path, ';')
@@ -513,7 +524,6 @@ require("mason-lspconfig").setup({
 for server_name, server_specific_opts in pairs(servers) do
   local capabilities = cmp_lsp.default_capabilities()
   local server_opts = {
-    on_attach = default_on_attach,
     capabilities = capabilities,
     flags = {
       debounce_text_changes = 150,
