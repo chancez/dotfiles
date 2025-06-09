@@ -520,7 +520,9 @@ for server_name, server_specific_opts in pairs(servers) do
     server_opts[k] = v
   end
 
-  require("lspconfig")[server_name].setup(server_opts)
+    -- Server-specific settings. See `:help lsp-quickstart`
+  vim.lsp.config(server_name, server_opts)
+  vim.lsp.enable(server_name)
 end
 
 -- lsp signature
