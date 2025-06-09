@@ -11,7 +11,7 @@ neovim = "0.11"
 golangci-lint = "latest"
 # "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.59.1"
 usage = "latest"
-go = "1.23"
+go = "1.24"
 
 [settings]
 experimental = true
