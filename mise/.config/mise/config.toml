@@ -1,19 +1,23 @@
 [tools]
 # you can set these with `rtx use -g`
 node = ['lts', '20', '19', '18', '17', '16']
-python = ['3.10', '2.7']
-terraform = '1.4.6'
-java = '20'
-kubectl = '1.28'
-ruby = '3.1'
+python = ['3', '2.7']
+uv = "latest"
+terraform = "1.12.1"
+java = "24"
+kubectl = "1.33"
+ruby = "3.4"
 neovim = "0.11"
 "npm:jwt-cli" = "latest"
 "npm:mcp-hub" = "latest"
 golangci-lint = "latest"
-# "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "v1.59.1"
 usage = "latest"
 go = "1.24"
+
+[env]
+_.python.venv = { path = ".venv", create = true, uv_create_args = ['--seed'] }
 
 [settings]
 experimental = true
 idiomatic_version_file_enable_tools = ["go"]
+python.uv_venv_auto = true
