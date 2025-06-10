@@ -77,7 +77,7 @@ return {
     opts = {},
     dependencies = {'kyazdani42/nvim-web-devicons', opt = true}
   },
-  { 'windwp/nvim-autopairs', opts = { check_ts = true } },
+  { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
 
   { 'szw/vim-maximizer' },
   { 'nicwest/vim-camelsnek' },
