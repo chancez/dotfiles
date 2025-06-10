@@ -140,39 +140,36 @@ local function lspAttach(bufnr, client)
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({'BufWritePre'}, {
       group = 'CodeFormat',
+      buffer = bufnr,
+      desc = 'Format code on save',
       callback = function()
         LspOrgImports()
         vim.lsp.buf.format()
-      end
+      end,
     })
   end
 
-  local wk = require("which-key")
+  local map = vim.keymap.set
 
-  wk.add({
-    mode='n',
-    silent = true,
-    buffer = bufnr,
-    {'<leader>rn', '<cmd>LspRename<CR>', desc = 'LspRename'},
-    {'gD', '<cmd>LspDeclaration<CR>', desc = 'LspDeclaration'},
-    {'gd', '<cmd>LspDefinition<CR>', desc = 'LspDefinition'},
-    {'<leader>D', '<cmd>LspTypeDefinition<CR>', desc = 'LspTypeDefinition'},
-    {'gr', '<cmd>LspReferences<CR>', desc = 'LspReferences'},
-    {'gi', '<cmd>LspImplementation<CR>', desc = 'LspImplementation'},
+  map('n', '<leader>rn', '<cmd>LspRename<CR>', {desc = 'LspRename', silent = true, buffer = bufnr})
+  map('n', 'gD', '<cmd>LspDeclaration<CR>', {desc = 'LspDeclaration', silent = true, buffer = bufnr})
+  map('n', 'gd', '<cmd>LspDefinition<CR>', {desc = 'LspDefinition', silent = true, buffer = bufnr})
+  map('n', '<leader>D', '<cmd>LspTypeDefinition<CR>', {desc = 'LspTypeDefinition', silent = true, buffer = bufnr})
+  map('n', 'gr', '<cmd>LspReferences<CR>', {desc = 'LspReferences', silent = true, buffer = bufnr})
+  map('n', 'gi', '<cmd>LspImplementation<CR>', {desc = 'LspImplementation', silent = true, buffer = bufnr})
 
-    {'<leader>ca', '<cmd>LspCodeAction<CR>', desc = 'LspCodeAction'},
-    {'K', '<cmd>LspHover<CR>', desc = 'LspHover'},
-    {'<C-k>', '<cmd>LspSignatureHelp<CR>', desc = 'LspSignatureHelp'},
+  map('n', '<leader>ca', '<cmd>LspCodeAction<CR>', {desc = 'LspCodeAction', silent = true, buffer = bufnr})
+  map('n', 'K', '<cmd>LspHover<CR>', {desc = 'LspHover', silent = true, buffer = bufnr})
+  map('n', '<C-k>', '<cmd>LspSignatureHelp<CR>', {desc = 'LspSignatureHelp', silent = true, buffer = bufnr})
 
-    {'<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', desc = 'LspAddWorkspaceFolder'},
-    {'<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', desc = 'LspRemoveWorkspaceFolder'},
-    {'<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', desc = 'LspListWorkspaceFolders'},
+  map('n', '<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', {desc = 'LspAddWorkspaceFolder', silent = true, buffer = bufnr})
+  map('n', '<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', {desc = 'LspRemoveWorkspaceFolder', silent = true, buffer = bufnr})
+  map('n', '<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', {desc = 'LspListWorkspaceFolders', silent = true, buffer = bufnr})
 
-    {'<leader>so', '<cmd>LspDocumentSymbols<CR>', desc = 'LspDocumentSymbols'},
-    {'<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', desc = 'LspWorkspaceSymbols'},
-    {'<m-O>', '<cmd>LspDocumentSymbols<CR>', desc = 'LspDocumentSymbols'},
-    {'<m-p>', '<cmd>LspWorkspaceSymbols<CR>', desc = 'LspWorkspaceSymbols'},
-  })
+  map('n', '<leader>so', '<cmd>LspDocumentSymbols<CR>', {desc = 'LspDocumentSymbols', silent = true, buffer = bufnr})
+  map('n', '<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', {desc = 'LspWorkspaceSymbols', silent = true, buffer = bufnr})
+  map('n', '<m-O>', '<cmd>LspDocumentSymbols<CR>', {desc = 'LspDocumentSymbols', silent = true, buffer = bufnr})
+  map('n', '<m-p>', '<cmd>LspWorkspaceSymbols<CR>', {desc = 'LspWorkspaceSymbols', silent = true, buffer = bufnr})
 end
 
 M.server_names = vim.tbl_keys(servers)
