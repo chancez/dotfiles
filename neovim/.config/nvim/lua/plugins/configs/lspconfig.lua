@@ -112,31 +112,50 @@ end
 local function lspAttach(bufnr, client)
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspRename', function() vim.lsp.buf.rename() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspDeclaration', function() vim.lsp.buf.declaration() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspDefinition', function() require("telescope.builtin").lsp_definitions({fname_width=75}) end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspTypeDefinition', function() require("telescope.builtin").lsp_type_definitions() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspReferences', function() require("telescope.builtin").lsp_references({fname_width=75}) end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspImplementation', function() require("telescope.builtin").lsp_implementations() end, { bang = true })
+  -- Define an lsp command that can be used in the command line
+  local lspCommand = function(name, command)
+    vim.api.nvim_buf_create_user_command(bufnr, name, command, { bang = true })
+  end
 
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspCodeAction', function() vim.lsp.buf.code_action() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspHover', function() vim.lsp.buf.hover() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspSignatureHelp', function() vim.lsp.buf.signature_help() end, { bang = true })
+  -- Map an lsp command to a keybinding. The command must already be defined.
+  local mapLspCommand = function(cmd, lhs)
+    local rhs = '<cmd>' .. cmd .. '<CR>'
+    local desc = cmd
+    local mode = 'n'
+    vim.keymap.set(mode, lhs, rhs, {desc = desc, silent = true, buffer = bufnr})
+  end
 
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspAddWorkspaceFolder', function() vim.lsp.buf.add_workspace_folder() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspRemoveWorkspaceFolder', function() vim.lsp.buf.remove_workspace_folder() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspListWorkspaceFolders', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, { bang = true })
+  -- Define an lsp command and map it to a keybinding
+  local lspCommandMap = function(name,  lhs, command)
+    lspCommand(name, command)
+    mapLspCommand(name, lhs)
+  end
 
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspDocumentSymbols', function() require("telescope.builtin").lsp_document_symbols() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspWorkspaceSymbols', function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end, { bang = true })
-  vim.api.nvim_buf_create_user_command(bufnr, 'LspFixAll', function() LspFixAll() end, { bang = true })
+  lspCommandMap('LspRename','<leader>rn',  function() vim.lsp.buf.rename() end)
+  lspCommandMap('LspDeclaration', 'gD', function() vim.lsp.buf.declaration() end)
+  lspCommandMap('LspDefinition', 'gd', function() require("telescope.builtin").lsp_definitions({fname_width=75}) end)
+  lspCommandMap('LspTypeDefinition', '<leader>D', function() require("telescope.builtin").lsp_type_definitions() end)
+  lspCommandMap('LspReferences', 'gr', function() require("telescope.builtin").lsp_references({fname_width=75}) end)
+  lspCommandMap('LspImplementation', 'gi', function() require("telescope.builtin").lsp_implementations() end)
+
+  lspCommandMap('LspCodeAction', '<leader>ca', function() vim.lsp.buf.code_action() end)
+  lspCommandMap('LspHover', 'K', function() vim.lsp.buf.hover() end)
+  lspCommandMap('LspSignatureHelp', '<C-k>', function() vim.lsp.buf.signature_help() end)
+
+  lspCommandMap('LspAddWorkspaceFolder', '<leader>wa', function() vim.lsp.buf.add_workspace_folder() end)
+  lspCommandMap('LspRemoveWorkspaceFolder', '<leader>wr', function() vim.lsp.buf.remove_workspace_folder() end)
+  lspCommandMap('LspListWorkspaceFolders', '<leader>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
+
+  lspCommandMap('LspDocumentSymbols', '<m-O>', function() require("telescope.builtin").lsp_document_symbols() end)
+  lspCommandMap('LspWorkspaceSymbols', '<m-p>', function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end)
+  lspCommand('LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end)
+  lspCommand('LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end)
+  lspCommand('LspFixAll', function() LspFixAll() end)
 
   -- formatting
   if client.server_capabilities.documentFormattingProvider then
-    vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, { bang = true })
-    vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() LspOrgImports() end, { bang = true })
+    lspCommand('LspFormat', function() vim.lsp.buf.format() end)
+    lspCommand('LspOrgImports', function() LspOrgImports() end)
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({'BufWritePre'}, {
       group = 'CodeFormat',
@@ -148,28 +167,6 @@ local function lspAttach(bufnr, client)
       end,
     })
   end
-
-  local map = vim.keymap.set
-
-  map('n', '<leader>rn', '<cmd>LspRename<CR>', {desc = 'LspRename', silent = true, buffer = bufnr})
-  map('n', 'gD', '<cmd>LspDeclaration<CR>', {desc = 'LspDeclaration', silent = true, buffer = bufnr})
-  map('n', 'gd', '<cmd>LspDefinition<CR>', {desc = 'LspDefinition', silent = true, buffer = bufnr})
-  map('n', '<leader>D', '<cmd>LspTypeDefinition<CR>', {desc = 'LspTypeDefinition', silent = true, buffer = bufnr})
-  map('n', 'gr', '<cmd>LspReferences<CR>', {desc = 'LspReferences', silent = true, buffer = bufnr})
-  map('n', 'gi', '<cmd>LspImplementation<CR>', {desc = 'LspImplementation', silent = true, buffer = bufnr})
-
-  map('n', '<leader>ca', '<cmd>LspCodeAction<CR>', {desc = 'LspCodeAction', silent = true, buffer = bufnr})
-  map('n', 'K', '<cmd>LspHover<CR>', {desc = 'LspHover', silent = true, buffer = bufnr})
-  map('n', '<C-k>', '<cmd>LspSignatureHelp<CR>', {desc = 'LspSignatureHelp', silent = true, buffer = bufnr})
-
-  map('n', '<leader>wa', '<cmd>LspAddWorkspaceFolder<CR>', {desc = 'LspAddWorkspaceFolder', silent = true, buffer = bufnr})
-  map('n', '<leader>wr', '<cmd>LspRemoveWorkspaceFolder<CR>', {desc = 'LspRemoveWorkspaceFolder', silent = true, buffer = bufnr})
-  map('n', '<leader>wl', '<cmd>LspListWorkspaceFolders<CR>', {desc = 'LspListWorkspaceFolders', silent = true, buffer = bufnr})
-
-  map('n', '<leader>so', '<cmd>LspDocumentSymbols<CR>', {desc = 'LspDocumentSymbols', silent = true, buffer = bufnr})
-  map('n', '<leader>sp', '<cmd>LspWorkspaceSymbols<CR>', {desc = 'LspWorkspaceSymbols', silent = true, buffer = bufnr})
-  map('n', '<m-O>', '<cmd>LspDocumentSymbols<CR>', {desc = 'LspDocumentSymbols', silent = true, buffer = bufnr})
-  map('n', '<m-p>', '<cmd>LspWorkspaceSymbols<CR>', {desc = 'LspWorkspaceSymbols', silent = true, buffer = bufnr})
 end
 
 M.server_names = vim.tbl_keys(servers)
