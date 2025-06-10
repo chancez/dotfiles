@@ -62,22 +62,6 @@ return {
   },
   { 'chentoast/marks.nvim', event = "VeryLazy", opts = { default_mappings = false } },
 
-  {
-    'L3MON4D3/LuaSnip',
-    config = function()
-      require("luasnip/loaders/from_vscode").lazy_load()
-      local luasnip = require 'luasnip'
-      luasnip.config.set_config {
-        history = true,
-        updateevents = "TextChanged,TextChangedI"
-      }
-    end,
-    dependencies = {
-      -- Snippet collections
-      "rafamadriz/friendly-snippets",
-    },
-  },
-
   -- utilities that leverage vim verbs
   { 'tpope/vim-repeat' },
   { 'tpope/vim-unimpaired' },
