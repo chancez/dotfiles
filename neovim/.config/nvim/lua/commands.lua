@@ -24,16 +24,3 @@ vim.api.nvim_create_user_command('YQ', function(cmd)
 end, { nargs = '*', bang = true })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end , {})
-
--- dap commands
-
--- dap-go
-local dapGo = require('dap-go')
-vim.api.nvim_create_user_command('DapGoTest', function() dapGo.debug_test() end, { bang = true })
-
--- dap-ui
-local dapUI = require('dapui')
-vim.api.nvim_create_user_command('DapUIOpen', function() dapUI.open({reset=true}) end, { bang = true })
-vim.api.nvim_create_user_command('DapUIClose', function() dapUI.close() end, { bang = true })
-vim.api.nvim_create_user_command('DapUIToggle', function() dapUI.toggle() end, { bang = true })
-vim.api.nvim_create_user_command('DapUIEval', function() dapUI.eval() end, { bang = true })
