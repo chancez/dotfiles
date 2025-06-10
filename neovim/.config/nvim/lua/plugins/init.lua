@@ -112,16 +112,9 @@ return {
   },
   { 'nicwest/vim-camelsnek' },
   {
-    'stevearc/qf_helper.nvim',
-    config = function()
-      require('qf_helper').setup()
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "qf",
-        callback = function(args)
-          vim.keymap.set('n', 'dd', ':Reject<cr>', { buffer = args.buf })
-        end
-      })
-    end
+    'stevearc/quicker.nvim',
+    event = "FileType qf",
+    opts = {},
   },
   {
     'ojroques/nvim-osc52',
