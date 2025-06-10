@@ -17,7 +17,7 @@ function M.GetBufferString()
 end
 
 function M.RunCommand(binary, input, args)
-  local cmd = {binary, args}
+  local cmd = { binary, args }
 
   vim.system(cmd, { stdin = input, text = true }, function(result)
     vim.schedule(function()

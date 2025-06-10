@@ -18,7 +18,7 @@ local whitespaceIgnoreFileTypes = {
   'help',
 }
 
-vim.api.nvim_create_autocmd({'FileType'}, {
+vim.api.nvim_create_autocmd({ 'FileType' }, {
   pattern = '*',
   callback = function()
     if vim.tbl_contains(whitespaceIgnoreFileTypes, vim.bo.filetype) then
@@ -46,9 +46,8 @@ function StripTrailingWhitespace()
   end
 end
 
-
 -- strip trailing whitespace
-vim.api.nvim_create_autocmd({'BufWritePre'}, {
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
   pattern = '*',
   callback = function()
     -- Only strip if the b:noStripWhitespace variable isn't set
@@ -59,9 +58,9 @@ vim.api.nvim_create_autocmd({'BufWritePre'}, {
 })
 
 -- Highlight on yank
-vim.api.nvim_create_autocmd({'TextYankPost'}, {
+vim.api.nvim_create_autocmd({ 'TextYankPost' }, {
   pattern = '*',
   callback = function()
-    vim.highlight.on_yank({higroup='IncSearch', timeout=300})
+    vim.highlight.on_yank({ higroup = 'IncSearch', timeout = 300 })
   end,
 })

@@ -40,7 +40,7 @@ return {
       highlight = { enable = true },
       textobjects = {
         enable = true,
-         select = {
+        select = {
           enable = true,
           lookahead = true,
           keymaps = {
@@ -61,7 +61,7 @@ return {
       parser_config.cel = {
         install_info = {
           url = "https://github.com/bufbuild/tree-sitter-cel.git",
-          files = {"src/parser.c"},
+          files = { "src/parser.c" },
           branch = "main",
           generate_requires_npm = false,
           requires_generate_from_grammar = false,
@@ -99,7 +99,7 @@ return {
           "section",
         },
       },
-     }
+    }
   },
 
   { 'windwp/nvim-ts-autotag', dependencies = { 'nvim-treesitter/nvim-treesitter' }, config = true },

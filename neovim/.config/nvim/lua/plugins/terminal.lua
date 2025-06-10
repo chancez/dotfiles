@@ -5,7 +5,7 @@ return {
       open_mapping = '<c-t>',
       start_in_insert = true,
     },
-    config = function (_, opts)
+    config = function(_, opts)
       local toggleterm = require("toggleterm")
       toggleterm.setup(opts)
 

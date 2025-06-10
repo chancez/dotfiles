@@ -6,20 +6,20 @@ table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
 local servers = {
-  clangd = {
+  clangd                 = {
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }, -- remove proto, handled by bufls
   },
-  rust_analyzer = {},
-  pyright = {},
-  ts_ls  = {},
-  bashls  = {},
-  dockerls  = {},
-  jsonnet_ls = {},
-  sqlls = {},
-  terraformls = {},
-  esbonio = {}, -- Sphinx/RestructuredText
-  jdtls  = {},
-  lua_ls = {
+  rust_analyzer          = {},
+  pyright                = {},
+  ts_ls                  = {},
+  bashls                 = {},
+  dockerls               = {},
+  jsonnet_ls             = {},
+  sqlls                  = {},
+  terraformls            = {},
+  esbonio                = {}, -- Sphinx/RestructuredText
+  jdtls                  = {},
+  lua_ls                 = {
     settings = {
       Lua = {
         runtime = {
@@ -44,8 +44,8 @@ local servers = {
       },
     },
   },
-  gopls = {
-    cmd = {"gopls", "serve"},
+  gopls                  = {
+    cmd = { "gopls", "serve" },
     settings = {
       gopls = {
         buildFlags = {
@@ -63,7 +63,7 @@ local servers = {
       },
     },
   },
-  yamlls = {
+  yamlls                 = {
     filetypes = { 'yaml', 'yaml.docker-compose' },
     settings = {
       yaml = {
@@ -74,10 +74,10 @@ local servers = {
       }
     },
   },
-  helm_ls = {},
-  buf_ls = {},
+  helm_ls                = {},
+  buf_ls                 = {},
   kotlin_language_server = {},
-  graphql = {
+  graphql                = {
     filetypes = { "typescript", "typescriptreact", "graphql" },
     settings = {
       ["graphql-config.load.legacy"] = true,
@@ -122,20 +122,20 @@ local function lspAttach(bufnr, client)
     local rhs = '<cmd>' .. cmd .. '<CR>'
     local desc = cmd
     local mode = 'n'
-    vim.keymap.set(mode, lhs, rhs, {desc = desc, silent = true, buffer = bufnr})
+    vim.keymap.set(mode, lhs, rhs, { desc = desc, silent = true, buffer = bufnr })
   end
 
   -- Define an lsp command and map it to a keybinding
-  local lspCommandMap = function(name,  lhs, command)
+  local lspCommandMap = function(name, lhs, command)
     lspCommand(name, command)
     mapLspCommand(name, lhs)
   end
 
-  lspCommandMap('LspRename','<leader>rn',  function() vim.lsp.buf.rename() end)
+  lspCommandMap('LspRename', '<leader>rn', function() vim.lsp.buf.rename() end)
   lspCommandMap('LspDeclaration', 'gD', function() vim.lsp.buf.declaration() end)
-  lspCommandMap('LspDefinition', 'gd', function() require("telescope.builtin").lsp_definitions({fname_width=75}) end)
+  lspCommandMap('LspDefinition', 'gd', function() require("telescope.builtin").lsp_definitions({ fname_width = 75 }) end)
   lspCommandMap('LspTypeDefinition', '<leader>D', function() require("telescope.builtin").lsp_type_definitions() end)
-  lspCommandMap('LspReferences', 'gr', function() require("telescope.builtin").lsp_references({fname_width=75}) end)
+  lspCommandMap('LspReferences', 'gr', function() require("telescope.builtin").lsp_references({ fname_width = 75 }) end)
   lspCommandMap('LspImplementation', 'gi', function() require("telescope.builtin").lsp_implementations() end)
 
   lspCommandMap('LspCodeAction', '<leader>ca', function() vim.lsp.buf.code_action() end)
@@ -144,10 +144,12 @@ local function lspAttach(bufnr, client)
 
   lspCommandMap('LspAddWorkspaceFolder', '<leader>wa', function() vim.lsp.buf.add_workspace_folder() end)
   lspCommandMap('LspRemoveWorkspaceFolder', '<leader>wr', function() vim.lsp.buf.remove_workspace_folder() end)
-  lspCommandMap('LspListWorkspaceFolders', '<leader>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
+  lspCommandMap('LspListWorkspaceFolders', '<leader>wl',
+    function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
 
   lspCommandMap('LspDocumentSymbols', '<m-O>', function() require("telescope.builtin").lsp_document_symbols() end)
-  lspCommandMap('LspWorkspaceSymbols', '<m-p>', function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end)
+  lspCommandMap('LspWorkspaceSymbols', '<m-p>',
+    function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end)
   lspCommand('LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end)
   lspCommand('LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end)
   lspCommand('LspFixAll', function() LspFixAll() end)
@@ -157,7 +159,7 @@ local function lspAttach(bufnr, client)
     lspCommand('LspFormat', function() vim.lsp.buf.format() end)
     lspCommand('LspOrgImports', function() LspOrgImports() end)
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
-    vim.api.nvim_create_autocmd({'BufWritePre'}, {
+    vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
       group = 'CodeFormat',
       buffer = bufnr,
       desc = 'Format code on save',
@@ -185,7 +187,7 @@ M.setup = function()
 
 
   for server_name, server_specific_opts in pairs(servers) do
-  -- nvim-cmp supports additional completion capabilities
+    -- nvim-cmp supports additional completion capabilities
     local cmp_lsp = require('cmp_nvim_lsp')
     local capabilities = cmp_lsp.default_capabilities()
     local server_opts = {
@@ -194,7 +196,7 @@ M.setup = function()
         debounce_text_changes = 150,
       },
     }
-    for k,v in pairs(server_specific_opts) do
+    for k, v in pairs(server_specific_opts) do
       server_opts[k] = v
     end
 

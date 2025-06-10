@@ -12,11 +12,11 @@ vim.opt.lazyredraw = true
 vim.opt.errorbells = false
 vim.opt.number = true
 vim.opt.showfulltag = true
-vim.opt.hlsearch = true -- Highlight as you search.
+vim.opt.hlsearch = true   -- Highlight as you search.
 vim.opt.ignorecase = true -- Ignore case when searching
-vim.opt.showmatch = true -- highlight matching [{()}]
-vim.opt.incsearch = true --  Searches as you type.
-vim.opt.smartcase = true -- if case seems to matter use it
+vim.opt.showmatch = true  -- highlight matching [{()}]
+vim.opt.incsearch = true  --  Searches as you type.
+vim.opt.smartcase = true  -- if case seems to matter use it
 vim.opt.showmode = true
 vim.opt.synmaxcol = 2048
 vim.opt.title = true
@@ -47,14 +47,14 @@ vim.opt.tags = 'tags;'
 vim.opt.foldopen = 'block,insert,jump,mark,percent,quickfix,search,tag,undo'
 vim.opt.foldenable = true
 vim.opt.foldlevelstart = 10 -- open most folds by default
-vim.opt.foldnestmax = 10 -- 10 nested fold max
+vim.opt.foldnestmax = 10    -- 10 nested fold max
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
 vim.opt.exrc = true
 
 -- https://github.com/rmagatti/auto-session?tab=readme-ov-file#recommended-sessionoptions-config
-vim.opt.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.cmd [[ packadd cfilter ]]
 

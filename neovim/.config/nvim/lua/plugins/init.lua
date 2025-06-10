@@ -11,14 +11,14 @@ return {
       require('onedark').load()
     end
   },
-  { 'norcalli/nvim-colorizer.lua', event = 'VeryLazy', config = true },
+  { 'norcalli/nvim-colorizer.lua',  event = 'VeryLazy', config = true },
   { 'kyazdani42/nvim-web-devicons', lazy = true },
 
   {
     'preservim/tagbar',
     cmd = 'TagbarToggle',
     keys = {
-      {'<m-e>', ':TagbarToggle<CR>', { silent = true }},
+      { '<m-e>', ':TagbarToggle<CR>', { silent = true } },
     }
   },
 
@@ -27,20 +27,20 @@ return {
     event = "VeryLazy",
     dependencies = { 'kyazdani42/nvim-web-devicons', lazy = true },
     opts = {
-      options = {theme = 'onedark'},
-      extensions = {'toggleterm'},
+      options = { theme = 'onedark' },
+      extensions = { 'toggleterm' },
       sections = {
-        lualine_a = {'mode'},
-        lualine_b = {'diagnostics'},
+        lualine_a = { 'mode' },
+        lualine_b = { 'diagnostics' },
         lualine_c = {
           {
             'filename',
             path = 1,
           }
         },
-        lualine_x = {'filetype', 'lsp_status'},
-        lualine_y = {'progress'},
-        lualine_z = {'location'}
+        lualine_x = { 'filetype', 'lsp_status' },
+        lualine_y = { 'progress' },
+        lualine_z = { 'location' }
       },
       tabline = {
         lualine_a = {
@@ -53,20 +53,20 @@ return {
         lualine_c = {},
         lualine_x = {},
         lualine_y = {},
-        lualine_z = {'tabs'}
+        lualine_z = { 'tabs' }
       }
     }
   },
 
   { 'lewis6991/gitsigns.nvim', event = "VeryLazy", dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
   {
-      "lukas-reineke/indent-blankline.nvim",
-      main = "ibl",
-      ---@module "ibl"
-      ---@type ibl.config
-      opts = {},
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {},
   },
-  { 'chentoast/marks.nvim', event = "VeryLazy", opts = { default_mappings = false } },
+  { 'chentoast/marks.nvim',    event = "VeryLazy", opts = { default_mappings = false } },
 
   -- utilities that leverage vim verbs
   { 'tpope/vim-repeat' },
@@ -77,7 +77,7 @@ return {
   {
     'tpope/vim-commentary',
     keys = {
-      {'<M-/>', ':Commentary<CR>', mode={'n', 'v'}, { silent = true }},
+      { '<M-/>', ':Commentary<CR>', mode = { 'n', 'v' }, { silent = true } },
     }
   },
   { 'tpope/vim-eunuch' },
@@ -85,7 +85,7 @@ return {
     'junegunn/vim-easy-align',
     keys = {
       -- easy align
-      {'ga', '<Plug>(EasyAlign)', desc = 'Easy align', mode={'n', 'x'}},
+      { 'ga', '<Plug>(EasyAlign)', desc = 'Easy align', mode = { 'n', 'x' } },
     }
   },
   {
@@ -93,7 +93,7 @@ return {
     event = "VeryLazy",
     cmd = 'WhichKey',
     keys = {
-      {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
+      { '<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode = 'n', { silent = true } },
     },
     opts = {
       win = {
@@ -107,7 +107,7 @@ return {
   {
     'szw/vim-maximizer',
     keys = {
-      {'<c-w>0', ':MaximizerToggle<CR>', mode={'n'}},
+      { '<c-w>0', ':MaximizerToggle<CR>', mode = { 'n' } },
     },
   },
   { 'nicwest/vim-camelsnek' },
@@ -126,8 +126,8 @@ return {
   {
     'ojroques/nvim-osc52',
     keys = {
-      {'<leader>c', function() require('osc52').copy_operator() end, desc = 'Copy to clipboard with OSC52'},
-      {'<leader>c', function() require('osc52').copy_visual() end, desc = 'Copy to clipboard with OSC52', mode='v'},
+      { '<leader>c', function() require('osc52').copy_operator() end, desc = 'Copy to clipboard with OSC52' },
+      { '<leader>c', function() require('osc52').copy_visual() end,   desc = 'Copy to clipboard with OSC52', mode = 'v' },
     },
     opts = {}
   },
@@ -172,5 +172,5 @@ return {
   { 'fladson/vim-kitty' },
   { 'vito-c/jq.vim' },
   { 'HiPhish/jinja.vim' },
-  { 'towolf/vim-helm', ft = 'helm' },
+  { 'towolf/vim-helm',       ft = 'helm' },
 }

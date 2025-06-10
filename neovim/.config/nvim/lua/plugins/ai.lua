@@ -20,7 +20,7 @@ return {
 
   {
     "olimorris/codecompanion.nvim",
-    cmd = {"CodeCompanion", "CodeCompanionChat", "CodeCompanionCmd", "CodeCompanionActions"},
+    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionCmd", "CodeCompanionActions" },
     opts = {
       strategies = {
         chat = {

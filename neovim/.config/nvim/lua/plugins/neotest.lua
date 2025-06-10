@@ -31,10 +31,10 @@ return {
         virtual_text = {
           format = function(diagnostic)
             local message = diagnostic.message
-            :gsub("\n", " ")
-            :gsub("\t", " ")
-            :gsub("%s+", " ")
-            :gsub("^%s+", "")
+                :gsub("\n", " ")
+                :gsub("\t", " ")
+                :gsub("%s+", " ")
+                :gsub("^%s+", "")
             return message
           end,
         },
@@ -62,7 +62,8 @@ return {
 
       vim.api.nvim_create_user_command('TestNearest', function() neotest.run.run() end, { bang = true })
       vim.api.nvim_create_user_command('TestFile', function() neotest.run.run(vim.fn.expand("%")) end, { bang = true })
-      vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end, { bang = true })
+      vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end,
+        { bang = true })
       vim.api.nvim_create_user_command('TestSuite', function() neotest.run.run(vim.fn.getcwd()) end, { bang = true })
       vim.api.nvim_create_user_command('TestOpen', function() neotest.output.toggle() end, { bang = true })
       vim.api.nvim_create_user_command('TestOutput', function() neotest.output_panel.toggle() end, { bang = true })

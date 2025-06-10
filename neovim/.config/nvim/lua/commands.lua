@@ -4,7 +4,7 @@ local util = require 'util'
 vim.api.nvim_create_user_command('Helptab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })
 
 -- Quit all buffers and delete the current session
-vim.api.nvim_create_user_command('Qas', function ()
+vim.api.nvim_create_user_command('Qas', function()
   vim.cmd(':SessionDelete')
   vim.cmd(':qa')
 end, {})
@@ -23,4 +23,4 @@ vim.api.nvim_create_user_command('YQ', function(cmd)
   util.RunCommand('yq', input, args)
 end, { nargs = '*', bang = true })
 
-vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end , {})
+vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
