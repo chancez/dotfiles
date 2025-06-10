@@ -14,7 +14,13 @@ return {
   { 'norcalli/nvim-colorizer.lua', event = 'VeryLazy', config = true },
   { 'kyazdani42/nvim-web-devicons', lazy = true },
 
-  { 'preservim/tagbar', cmd = 'TagbarToggle' },
+  {
+    'preservim/tagbar',
+    cmd = 'TagbarToggle',
+    keys = {
+      {'<m-e>', ':TagbarToggle<CR>', { silent = true }},
+    }
+  },
 
   {
     'nvim-lualine/lualine.nvim',
@@ -68,18 +74,38 @@ return {
   { 'tpope/vim-surround' },
 
   -- utilities
-  { 'tpope/vim-commentary' },
+  {
+    'tpope/vim-commentary',
+    keys = {
+      {'<M-/>', ':Commentary<CR>', mode={'n', 'v'}, { silent = true }},
+    }
+  },
   { 'tpope/vim-eunuch' },
-  { 'junegunn/vim-easy-align' },
+  {
+    'junegunn/vim-easy-align',
+    keys = {
+      -- easy align
+      {'ga', '<Plug>(EasyAlign)', desc = 'Easy align', mode={'n', 'x'}},
+    }
+  },
   {
     'folke/which-key.nvim',
     event = "VeryLazy",
+    cmd = 'WhichKey',
+    keys = {
+      {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
+    },
     opts = {},
     dependencies = {'kyazdani42/nvim-web-devicons', opt = true}
   },
   { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
 
-  { 'szw/vim-maximizer' },
+  {
+    'szw/vim-maximizer',
+    keys = {
+      {'<c-w>0', ':MaximizerToggle<CR>', mode={'n'}},
+    },
+  },
   { 'nicwest/vim-camelsnek' },
   {
     'stevearc/qf_helper.nvim',
@@ -95,16 +121,11 @@ return {
   },
   {
     'ojroques/nvim-osc52',
-    config = function (_, opts)
-      local osc52 = require('osc52')
-      osc52.setup(opts)
-
-      local wk = require("which-key")
-      wk.add({
-        {'<leader>c', function() osc52.copy_operator() end, desc = 'Copy to clipboard with OSC52'},
-        {'<leader>c', function() osc52.copy_visual() end, desc = 'Copy to clipboard with OSC52', mode='v'},
-      })
-    end
+    keys = {
+      {'<leader>c', function() require('osc52').copy_operator() end, desc = 'Copy to clipboard with OSC52'},
+      {'<leader>c', function() require('osc52').copy_visual() end, desc = 'Copy to clipboard with OSC52', mode='v'},
+    },
+    opts = {}
   },
   { 'lambdalisue/vim-suda' },
 
