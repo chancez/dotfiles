@@ -1,29 +1,37 @@
 return {
   {
     'hrsh7th/nvim-cmp', -- Autocompletion plugin
-    event = {"InsertEnter", "CmdlineEnter"},
+    event = { "InsertEnter", "CmdlineEnter" },
     dependencies = {
-      'hrsh7th/cmp-cmdline', -- cmdline source
-      'hrsh7th/cmp-nvim-lsp', -- LSP source
-      'hrsh7th/cmp-path', -- path source
-      'hrsh7th/cmp-buffer', -- buffer source
-      { 'tzachar/cmp-fuzzy-path', dependencies = {'tzachar/fuzzy.nvim'} }, -- fuzzy path source
+      'hrsh7th/cmp-cmdline',                                                   -- cmdline source
+      'hrsh7th/cmp-nvim-lsp',                                                  -- LSP source
+      'hrsh7th/cmp-path',                                                      -- path source
+      'hrsh7th/cmp-buffer',                                                    -- buffer source
+      { 'tzachar/cmp-fuzzy-path',   dependencies = { 'tzachar/fuzzy.nvim' } }, -- fuzzy path source
       {
-        'zbirenbaum/copilot-cmp', dependencies = {'zbirenbaum/copilot.lua'},
-        config = function ()
+        'zbirenbaum/copilot-cmp',
+        dependencies = { 'zbirenbaum/copilot.lua' },
+        config = function()
           require("copilot_cmp").setup()
         end
       },
       { 'saadparwaiz1/cmp_luasnip', dependencies = { 'L3MON4D3/LuaSnip' } }, -- Snippets source for nvim-cmp
     },
     config = function()
-      local cmp = require 'cmp'
+      local cmp = require('cmp')
       local cmp_autopairs = require('nvim-autopairs.completion.cmp')
       local luasnip = require("luasnip")
 
       require("luasnip/loaders/from_vscode").lazy_load()
 
-      cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
+      cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done({ map_char = { tex = '' } }))
+
+      -- https://github.com/zbirenbaum/copilot-cmp?tab=readme-ov-file#tab-completion-configuration-highly-recommended
+      local has_words_before = function()
+        if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then return false end
+        local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+        return col ~= 0 and vim.api.nvim_buf_get_text(0, line - 1, 0, line - 1, col, {})[1]:match("^%s*$") == nil
+      end
 
       ---@diagnostic disable-next-line: redundant-parameter
       cmp.setup({
@@ -43,17 +51,17 @@ return {
           ['<C-e>'] = cmp.mapping.close(),
           ['<CR>'] = cmp.mapping.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
+            select = false,
           },
-          ['<Tab>'] = function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
+          ["<Tab>"] = vim.schedule_wrap(function(fallback)
+            if cmp.visible() and has_words_before() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
             elseif luasnip.expand_or_jumpable() then
               luasnip.expand_or_jump()
             else
               fallback()
             end
-          end,
+          end),
           ['<S-Tab>'] = function(fallback)
             if cmp.visible() then
               cmp.select_prev_item()
@@ -67,24 +75,49 @@ return {
         performance = {
           fetching_timeout = 500,
         },
-        sources = {
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-          { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '20', '-p', '--no-ignore'}} },
-          { name = 'buffer' },
-          { name = "copilot", group_index = 2 },
+        sources = cmp.config.sources(
+          {
+            { name = 'nvim_lsp' },
+            { name = 'luasnip' },
+          },
+          {
+            { name = 'fuzzy_path', option = { fd_cmd = { 'fd', '-d', '20', '-p', '--no-ignore' } } },
+            { name = 'buffer' },
+          },
+          {
+            { name = 'copilot', max_item_count = 3 },
+          }
+        ),
+        -- based on https://github.com/zbirenbaum/copilot-cmp?tab=readme-ov-file#comparators
+        sorting = {
+          priority_weight = 2,
+          comparators = {
+            require("copilot_cmp.comparators").prioritize,
+
+            -- Below is the default comparitor list and order for nvim-cmp
+            cmp.config.compare.offset,
+            -- cmp.config.compare.scopes, --this is commented in nvim-cmp too
+            cmp.config.compare.exact,
+            cmp.config.compare.score,
+            cmp.config.compare.recently_used,
+            cmp.config.compare.locality,
+            cmp.config.compare.kind,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+          },
         },
       })
 
       -- Use buffer source for `/`
       cmp.setup.cmdline('/', {
         mapping = {
-          ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
-          ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
-          ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
-          ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
-          ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
-          ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
+          ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
+          ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+          ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
+          ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+          ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
+          ['<C-e>'] = cmp.mapping(cmp.mapping.close(), { 'i', 'c' }),
         },
         sources = {
           { name = 'buffer' },
@@ -94,15 +127,15 @@ return {
       -- Use cmdline & path source for ':'
       cmp.setup.cmdline(':', {
         mapping = {
-          ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
-          ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
-          ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i', 'c'}),
-          ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i', 'c'}),
-          ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
-          ['<C-e>'] = cmp.mapping(cmp.mapping.close(), {'i', 'c'}),
+          ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
+          ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+          ['<C-k>'] = cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 'c' }),
+          ['<C-j>'] = cmp.mapping(cmp.mapping.select_next_item(), { 'i', 'c' }),
+          ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
+          ['<C-e>'] = cmp.mapping(cmp.mapping.close(), { 'i', 'c' }),
         },
         sources = {
-          { name = 'fuzzy_path', option = {fd_cmd = {'fd', '-d', '10', '-p', '--no-ignore'}} },
+          { name = 'fuzzy_path', option = { fd_cmd = { 'fd', '-d', '10', '-p', '--no-ignore' } } },
           { name = 'cmdline' },
         }
       })
