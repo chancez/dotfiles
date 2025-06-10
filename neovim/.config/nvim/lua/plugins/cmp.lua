@@ -16,11 +16,19 @@ return {
         end
       },
       { 'saadparwaiz1/cmp_luasnip', dependencies = { 'L3MON4D3/LuaSnip' } }, -- Snippets source for nvim-cmp
+      { 'onsails/lspkind.nvim' },
     },
     config = function()
       local cmp = require('cmp')
       local cmp_autopairs = require('nvim-autopairs.completion.cmp')
       local luasnip = require("luasnip")
+      local lspkind = require('lspkind')
+      lspkind.init({
+        symbol_map = {
+          Copilot = "",
+        },
+      })
+      vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#6CC644" })
 
       require("luasnip/loaders/from_vscode").lazy_load()
 
@@ -112,6 +120,20 @@ return {
             cmp.config.compare.order,
           },
         },
+        formatting = {
+          format = lspkind.cmp_format({
+            mode = 'symbol_text', -- show only symbol annotations
+            maxwidth = {
+              -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+              -- can also be a function to dynamically calculate max width such as
+              -- menu = function() return math.floor(0.45 * vim.o.columns) end,
+              menu = 50,              -- leading text (labelDetails)
+              abbr = 50,              -- actual suggestion item
+            },
+            ellipsis_char = '...',    -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+            show_labelDetails = true, -- show labelDetails in menu. Disabled by default
+          })
+        }
       })
 
       -- Use buffer source for `/`
