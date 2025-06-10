@@ -62,15 +62,6 @@ return {
   },
   { 'chentoast/marks.nvim', event = "VeryLazy", opts = { default_mappings = false } },
 
-  -- debug adapter protocol
-  {
-    'mfussenegger/nvim-dap',
-    dependencies = {
-      { 'rcarriga/nvim-dap-ui', dependencies = {"nvim-neotest/nvim-nio" }, config = true },
-      { 'leoluz/nvim-dap-go', config = true },
-    },
-  },
-
   -- AI
   {
     'zbirenbaum/copilot.lua',
@@ -163,56 +154,6 @@ return {
   { 'windwp/nvim-autopairs', opts = { check_ts = true } },
 
   { 'szw/vim-maximizer' },
-  {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/neotest-go",
-    },
-    config = function()
-      -- https://github.com/nvim-neotest/neotest-go#installation
-      -- The vim.diagnostic.config is optional but recommended if you
-      -- enabled the diagnostic option of neotest. Especially testify makes heavy use
-      -- of tabs and newlines in the error messages, which reduces the readability of
-      -- the generated virtual text otherwise.
-      --
-      -- get neotest namespace (api call creates or returns namespace)
-      local neotest_ns = vim.api.nvim_create_namespace("neotest")
-      vim.diagnostic.config({
-        virtual_text = {
-          format = function(diagnostic)
-            local message = diagnostic.message
-            :gsub("\n", " ")
-            :gsub("\t", " ")
-            :gsub("%s+", " ")
-            :gsub("^%s+", "")
-            return message
-          end,
-        },
-      }, neotest_ns)
-
-      require('neotest').setup({
-        adapters = {
-          require('neotest-go')({
-            recursive_run = true,
-          }),
-        },
-        quickfix = {
-          enabled = true,
-          open = true
-        },
-        icons = {
-          passed = "",
-          running = "",
-          skipped = "",
-          unknown = "",
-        },
-      })
-    end
-  },
   { 'nicwest/vim-camelsnek' },
   {
     'stevearc/qf_helper.nvim',
@@ -248,7 +189,10 @@ return {
     ---@module "auto-session"
     ---@type AutoSession.Config
     opts = {
-      suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
+      suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/' },
+      session_lens = {
+        load_on_setup = false,
+      },
     }
   },
 

@@ -37,13 +37,3 @@ vim.api.nvim_create_user_command('DapUIOpen', function() dapUI.open({reset=true}
 vim.api.nvim_create_user_command('DapUIClose', function() dapUI.close() end, { bang = true })
 vim.api.nvim_create_user_command('DapUIToggle', function() dapUI.toggle() end, { bang = true })
 vim.api.nvim_create_user_command('DapUIEval', function() dapUI.eval() end, { bang = true })
-
--- neotest
-local neotest = require('neotest')
-vim.api.nvim_create_user_command('TestNearest', function() neotest.run.run() end, { bang = true })
-vim.api.nvim_create_user_command('TestFile', function() neotest.run.run(vim.fn.expand("%")) end, { bang = true })
-vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end, { bang = true })
-vim.api.nvim_create_user_command('TestSuite', function() neotest.run.run(vim.fn.getcwd()) end, { bang = true })
-vim.api.nvim_create_user_command('TestOpen', function() neotest.output.toggle() end, { bang = true })
-vim.api.nvim_create_user_command('TestOutput', function() neotest.output_panel.toggle() end, { bang = true })
-vim.api.nvim_create_user_command('TestSummary', function() neotest.summary.toggle() end, { bang = true })

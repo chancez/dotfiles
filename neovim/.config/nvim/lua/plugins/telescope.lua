@@ -1,7 +1,27 @@
 return {
   {
     'nvim-telescope/telescope.nvim',
-    event = "VeryLazy",
+    cmd = {
+      'Telescope',
+      'Diagnostics',
+    },
+    keys = {
+      {'<c-p>', function() require('telescope.builtin').find_files() end, desc = 'Telescope find_files'},
+      {'<m-o>', function() require('telescope.builtin').buffers() end, desc = 'Telescope buffers'},
+      {'<c-b>', function() require('telescope.builtin').current_buffer_fuzzy_find() end, desc = 'Telescope current_buffer_fuzzy_find'},
+      {'<c-g>', function() require('telescope.builtin').grep_string() end, desc = 'Telescope grep_string'},
+      {'<m-;>', function() require('telescope.builtin').command_history() end, desc = 'Telescope command_history'},
+      {'<m-c>', function() require('telescope.builtin').commands() end, desc = 'Telescope commands'},
+
+      {'<leader>ff', function() require('telescope.builtin').find_files() end, desc = 'Telescope find_files'},
+      {'<leader>fg', function() require('telescope.builtin').live_grep() end, desc = 'Telescope live_grep'},
+      {'<leader>fB', function() require('telescope.builtin').buffers() end, desc = 'Telescope buffers'},
+      {'<leader>fh', function() require('telescope.builtin').help_tags() end, desc = 'Telescope help_tags'},
+      {'<leader>fr', function() require('telescope.builtin').registers() end, desc = 'Telescope registers'},
+      {'<leader>fm', function() require('telescope.builtin').marks() end, desc = 'Telescope marks'},
+      {'<leader>d', function() require('telescope.builtin').diagnostics() end, desc = 'Diagnostics'},
+      {'<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end, desc = 'Telescope file_browser'},
+    },
     dependencies = {
       'nvim-lua/popup.nvim',
       'nvim-telescope/telescope-frecency.nvim',
@@ -74,30 +94,7 @@ return {
       require("telescope").load_extension('file_browser')
       telescope.load_extension('dap')
 
-      local wk = require("which-key")
-      local telescopeBuiltin = require('telescope.builtin')
-
-      vim.api.nvim_create_user_command('Diagnostics', function() telescopeBuiltin.diagnostics() end, {})
-      wk.add({
-        mode =  'n',
-        {'<c-p>', function() telescopeBuiltin.find_files() end, desc = 'Telescope find_files'},
-        {'<m-o>', function() telescopeBuiltin.buffers() end, desc = 'Telescope buffers'},
-        {'<c-b>', function() telescopeBuiltin.current_buffer_fuzzy_find() end, desc = 'Telescope current_buffer_fuzzy_find'},
-        {'<c-g>', function() telescopeBuiltin.grep_string() end, desc = 'Telescope grep_string'},
-        {'<m-;>', function() telescopeBuiltin.command_history() end, desc = 'Telescope command_history'},
-        {'<m-c>', function() telescopeBuiltin.commands() end, desc = 'Telescope commands'},
-
-        {'<leader>ff', function() telescopeBuiltin.find_files() end, desc = 'Telescope find_files'},
-        {'<leader>fg', function() telescopeBuiltin.live_grep() end, desc = 'Telescope live_grep'},
-        {'<leader>fB', function() telescopeBuiltin.buffers() end, desc = 'Telescope buffers'},
-        {'<leader>fh', function() telescopeBuiltin.help_tags() end, desc = 'Telescope help_tags'},
-        {'<leader>fr', function() telescopeBuiltin.registers() end, desc = 'Telescope registers'},
-        {'<leader>fm', function() telescopeBuiltin.marks() end, desc = 'Telescope marks'},
-        {'<leader>d', function() telescopeBuiltin.diagnostics() end, desc = 'Diagnostics'},
-
-        {'<leader>fb', function() telescope.extensions.file_browser.file_browser() end, desc = 'Telescope file_browser'},
-      })
-
-    end
+      vim.api.nvim_create_user_command('Diagnostics', function() require('telescope.builtin').diagnostics() end, {})
+    end,
   },
 }
