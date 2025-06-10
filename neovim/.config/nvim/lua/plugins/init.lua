@@ -95,8 +95,12 @@ return {
     keys = {
       {'<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode='n', { silent = true }},
     },
-    opts = {},
-    dependencies = {'kyazdani42/nvim-web-devicons', opt = true}
+    opts = {
+      win = {
+        zindex = 2000 -- set higher than cmp so that which key is on top
+      }
+    },
+    dependencies = { 'kyazdani42/nvim-web-devicons', opt = true }
   },
   { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
 

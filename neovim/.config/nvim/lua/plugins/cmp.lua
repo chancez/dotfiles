@@ -35,6 +35,11 @@ return {
 
       ---@diagnostic disable-next-line: redundant-parameter
       cmp.setup({
+        window = {
+          completion = {
+            zindex = 1001, -- set lower than which-key
+          }
+        },
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
