@@ -85,21 +85,30 @@ local servers = {
   },
 }
 
-function LspOrgImports(wait_ms)
-  local params = vim.lsp.util.make_range_params()
-  params.context = {only = {"source.organizeImports"}}
-  local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, wait_ms)
-  for _, res in pairs(result or {}) do
-    for _, r in pairs(res.result or {}) do
-      if r.edit then
-        vim.lsp.util.apply_workspace_edit(r.edit, "utf-16")
-      else
-        vim.lsp.buf.execute_command(r.command)
-      end
-    end
-  end
+function LspOrgImports()
+  vim.lsp.buf.code_action({
+    ---@diagnostic disable-next-line: missing-fields
+    context = {
+      only = { 'source.organizeImports' },
+    },
+    apply = true,
+  })
 end
 
+function LspFixAll()
+  vim.lsp.buf.code_action({
+    ---@diagnostic disable-next-line: missing-fields
+    context = {
+      only = { 'source.fixAll' },
+    },
+    apply = true,
+  })
+end
+
+-- Setup LSP commands and keymaps
+--
+---@param bufnr (integer) Buffer handle, or 0 for current
+---@param client vim.lsp.Client client rpc object
 local function lspAttach(bufnr, client)
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
@@ -122,19 +131,18 @@ local function lspAttach(bufnr, client)
   vim.api.nvim_buf_create_user_command(bufnr, 'LspWorkspaceSymbols', function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end, { bang = true })
   vim.api.nvim_buf_create_user_command(bufnr, 'LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end, { bang = true })
   vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end, { bang = true })
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspFixAll', function() LspFixAll() end, { bang = true })
 
   -- formatting
   if client.server_capabilities.documentFormattingProvider then
     vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, { bang = true })
-    vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() LspOrgImports(3000) end, { bang = true })
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() LspOrgImports() end, { bang = true })
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({'BufWritePre'}, {
-      -- buffer = bufnr,
       group = 'CodeFormat',
-      pattern = {"*.go"},
       callback = function()
-        LspOrgImports(1000)
-        vim.lsp.buf.format({bufnr = bufnr, id = client.id, timeout_ms=2000})
+        LspOrgImports()
+        vim.lsp.buf.format()
       end
     })
   end
