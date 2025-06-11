@@ -164,6 +164,15 @@ local function lspAttach(bufnr, client)
       buffer = bufnr,
       desc = 'Format code on save',
       callback = function()
+        -- Suppress No code actions available message
+        -- https://github.com/neovim/neovim/issues/17758#issuecomment-1704694075
+        local orignal = vim.notify
+        vim.notify = function(msg, level, opts)
+          if msg == 'No code actions available' then
+            return
+          end
+          orignal(msg, level, opts)
+        end
         LspOrgImports()
         vim.lsp.buf.format()
       end,
