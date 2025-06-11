@@ -23,11 +23,16 @@ require 'options'
 
 require("lazy").setup("plugins", {
   -- do not automatically check for plugin updates
-  checker = { enabled = false },
+  checker = {
+    enabled = false
+  },
   rocks = {
     enabled = false
   },
-
+  change_detection = {
+    enabled = true,
+    notify = false,
+  },
 })
 
 require 'commands'
