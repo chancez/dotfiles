@@ -13,6 +13,7 @@ local servers = {
   pyright                = {},
   ts_ls                  = {},
   bashls                 = {},
+  shellcheck             = {},
   dockerls               = {},
   jsonnet_ls             = {},
   sqlls                  = {},
