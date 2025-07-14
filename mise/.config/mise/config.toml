@@ -14,10 +14,6 @@ golangci-lint = "latest"
 usage = "latest"
 go = "1.24"
 
-[env]
-_.python.venv = { path = ".venv", create = true, uv_create_args = ['--seed'] }
-
 [settings]
 experimental = true
 idiomatic_version_file_enable_tools = ["go"]
-python.uv_venv_auto = true
