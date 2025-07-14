@@ -12,7 +12,6 @@ return {
       auto_install = true,
       ensure_installed = {
         "c",
-        "cel",
         "comment",
         "dockerfile",
         "go",
