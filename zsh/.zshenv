@@ -10,4 +10,7 @@ _viewGitLogLine() {
   git show --color=always $1 | diff-so-fancy
 }
 
-source "$HOME/.zshenv_secrets"
+
+if [ -f "$HOME/.zshenv_secrets" ]; then
+  source "$HOME/.zshenv_secrets"
+fi
