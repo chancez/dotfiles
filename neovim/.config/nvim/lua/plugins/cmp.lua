@@ -62,10 +62,17 @@ return {
           ['<C-j>'] = cmp.mapping.select_next_item(),
           ['<C-Space>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.close(),
-          ['<CR>'] = cmp.mapping.confirm {
+          ['<CR>'] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
-            select = false,
-          },
+            select = true,
+          }),
+          ['<C-l>'] = cmp.mapping.complete({
+            config = {
+              sources = {
+                { name = 'copilot' }
+              }
+            }
+          }),
           ["<Tab>"] = vim.schedule_wrap(function(fallback)
             if cmp.visible() and has_words_before() then
               cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
@@ -90,15 +97,13 @@ return {
         },
         sources = cmp.config.sources(
           {
-            { name = 'nvim_lsp' },
-            { name = 'luasnip' },
+            { name = 'nvim_lsp', max_item_count = 10 },
+            { name = 'luasnip',  keyword_length = 2, max_item_count = 5 },
+            { name = 'copilot',  max_item_count = 3 },
           },
           {
-            { name = 'fuzzy_path', option = { fd_cmd = { 'fd', '-d', '20', '-p', '--no-ignore' } } },
-            { name = 'buffer' },
-          },
-          {
-            { name = 'copilot', max_item_count = 3 },
+            { name = 'fuzzy_path', max_item_count = 5, option = { fd_cmd = { 'fd', '-d', '20', '-p', '--no-ignore' } } },
+            { name = 'buffer',     keyword_length = 2 },
           }
         ),
         -- based on https://github.com/zbirenbaum/copilot-cmp?tab=readme-ov-file#comparators

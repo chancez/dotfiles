@@ -12,8 +12,12 @@ local servers = {
   rust_analyzer          = {},
   pyright                = {},
   ts_ls                  = {},
-  bashls                 = {},
-  shellcheck             = {},
+  bashls                 = {
+    bashIde = {
+      enableSourceErrorDiagnostics = true,
+      shellcheckPath = vim.fn.stdpath("data") .. "/mason/bin/shellcheck",
+    }
+  },
   dockerls               = {},
   jsonnet_ls             = {},
   sqlls                  = {},

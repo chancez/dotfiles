@@ -13,8 +13,17 @@ return {
       copilot_node_command = os.getenv('HOME') .. '/.local/bin/mise-node-lts.sh',
       server = {
         type = 'nodejs',
-        custom_server_filepath = vim.fn.expand("~/.local/share/nvim/mason/bin/copilot-language-server"),
+        custom_server_filepath = vim.fn.stdpath("data") .. "/mason/bin/copilot-language-server",
       },
+      server_opts_overrides = {
+        settings = {
+          advanced = {
+            listCount = 10,         -- #completions for panel
+            inlineSuggestCount = 3, -- #completions for getCompletions
+            length = 100,           -- max length of copilot suggestions
+          }
+        },
+      }
     }
   },
 
