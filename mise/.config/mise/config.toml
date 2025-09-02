@@ -3,9 +3,9 @@
 node = ['lts', '20', '19', '18', '17', '16']
 python = ['3', '2.7']
 uv = "latest"
-terraform = "1.12.1"
+terraform = "latest"
 java = "24"
-kubectl = "1.33"
+kubectl = "latest"
 ruby = "3.4"
 neovim = "0.11"
 "npm:jwt-cli" = "latest"
@@ -13,7 +13,7 @@ neovim = "0.11"
 "npm:tree-sitter-cli" = "latest"
 golangci-lint = "latest"
 usage = "latest"
-go = "1.24"
+go = [ "latest", "1.25", "1.24" ]
 
 [settings]
 experimental = true
