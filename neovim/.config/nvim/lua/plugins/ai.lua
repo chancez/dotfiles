@@ -10,7 +10,7 @@ return {
       filetypes = {
         yaml = true,
       },
-      copilot_node_command = os.getenv('HOME') .. '/.local/bin/mise-node-lts.sh',
+      copilot_node_command = { "mise", "exec", "node@lts", "--", "node" },
       server = {
         type = 'nodejs',
         custom_server_filepath = vim.fn.stdpath("data") .. "/mason/bin/copilot-language-server",
