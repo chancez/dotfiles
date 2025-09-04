@@ -166,4 +166,14 @@ return {
   { 'vito-c/jq.vim' },
   { 'HiPhish/jinja.vim' },
   { 'towolf/vim-helm',       ft = 'helm' },
+  {
+    "ramilito/kubectl.nvim",
+    version      = "2.*",
+    dependencies = "saghen/blink.download",
+    keys         = {
+      { "<leader>k", function() require("kubectl").toggle({ tab = true }) end, desc = 'Toggle kubectl', mode = 'n', { silent = true } },
+    },
+    cmd          = { "Kubectl" },
+    opts         = {}
+  },
 }

@@ -16,6 +16,7 @@ local whitespaceIgnoreFileTypes = {
   'mcphub',
   'markdown',
   'help',
+  'k8s_*'
 }
 
 vim.api.nvim_create_autocmd({ 'FileType' }, {
