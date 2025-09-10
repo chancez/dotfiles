@@ -73,6 +73,9 @@ local servers = {
     settings = {
       yaml = {
         validate = false,
+        format = {
+          enable = false,
+        },
         schemas = {
           ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
         },
