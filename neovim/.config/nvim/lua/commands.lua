@@ -5,7 +5,8 @@ vim.api.nvim_create_user_command('Helptab', ':help <args> | wincmd T', { nargs =
 
 -- Quit all buffers and delete the current session
 vim.api.nvim_create_user_command('Qas', function()
-  vim.cmd(':AutoSession delete')
+  vim.cmd(':silent AutoSession delete')
+  vim.cmd(':AutoSession disable')
   vim.cmd(':qa')
 end, {})
 
