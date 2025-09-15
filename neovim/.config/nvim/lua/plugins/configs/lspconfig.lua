@@ -118,6 +118,10 @@ end
 ---@param bufnr (integer) Buffer handle, or 0 for current
 ---@param client vim.lsp.Client client rpc object
 local function lspAttach(bufnr, client)
+  vim.bo[bufnr].formatexpr = nil
+  vim.bo[bufnr].formatprg = nil
+
+
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
   -- Define an lsp command that can be used in the command line
