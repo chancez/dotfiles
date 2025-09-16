@@ -18,7 +18,16 @@ return {
     }
   },
   { 'onsails/lspkind-nvim' },
-  { 'j-hui/fidget.nvim',   config = true },
+  {
+    'j-hui/fidget.nvim',
+    opts = {
+      notification = {
+        window = {
+          max_width = 50
+        },
+      },
+    }
+  },
   {
     'williamboman/mason.nvim',
     opts = {
