@@ -19,7 +19,7 @@ return {
       { '<leader>fh', function() require('telescope.builtin').help_tags() end,                    desc = 'Telescope help_tags' },
       { '<leader>fr', function() require('telescope.builtin').registers() end,                    desc = 'Telescope registers' },
       { '<leader>fm', function() require('telescope.builtin').marks() end,                        desc = 'Telescope marks' },
-      { '<leader>d',  function() require('telescope.builtin').diagnostics() end,                  desc = 'Diagnostics' },
+      { '<leader>fd', function() require('telescope.builtin').diagnostics() end,                  desc = 'Diagnostics' },
       { '<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end, desc = 'Telescope file_browser' },
     },
     dependencies = {

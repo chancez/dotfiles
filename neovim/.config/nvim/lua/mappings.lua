@@ -82,3 +82,4 @@ map('n', ']d', function() vim.diagnostic.jump({ count = -1, float = true }) end,
 map('n', '<leader>q', function() vim.diagnostic.setloclist() end, { desc = 'Diagnostics loclist' })
 map('n', '<leader>td', function() vim.diagnostic.enable(not vim.diagnostic.is_enabled()) end,
   { desc = 'Toggle diagnostics' })
+map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
