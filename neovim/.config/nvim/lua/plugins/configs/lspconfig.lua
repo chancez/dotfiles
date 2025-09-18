@@ -113,6 +113,30 @@ function LspFixAll()
   })
 end
 
+-- Add a toggle for autoformatting
+vim.g.autoFormat = true
+vim.b.autoFormat = nil
+
+function LspToggleAutoFormat()
+  vim.g.autoFormat = not vim.g.autoFormat
+  local status = vim.g.autoFormat and "enabled" or "disabled"
+  print("Auto-formatting on save " .. status)
+end
+
+function LspToggleAutoFormatBuffer()
+  vim.b.autoFormat = not vim.b.autoFormat
+  local status = vim.b.autoFormat and "enabled" or "disabled"
+  print("Auto-formatting on save for this buffer " .. status)
+end
+
+function IsLspAutoFormatEnabled()
+  if vim.b.autoFormat == nil then
+    return vim.g.autoFormat
+  else
+    return vim.b.autoFormat
+  end
+end
+
 -- Setup LSP commands and keymaps
 --
 ---@param bufnr (integer) Buffer handle, or 0 for current
@@ -125,22 +149,22 @@ local function lspAttach(bufnr, client)
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
   -- Define an lsp command that can be used in the command line
-  local lspCommand = function(name, command)
-    vim.api.nvim_buf_create_user_command(bufnr, name, command, { bang = true })
+  local lspCommand = function(name, command, desc)
+    vim.api.nvim_buf_create_user_command(bufnr, name, command, { bang = true, desc = desc })
   end
 
   -- Map an lsp command to a keybinding. The command must already be defined.
-  local mapLspCommand = function(cmd, lhs)
+  local mapLspCommand = function(cmd, lhs, desc)
     local rhs = '<cmd>' .. cmd .. '<CR>'
-    local desc = cmd
+    local description = desc or cmd
     local mode = 'n'
-    vim.keymap.set(mode, lhs, rhs, { desc = desc, silent = true, buffer = bufnr })
+    vim.keymap.set(mode, lhs, rhs, { desc = description, silent = true, buffer = bufnr })
   end
 
   -- Define an lsp command and map it to a keybinding
-  local lspCommandMap = function(name, lhs, command)
-    lspCommand(name, command)
-    mapLspCommand(name, lhs)
+  local lspCommandMap = function(name, lhs, command, desc)
+    lspCommand(name, command, desc)
+    mapLspCommand(name, lhs, desc)
   end
 
   lspCommandMap('LspRename', '<leader>rn', function() vim.lsp.buf.rename() end)
@@ -170,12 +194,21 @@ local function lspAttach(bufnr, client)
   if client.server_capabilities.documentFormattingProvider then
     lspCommand('LspFormat', function() vim.lsp.buf.format() end)
     lspCommand('LspOrgImports', function() LspOrgImports() end)
+    lspCommandMap('LspToggleAutoFormat', '<leader>tfg', function() LspToggleAutoFormat() end,
+      'Toggle auto-formatting on save globally')
+    lspCommandMap('LspToggleAutoFormatBuffer', '<leader>tfb', function() LspToggleAutoFormat() end,
+      'Toggle auto-formatting on save for this buffer')
+
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
       group = 'CodeFormat',
       buffer = bufnr,
       desc = 'Format code on save',
       callback = function()
+        -- Check if autoformatting is enabled
+        if not IsLspAutoFormatEnabled() then
+          return
+        end
         -- Suppress No code actions available message
         -- https://github.com/neovim/neovim/issues/17758#issuecomment-1704694075
         local orignal = vim.notify
