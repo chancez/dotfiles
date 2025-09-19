@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+REPO_PATH=${1:-.}
+BRANCH="$(git -C "${REPO_PATH}" branch --show-current)"
+if [ -n "$BRANCH" ]; then
+  echo "$BRANCH"
+  exit 0
+fi
+
+for location in rebase-merge rebase-apply; do
+  path=$(git -C "${REPO_PATH}" rev-parse --git-path ${location})
+  if test -d "${path}"; then
+    revision="$(cat "${path}/head-name")"
+    echo "${revision##refs/heads/}"
+    exit 0
+  fi
+done
+exit 1
