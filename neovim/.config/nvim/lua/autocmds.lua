@@ -47,6 +47,15 @@ function StripTrailingWhitespace()
   end
 end
 
+function ToggleStripTrailingWhitespace()
+  vim.b.noStripWhitespace = not vim.b.noStripWhitespace
+  local status = vim.b.noStripWhitespace and "disabled" or "enabled"
+  print("StripTrailingWhitespace on save for this buffer " .. status)
+end
+
+vim.api.nvim_create_user_command('ToggleStripTrailingWhitespace', ToggleStripTrailingWhitespace,
+  { desc = "Toggle stripping trailing whitespace on save for this buffer" })
+
 -- strip trailing whitespace
 vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
   pattern = '*',
