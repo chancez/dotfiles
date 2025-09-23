@@ -395,6 +395,29 @@ alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt sandre
 # https://sw.kovidgoyal.net/kitty/faq/#i-get-errors-about-the-terminal-being-unknown-or-opening-the-terminal-failing-when-sshing-into-a-different-computer
 command -v kitty >/dev/null && alias kittyssh="kitty +kitten ssh"
 
+function nvim() {
+  local no_session=false
+  local args=()
+
+  # Parse arguments
+  for arg in "$@"; do
+    case "$arg" in
+      --no-session|--nosession)
+        no_session=true
+        ;;
+      *)
+        args+=("$arg")
+        ;;
+    esac
+  done
+
+  if "$no_session"; then
+     args+=(--cmd "let g:auto_session_enabled = v:false")
+  fi
+
+  command nvim "${args[@]}"
+}
+
 if (( $+commands[nvim] )); then
     alias vim='nvim'
     export EDITOR='nvim'
