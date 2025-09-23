@@ -64,6 +64,7 @@ local servers = {
       }
     },
   },
+  jsonls                 = {},
   helm_ls                = {},
   buf_ls                 = {},
   kotlin_language_server = {},
