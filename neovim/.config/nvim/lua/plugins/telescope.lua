@@ -1,10 +1,7 @@
 return {
   {
     'nvim-telescope/telescope.nvim',
-    cmd = {
-      'Telescope',
-      'Diagnostics',
-    },
+    lazy = false,
     keys = {
       { '<c-p>',      function() require('telescope.builtin').find_files() end,                   desc = 'Telescope find_files' },
       { '<m-o>',      function() require('telescope.builtin').buffers() end,                      desc = 'Telescope buffers' },
@@ -30,6 +27,7 @@ return {
       "nvim-telescope/telescope-file-browser.nvim",
       { "nvim-telescope/telescope-dap.nvim",        dependencies = { 'mfussenegger/nvim-dap' } },
       'nvim-telescope/telescope-symbols.nvim',
+      'nvim-telescope/telescope-ui-select.nvim',
     },
     config = function()
       local actions = require("telescope.actions")
@@ -91,8 +89,9 @@ return {
       }
 
       telescope.load_extension('fzf')
-      require("telescope").load_extension('file_browser')
+      telescope.load_extension('file_browser')
       telescope.load_extension('dap')
+      telescope.load_extension('ui-select')
 
       vim.api.nvim_create_user_command('Diagnostics', function() require('telescope.builtin').diagnostics() end, {})
     end,

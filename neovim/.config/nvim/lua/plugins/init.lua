@@ -136,9 +136,38 @@ return {
       suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/' },
       session_lens = {
         load_on_setup = false,
+        picker = "telescope",
       },
-      git_use_branch_name = true,
+      -- log_level = 'debug',
+      -- git_use_branch_name = true,
       git_auto_restore_on_branch_change = true,
+      git_use_branch_name = function(path)
+        local lib = require("auto-session.lib")
+        local cmd = string.format('git-current-branch %s', path or "")
+        lib.logger.debug("git_get_branch_name: executing " .. cmd)
+        local out = vim.fn.system(cmd)
+        if vim.v.shell_error ~= 0 then
+          lib.logger.debug("git_get_branch_name: git failed with: " .. out)
+          return nil
+        end
+        lib.logger.debug("git_get_branch_name: got branch: " .. out)
+        return vim.fn.trim(out)
+      end,
+      no_restore_cmds = {
+        -- If there is no existing session, clear out all buffers
+        function(is_startup)
+          if (is_startup) then
+            return
+          end
+          local autosession = require('auto-session')
+          local lib = require("auto-session.lib")
+          lib.logger.debug("no_restore: checking for existing session")
+          if not autosession.session_exists_for_cwd() then
+            lib.logger.debug("no_restore: no existing session, clearing buffers before restoring")
+            lib.conditional_buffer_wipeout(false)
+          end
+        end
+      }
     }
   },
 
