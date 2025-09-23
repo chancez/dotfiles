@@ -1,10 +1,5 @@
 local M = {}
 
--- Insert runtime_path of neovim lua files for LSP
--- local runtime_path = vim.split(package.path, ';')
--- table.insert(runtime_path, 'lua/?.lua')
--- table.insert(runtime_path, 'lua/?/init.lua')
-
 local servers = {
   clangd                 = {
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }, -- remove proto, handled by bufls
