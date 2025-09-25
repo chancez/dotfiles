@@ -9,6 +9,7 @@ return {
       panel = { enabled = false },
       filetypes = {
         yaml = true,
+        gitcommit = true,
       },
       copilot_node_command = { "mise", "exec", "node@lts", "--", "node" },
       server = {
