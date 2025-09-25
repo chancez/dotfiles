@@ -80,6 +80,11 @@ return {
         pickers = {
           find_files = {
             find_command = { 'rg', '--files', '--hidden', '--no-binary' },
+            mappings = {
+              i = {
+                ["<C-Space>"] = actions.to_fuzzy_refine,
+              },
+            },
           },
           buffers = {
             ignore_current_buffer = true,
