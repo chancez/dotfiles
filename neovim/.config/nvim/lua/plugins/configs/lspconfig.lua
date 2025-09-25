@@ -73,7 +73,7 @@ local auto_install_servers = {
 
 
 local manually_managed_servers = {
-  copilot_ls = {},
+  -- copilot_ls = {},
 }
 
 local servers = vim.tbl_extend("error", auto_install_servers, manually_managed_servers)
