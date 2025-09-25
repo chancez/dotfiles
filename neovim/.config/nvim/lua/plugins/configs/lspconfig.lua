@@ -1,6 +1,6 @@
 local M = {}
 
-local servers = {
+local auto_install_servers = {
   clangd                 = {
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }, -- remove proto, handled by bufls
   },
@@ -70,6 +70,13 @@ local servers = {
     }
   },
 }
+
+
+local manually_managed_servers = {
+  copilot_ls = {},
+}
+
+local servers = vim.tbl_extend("error", auto_install_servers, manually_managed_servers)
 
 function LspOrgImports()
   vim.lsp.buf.code_action({
@@ -203,6 +210,7 @@ local function lspAttach(bufnr, client)
   end
 end
 
+M.auto_install_servers = vim.tbl_keys(auto_install_servers)
 M.server_names = vim.tbl_keys(servers)
 
 M.setup = function()
@@ -234,6 +242,7 @@ M.setup = function()
 
     -- Server-specific settings. See `:help lsp-quickstart`
     vim.lsp.config(server_name, server_opts)
+    vim.lsp.enable(server_name)
   end
 end
 

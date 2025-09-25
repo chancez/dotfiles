@@ -1,9 +1,6 @@
 return {
   {
     'neovim/nvim-lspconfig',
-    config = function()
-      require("plugins.configs.lspconfig").setup()
-    end,
   },
   {
     'ray-x/lsp_signature.nvim',
@@ -47,12 +44,14 @@ return {
       "neovim/nvim-lspconfig",
     },
     config = function()
-      local serverNames = require("plugins.configs.lspconfig").server_names
+      local myLspConfigs = require("plugins.configs.lspconfig")
+      local serverNames = myLspConfigs.auto_install_servers
       require("mason-lspconfig").setup({
         ensure_installed = serverNames,
         automatic_installation = true,
-        automatic_enable = true,
+        automatic_enable = false,
       })
+      myLspConfigs.setup()
     end
   },
 }
