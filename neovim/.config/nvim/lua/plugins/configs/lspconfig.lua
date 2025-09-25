@@ -227,11 +227,7 @@ M.setup = function()
 
 
   for server_name, server_specific_opts in pairs(servers) do
-    -- nvim-cmp supports additional completion capabilities
-    local cmp_lsp = require('cmp_nvim_lsp')
-    local capabilities = cmp_lsp.default_capabilities()
     local server_opts = {
-      capabilities = capabilities,
       flags = {
         debounce_text_changes = 150,
       },

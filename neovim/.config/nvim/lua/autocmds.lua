@@ -16,7 +16,8 @@ local whitespaceIgnoreFileTypes = {
   'mcphub',
   'markdown',
   'help',
-  'k8s_*'
+  'k8s_*',
+  'blink-cmp-menu',
 }
 
 vim.api.nvim_create_autocmd({ 'FileType' }, {
