@@ -18,6 +18,7 @@ return {
       { '<leader>fm', function() require('telescope.builtin').marks() end,                        desc = 'Telescope marks' },
       { '<leader>fd', function() require('telescope.builtin').diagnostics() end,                  desc = 'Diagnostics' },
       { '<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end, desc = 'Telescope file_browser' },
+      { '<leader>u',  function() require('telescope').extensions.undo.undo() end,                 desc = 'Telescope undo' },
     },
     dependencies = {
       'nvim-lua/popup.nvim',
@@ -28,6 +29,7 @@ return {
       { "nvim-telescope/telescope-dap.nvim",        dependencies = { 'mfussenegger/nvim-dap' } },
       'nvim-telescope/telescope-symbols.nvim',
       'nvim-telescope/telescope-ui-select.nvim',
+      "debugloop/telescope-undo.nvim",
     },
     config = function()
       local actions = require("telescope.actions")
@@ -46,6 +48,7 @@ return {
             -- disables netrw and use telescope-file-browser in its place
             hijack_netrw = true,
           },
+          undo = {},
         },
         defaults = require('telescope.themes').get_ivy {
           layout_config = {
@@ -97,6 +100,7 @@ return {
       telescope.load_extension('file_browser')
       telescope.load_extension('dap')
       telescope.load_extension('ui-select')
+      telescope.load_extension('undo')
 
       vim.api.nvim_create_user_command('Diagnostics', function() require('telescope.builtin').diagnostics() end, {})
     end,
