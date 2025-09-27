@@ -16,7 +16,7 @@ golangci-lint = "latest"
 usage = "latest"
 go = [ "latest", "1.25", "1.24" ]
 "go:gotest.tools/gotestsum" = "latest"
-"pipx:beets" = { version = "latest", extras = "scrub" }
+"pipx:beets" = { version = "latest", extras = "scrub,chroma" }
 
 [settings]
 experimental = true
