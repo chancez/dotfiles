@@ -1,16 +1,35 @@
 return {
   {
     'nvim-treesitter/nvim-treesitter',
+    branch = "main",
     lazy = false,
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter-refactor',
-      'nvim-treesitter/nvim-treesitter-textobjects',
-    },
     build = ':TSUpdate',
-    opts = {
-      sync_install = false,
-      auto_install = true,
-      ensure_installed = {
+    opts = {},
+    config = function(_, opts)
+      local ts = require('nvim-treesitter')
+      local parsers = require("nvim-treesitter.parsers")
+      ts.setup(opts)
+
+      -- Custom parsers
+      ---@diagnostic disable-next-line: missing-fields
+      parsers.cel = {
+        ---@diagnostic disable-next-line: missing-fields
+        install_info = {
+          url = "https://github.com/bufbuild/tree-sitter-cel.git",
+          files = { "src/parser.c" },
+          branch = "main",
+          generate_requires_npm = false,
+          requires_generate_from_grammar = false,
+        },
+      }
+
+      vim.filetype.add({
+        extension = {
+          cel = 'cel',
+        },
+      })
+
+      local filetypes = {
         "c",
         "comment",
         "dockerfile",
@@ -35,43 +54,14 @@ return {
         "typescript",
         "vim",
         "yaml",
-      },
-      highlight = { enable = true },
-      textobjects = {
-        enable = true,
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            -- You can use the capture groups defined in textobjects.scm
-            ['af'] = '@function.outer',
-            ['if'] = '@function.inner',
-            ['ac'] = '@class.outer',
-            ['ic'] = '@class.inner',
-          },
-        },
-      },
-    },
-    config = function(_, opts)
-      require("nvim-treesitter.configs").setup(opts)
-      --
-      -- Custom parsers
-      local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
-      parser_config.cel = {
-        install_info = {
-          url = "https://github.com/bufbuild/tree-sitter-cel.git",
-          files = { "src/parser.c" },
-          branch = "main",
-          generate_requires_npm = false,
-          requires_generate_from_grammar = false,
-        },
-        filetype = "cel",
+        "cel",
       }
 
-      vim.filetype.add({
-        extension = {
-          cel = 'cel',
-        },
+      ts.install(filetypes)
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = filetypes,
+        callback = function() vim.treesitter.start() end,
       })
     end,
   },
@@ -100,6 +90,31 @@ return {
       },
     }
   },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    branch = 'main',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    opts = {},
+    config = function(_, opts)
+      require("nvim-treesitter-textobjects").setup(opts)
+      local select = require("nvim-treesitter-textobjects.select")
 
+      local keymaps = {
+        -- You can use the capture groups defined in textobjects.scm
+        ['af'] = '@function.outer',
+        ['if'] = '@function.inner',
+        ['ac'] = '@class.outer',
+        ['ic'] = '@class.inner',
+      }
+
+      for keys, query in pairs(keymaps) do
+        -- Convert "@foo.bar" into "bar foo"
+        local desc = query:sub(2):gsub('(%a+).(%a+)', '%2 %1')
+        vim.keymap.set({ "x", "o" }, keys, function()
+          select.select_textobject(query, "textobjects")
+        end, { desc = desc })
+      end
+    end,
+  },
   { 'windwp/nvim-ts-autotag', dependencies = { 'nvim-treesitter/nvim-treesitter' }, config = true },
 }

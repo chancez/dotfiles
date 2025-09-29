@@ -8,15 +8,6 @@ return {
       'DapUIToggle',
       'DapUIEval',
     },
-    keys = {
-      { 'gtn', ':TestNearest<CR>',   { silent = true } },
-      { 'gtf', ':TestFile<CR>',      { silent = true } },
-      { 'gtd', ':TestDirectory<CR>', { silent = true } },
-      { 'gts', ':TestSuite<CR>',     { silent = true } },
-      { 'gto', ':TestOpen<CR>',      { silent = true } },
-      { 'gtO', ':TestOutput<CR>',    { silent = true } },
-      { 'gtS', ':TestSummary<CR>',   { silent = true } },
-    },
     dependencies = {
       { 'rcarriga/nvim-dap-ui', dependencies = { "nvim-neotest/nvim-nio" }, config = true },
       { 'leoluz/nvim-dap-go',   config = true },
