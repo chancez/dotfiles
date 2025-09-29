@@ -3,20 +3,31 @@ return {
     "nvim-neotest/neotest",
     cmd = {
       'Neotest',
-      'TestNearest',
-      'TestFile',
-      'TestDirectory',
-      'TestSuite',
-      'TestOpen',
-      'TestOutput',
-      'TestSummary',
+    },
+    keys = {
+      { "<leader>ta", function() require("neotest").run.attach() end,                                     desc = "[t]est [a]ttach" },
+      { "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end,                      desc = "[t]est run [f]ile" },
+      { "<leader>tA", function() require("neotest").run.run(vim.uv.cwd()) end,                            desc = "[t]est [A]ll files" },
+      { "<leader>tS", function() require("neotest").run.run({ suite = true }) end,                        desc = "[t]est [S]uite" },
+      { "<leader>tn", function() require("neotest").run.run() end,                                        desc = "[t]est [n]earest" },
+      { "<leader>tl", function() require("neotest").run.run_last() end,                                   desc = "[t]est [l]ast" },
+      { "<leader>ts", function() require("neotest").summary.toggle() end,                                 desc = "[t]est [s]ummary" },
+      { "<leader>to", function() require("neotest").output.open({ enter = true, auto_close = true }) end, desc = "[t]est [o]utput" },
+      { "<leader>tO", function() require("neotest").output_panel.toggle() end,                            desc = "[t]est [O]utput panel" },
+      { "<leader>tt", function() require("neotest").run.stop() end,                                       desc = "[t]est [t]erminate" },
     },
     dependencies = {
       "nvim-neotest/nvim-nio",
       "nvim-lua/plenary.nvim",
       "antoinemadec/FixCursorHold.nvim",
       "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/neotest-go",
+      {
+        "fredrikaverpil/neotest-golang",
+        version = "*",
+        dependencies = {
+          "leoluz/nvim-dap-go",
+        },
+      },
     },
     config = function()
       -- https://github.com/nvim-neotest/neotest-go#installation
@@ -44,8 +55,9 @@ return {
 
       neotest.setup({
         adapters = {
-          require('neotest-go')({
-            recursive_run = true,
+          require('neotest-golang')({
+            runner = "gotestsum",
+            warn_test_name_dupes = false,
           }),
         },
         quickfix = {
@@ -59,15 +71,6 @@ return {
           unknown = "",
         },
       })
-
-      vim.api.nvim_create_user_command('TestNearest', function() neotest.run.run() end, { bang = true })
-      vim.api.nvim_create_user_command('TestFile', function() neotest.run.run(vim.fn.expand("%")) end, { bang = true })
-      vim.api.nvim_create_user_command('TestDirectory', function() neotest.run.run(vim.fn.expand("%:p:h")) end,
-        { bang = true })
-      vim.api.nvim_create_user_command('TestSuite', function() neotest.run.run(vim.fn.getcwd()) end, { bang = true })
-      vim.api.nvim_create_user_command('TestOpen', function() neotest.output.toggle() end, { bang = true })
-      vim.api.nvim_create_user_command('TestOutput', function() neotest.output_panel.toggle() end, { bang = true })
-      vim.api.nvim_create_user_command('TestSummary', function() neotest.summary.toggle() end, { bang = true })
     end
   }
 }
