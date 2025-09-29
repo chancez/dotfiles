@@ -4,6 +4,7 @@ return {
     'rafamadriz/friendly-snippets',
     'fang2hou/blink-copilot',
   },
+  lazy = false,
   version = '1.*',
   ---@module 'blink.cmp'
   ---@type blink.cmp.Config
