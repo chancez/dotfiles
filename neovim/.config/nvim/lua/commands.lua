@@ -1,12 +1,13 @@
 local util = require 'util'
 
 -- Open help in a new tab
-vim.api.nvim_create_user_command('Helptab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })
+vim.api.nvim_create_user_command('HelpTab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })
+vim.api.nvim_create_user_command('HelpVert', ':vert botright help <args>', { nargs = 1, complete = 'help' })
 
 -- Quit all buffers and delete the current session
 vim.api.nvim_create_user_command('Qas', function()
   vim.cmd(':silent AutoSession delete')
-  vim.cmd(':AutoSession disable')
+  vim.cmd(':silent AutoSession disable')
   vim.cmd(':qa')
 end, {})
 
