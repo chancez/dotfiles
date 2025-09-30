@@ -180,7 +180,12 @@ return {
         ['<c-x>'] = 'q', -- map c-x to skip
       }
       vim.g.VM_maps = {
-        ["I BS"] = '', -- disable backspace mapping
+        ["I BS"] = '',     -- disable backspace mapping
+        ["I Return"] = '', -- disable CR mapping, it breaks blink
+        ["I CtrlB"] = '',
+        ["I CtrlF"] = '',
+        ["I Down Arrow"] = '',
+        ["I Up Arrow"] = '',
       }
     end,
   },
