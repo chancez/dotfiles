@@ -187,8 +187,8 @@ return {
       -- Mappings defined in a keymap layer only apply when there are
       -- multiple cursors. This lets you have overlapping mappings.
       mc.addKeymapLayer(function(layerSet)
-        set({ "n", "x" }, "<c-x>", function() mc.matchSkipCursor(1) end)
-        set({ "n", "x" }, "<c-p>", function() mc.matchSkipCursor(-1) end)
+        layerSet({ "n", "x" }, "<c-x>", function() mc.matchSkipCursor(1) end)
+        layerSet({ "n", "x" }, "<c-p>", function() mc.matchSkipCursor(-1) end)
 
         -- Map tab to escape in multi-cursor mode, which is how
         -- vim-visual-multi worked (hard to break habits)
