@@ -61,6 +61,8 @@ return {
         preset = 'inherit',
         ['<S-Tab>'] = { 'insert_prev' },
         ['<Tab>'] = { 'insert_next' },
+        ['<C-p>'] = { 'insert_prev' },
+        ['<C-n>'] = { 'insert_next' },
         ['<CR>'] = { 'accept_and_enter', 'fallback' },
       },
     },
