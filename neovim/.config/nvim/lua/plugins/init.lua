@@ -173,21 +173,36 @@ return {
 
   -- multicursor support like sublime text
   {
-    'mg979/vim-visual-multi',
-    init = function()
-      vim.g.VM_custom_remaps = {
-        ['<c-p>'] = 'Q', -- map c-p to previous
-        ['<c-x>'] = 'q', -- map c-x to skip
-      }
-      vim.g.VM_maps = {
-        ["I BS"] = '',     -- disable backspace mapping
-        ["I Return"] = '', -- disable CR mapping, it breaks blink
-        ["I CtrlB"] = '',
-        ["I CtrlF"] = '',
-        ["I Down Arrow"] = '',
-        ["I Up Arrow"] = '',
-      }
-    end,
+    "jake-stewart/multicursor.nvim",
+    branch = "1.0",
+    config = function()
+      local mc = require("multicursor-nvim")
+      mc.setup()
+
+      local set = vim.keymap.set
+
+      set({ "n", "x" }, "<c-n>", function() mc.matchAddCursor(1) end)
+      set({ "n", "x" }, "<c-x>", function() mc.matchSkipCursor(1) end)
+      set({ "n", "x" }, "<c-p>", function() mc.matchSkipCursor(-1) end)
+      set({ "n", "x" }, "<c-a>", function() mc.matchAllAddCursors() end)
+
+      -- Mappings defined in a keymap layer only apply when there are
+      -- multiple cursors. This lets you have overlapping mappings.
+      mc.addKeymapLayer(function(layerSet)
+        -- Map tab to escape in multi-cursor mode, which is how
+        -- vim-visual-multi worked (hard to break habits)
+        layerSet({ "n", "x" }, "<tab>", '<Esc>')
+
+        -- Enable and clear cursors using escape.
+        layerSet("n", "<esc>", function()
+          if not mc.cursorsEnabled() then
+            mc.enableCursors()
+          else
+            mc.clearCursors()
+          end
+        end)
+      end)
+    end
   },
 
   -- git
