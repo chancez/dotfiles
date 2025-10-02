@@ -159,13 +159,14 @@ return {
           if (is_startup) then
             return
           end
-          local autosession = require('auto-session')
-          local lib = require("auto-session.lib")
-          lib.logger.debug("no_restore: checking for existing session")
-          if not autosession.session_exists_for_cwd() then
-            lib.logger.debug("no_restore: no existing session, clearing buffers before restoring")
+          vim.ui.input({ prompt = 'No restore: clear all buffers? ([y]/n): ' }, function(input)
+            if input == 'n' then
+              return
+            end
+            local lib = require("auto-session.lib")
+            lib.logger.debug("no_restore: clearing all buffers")
             lib.conditional_buffer_wipeout(false)
-          end
+          end)
         end
       }
     }
