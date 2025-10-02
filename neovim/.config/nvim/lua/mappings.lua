@@ -57,6 +57,7 @@ map('n', 'k', 'gk')
 
 -- Make Y behave like other capitals
 map('n', 'Y', 'y$')
+map('n', '<leader>y', ':%y+<CR>', { desc = 'copy the entire buffer', silent = true })
 
 -- Reselect visual block after indent
 map('v', '<', '<gv')
