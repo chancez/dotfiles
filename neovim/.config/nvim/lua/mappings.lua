@@ -41,6 +41,33 @@ map('t', '<A-j>', '<C-\\><C-n><C-w>j')
 map('t', '<A-k>', '<C-\\><C-n><C-w>k')
 map('t', '<A-l>', '<C-\\><C-n><C-w>l')
 
+local function clearScrollback()
+  -- Enter insert mode if needed
+  local mode = vim.api.nvim_get_mode().mode
+  if mode == 'nt' then
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i", true, false, true), "n", true)
+  end
+  -- Send ctr-l in the terminal
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-l>", true, false, true), 'n', false)
+  local old = vim.opt.scrollback
+  vim.opt.scrollback = 1
+  vim.opt.scrollback = old
+  -- Return to normal mode if needed
+  if mode == 'nt' then
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-\\><C-n>", true, false, true), "n", true)
+  end
+end
+
+map('t', '<c-l>', clearScrollback, { desc = 'Clear terminal scrollback' })
+-- Set an auto-command to map c-l to clearScrollback in normal mode for terminal buffers
+vim.api.nvim_create_autocmd('TermOpen', {
+  pattern = '*',
+  callback = function()
+    map('n', '<c-l>', clearScrollback, { desc = 'Clear terminal scrollback', buffer = true })
+  end,
+})
+
+
 -- Buffer movement
 map('n', '<m-]>', ':bnext<CR>', { desc = 'Next buffer' })
 map('n', '<m-[>', ':bprev<CR>', { desc = 'Previous buffer' })
