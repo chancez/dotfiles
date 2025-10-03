@@ -12,6 +12,7 @@ end
 
 local whitespaceIgnoreFileTypes = {
   'terminal',
+  'toggleterm',
   'lazy',
   'mcphub',
   'markdown',
