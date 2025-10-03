@@ -133,6 +133,17 @@ return {
           local pid = state:read_pid()
           if pid then
             local state_file_path = state:get_path()
+            -- check if the pid still exists and is an nvim using pgrep and check the exit code
+            local cmd = { "pgrep", "-F", state_file_path, "nvim" }
+            lib.logger.debug("pre_restore: executing ", cmd)
+            local ret = vim.system(cmd):wait()
+            if ret.code ~= 0 then
+              -- nvim with the pid is not running so this is a left over PID we should clean up
+              lib.logger.debug(string.format("pre_restore: removing stale session pid file: %s", state_file_path))
+              state:delete()
+              return true
+            end
+
             -- Track that a session exists in a vim global so that we can avoid
             -- overwriting it when the current vim instance closes
             vim.g.auto_session_existing_session_name = session_name
