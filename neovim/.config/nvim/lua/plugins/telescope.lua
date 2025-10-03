@@ -72,7 +72,7 @@ return {
               ["<C-h>"] = "which_key",
               ["<C-s>"] = actions.cycle_previewers_next,
               ["<C-a>"] = actions.cycle_previewers_prev,
-
+              ["<C-Space>"] = actions.to_fuzzy_refine,
             },
             n = {
               ["<C-k>"] = actions.move_selection_previous,
@@ -83,11 +83,6 @@ return {
         pickers = {
           find_files = {
             find_command = { 'rg', '--files', '--hidden', '--no-binary' },
-            mappings = {
-              i = {
-                ["<C-Space>"] = actions.to_fuzzy_refine,
-              },
-            },
           },
           buffers = {
             ignore_current_buffer = true,
