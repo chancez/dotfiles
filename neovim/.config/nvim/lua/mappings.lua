@@ -112,14 +112,5 @@ map('n', '<leader>td', function() vim.diagnostic.enable(not vim.diagnostic.is_en
   { desc = 'Toggle diagnostics' })
 map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
 
-local resize = require('resize')
-
-vim.api.nvim_create_user_command('Resize', function(opts)
-  if #opts.fargs ~= 2 then
-    print("Usage: :Resize <direction> <amount>")
-    return
-  end
-  local direction = opts.fargs[1]
-  local amount = tonumber(opts.fargs[2])
-  resize.ResizeWindow(direction, amount)
-end, { desc = 'Resize window', nargs = '+', count = true })
+local resizer = require('resize').Resizer:new()
+map('n', '<leader>R', function() resizer:start() end, { desc = 'Start resizer' })
