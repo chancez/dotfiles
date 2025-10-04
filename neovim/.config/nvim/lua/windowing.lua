@@ -137,12 +137,14 @@ function Window:neighbors()
 end
 
 local direction_to_letter = {
-  left  = "h",
-  right = "l",
-  above = "k",
-  up    = "k",
-  below = "j",
-  down  = "j",
+  left   = "h",
+  right  = "l",
+  above  = "k",
+  up     = "k",
+  top    = "k",
+  below  = "j",
+  down   = "j",
+  bottom = "j",
 }
 
 function Window:neighbor(direction)
@@ -165,19 +167,19 @@ function Window:neighbor(direction)
   return neighbor
 end
 
-function Window:resize_up(amount)
+function Window:resize_top(amount)
   amount = amount or 1
   -- Decrease the size of the window above us
   local neighbor = self:neighbor("above")
   if neighbor then
-    neighbor:resize_down(-amount)
+    neighbor:resize_bottom(-amount)
   end
 end
 
-function Window:resize_down(amount)
+function Window:resize_bottom(amount)
   amount = amount or 1
   -- Only resize in a direction if it's possible
-  -- If we don't have a neighbor to below us, we can't grow "down".
+  -- If we don't have a neighbor below us, we can't grow "down".
   -- Doing so would result in growing "up".
   if amount > 0 then
     local neighbor = self:neighbor("below")
@@ -211,17 +213,92 @@ function Window:resize_left(amount)
   end
 end
 
+local resize_directions = {
+  up    = "top",
+  down  = "bottom",
+  left  = "left",
+  right = "right",
+}
+
 function Window:resize(direction, amount)
   vim.validate {
     direction = { direction, 'string' },
     amount = { amount, 'number' }
   }
   amount = amount or 1
-  local f = self["resize_" .. direction]
-  if not f then
+  local dir = resize_directions[direction]
+  if not dir then
     error(string.format("Invalid direction '%s'. Valid directions are: up, down, left, right", direction))
   end
+  local f = self["resize_" .. dir]
   f(self, amount)
+end
+
+function Window:resize_relative(direction, amount)
+  -- relative resizing takes neighbors into consideration
+  vim.validate {
+    direction = { direction, 'string' },
+    amount = { amount, 'number' }
+  }
+  if amount < 0 then
+    -- Only positive relative resizing is supported
+    error("Relative resizing only supports positive amounts")
+  end
+  amount = amount or 1
+
+  local left_neighbor = self:neighbor("left")
+  local right_neighbor = self:neighbor("right")
+  local top_neighbor = self:neighbor("top")
+  local bottom_neighbor = self:neighbor("bottom")
+
+  if direction == "left" and left_neighbor and right_neighbor then
+    -- has neighbor on both sides
+    -- narrower
+    self:resize_right(-amount)
+  elseif direction == "left" and left_neighbor then
+    -- only has left neighbor
+    -- wider
+    self:resize_left(amount)
+  elseif direction == "left" and right_neighbor then
+    -- only has right neighbor
+    -- narrower
+    self:resize_right(-amount)
+  elseif direction == "right" and left_neighbor and right_neighbor then
+    -- has neighbor on both sides
+    -- wider
+    self:resize_right(amount)
+  elseif direction == "right" and left_neighbor then
+    -- only has left neighbor
+    -- narrower
+    self:resize_left(-amount)
+  elseif direction == "right" and right_neighbor then
+    -- only has right neighbor
+    -- wider
+    self:resize_right(amount)
+  elseif direction == "up" and top_neighbor and bottom_neighbor then
+    -- has neighbor on above and below
+    -- shorter
+    self:resize_bottom(-amount)
+  elseif direction == "up" and top_neighbor then
+    -- only has top neighbor
+    -- taller
+    self:resize_top(amount)
+  elseif direction == "up" and bottom_neighbor then
+    -- only has bottom neighbor
+    -- shorter
+    self:resize_bottom(-amount)
+  elseif direction == "down" and top_neighbor and bottom_neighbor then
+    -- has neighbor on above and below
+    -- taller
+    self:resize_bottom(amount)
+  elseif direction == "down" and top_neighbor then
+    -- only has top neighbor
+    -- shorter
+    self:resize_top(-amount)
+  elseif direction == "down" and bottom_neighbor then
+    -- only has bottom neighbor
+    self:resize_bottom(amount)
+  end
 end
 
 M.Window = Window

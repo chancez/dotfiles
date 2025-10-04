@@ -112,5 +112,9 @@ map('n', '<leader>td', function() vim.diagnostic.enable(not vim.diagnostic.is_en
   { desc = 'Toggle diagnostics' })
 map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
 
-local resizer = require('resize').Resizer:new()
-map('n', '<leader>R', function() resizer:start() end, { desc = 'Start resizer' })
+map('n', '<leader>R', function()
+  local resizer = require('resize').Resizer:new({
+    relative_resizing = true,
+  })
+  resizer:start()
+end, { desc = 'Start relative resize mode' })

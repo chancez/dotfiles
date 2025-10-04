@@ -38,3 +38,10 @@ vim.api.nvim_create_user_command('Resize', function(opts)
   local amount = tonumber(opts.fargs[2])
   resize.ResizeWindow(direction, amount)
 end, { desc = 'Resize window', nargs = '+', count = true })
+
+vim.api.nvim_create_user_command('ResizeMode', function()
+  local resizer = require('resize').Resizer:new({
+    relative_resizing = true,
+  })
+  resizer:start()
+end, { desc = 'Start relative resize mode', count = true })
