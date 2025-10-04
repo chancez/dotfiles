@@ -11,6 +11,8 @@ vim.opt.scrolloff = 5 -- Begin scrolling when cursor is at 5 from the edge
 vim.opt.lazyredraw = true
 vim.opt.errorbells = false
 vim.opt.number = true
+-- vim.opt.relativenumber = true
+-- vim.opt.statuscolumn = '%s%{&nu?v:lnum:""}%=%{&rnu?" ".v:relnum:""}'
 vim.opt.showfulltag = true
 vim.opt.hlsearch = true   -- Highlight as you search.
 vim.opt.ignorecase = true -- Ignore case when searching
