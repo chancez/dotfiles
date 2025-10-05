@@ -6,11 +6,19 @@ local default_config = {
   vertical_resize_amount = 1,
   horizontal_resize_amount = 1,
   relative_resizing = false,
+  mappings = {
+    up = 'k',
+    down = 'j',
+    left = 'h',
+    right = 'l',
+    stop_resizing = '<Esc>',
+  },
 }
 
 -- a helper function to set a keymap and return the current mapping
 local function map(mode, lhs, rhs, opts)
-  -- Get the current keymap
+  -- Get the current global keymap
+  -- TODO: Figure out buffer mappings which takes predence over global mappings
   local current_map = vim.fn.maparg(lhs, mode, false, true)
   -- Set the new keymap
   vim.keymap.set(mode, lhs, rhs, opts)
@@ -44,47 +52,49 @@ function Resizer:start()
   end
   self.active = true
 
-  local opts = { noremap = true, silent = true }
-  -- Store current mappings and set new ones
-  -- Track the lhs because map() returns an empty table if there is no existing mapping.
+  local opts = { silent = true }
 
-  if not self.cfg.relative_resizing then
-    -- Absolute resizing
-    self.current_mappings = {
-      -- Positive resizing
-      k = map('n', 'k', function() M.resize("up", self.cfg.vertical_resize_amount) end, opts),
-      j = map('n', 'j', function() M.resize("down", self.cfg.vertical_resize_amount) end, opts),
-      h = map('n', 'h', function() M.resize("left", self.cfg.horizontal_resize_amount) end, opts),
-      l = map('n', 'l', function() M.resize("right", self.cfg.horizontal_resize_amount) end, opts),
-      -- Negative resizing
-      K = map('n', 'K', function() M.resize("up", -self.cfg.vertical_resize_amount) end, opts),
-      J = map('n', 'J', function() M.resize("down", -self.cfg.vertical_resize_amount) end, opts),
-      H = map('n', 'H', function() M.resize("left", -self.cfg.horizontal_resize_amount) end, opts),
-      L = map('n', 'L', function() M.resize("right", -self.cfg.horizontal_resize_amount) end, opts),
-      -- Stop resizing
-      ['<Esc>'] = map('n', '<Esc>', function() self:stop() end, opts),
-    }
-  else
-    self.current_mappings = {
-      -- Relative resizing
-      k = map('n', 'k', function() M.relative_resize("up", self.cfg.vertical_resize_amount) end, opts),
-      j = map('n', 'j', function() M.relative_resize("down", self.cfg.vertical_resize_amount) end, opts),
-      h = map('n', 'h', function() M.relative_resize("left", self.cfg.horizontal_resize_amount) end, opts),
-      l = map('n', 'l', function() M.relative_resize("right", self.cfg.horizontal_resize_amount) end, opts),
-      -- Stop resizing
-      ['<Esc>'] = map('n', '<Esc>', function() self:stop() end, opts),
-    }
+  local resize_func = M.resize
+  if self.cfg.relative_resizing then
+    resize_func = M.relative_resize
   end
+  local resize_mappings = {
+    -- Positive mappings
+    { key = self.cfg.mappings.up,            dir = "up",                       amount = self.cfg.vertical_resize_amount,    func = resize_func },
+    { key = self.cfg.mappings.down,          dir = "down",                     amount = self.cfg.vertical_resize_amount,    func = resize_func },
+    { key = self.cfg.mappings.left,          dir = "left",                     amount = self.cfg.horizontal_resize_amount,  func = resize_func },
+    { key = self.cfg.mappings.right,         dir = "right",                    amount = self.cfg.horizontal_resize_amount,  func = resize_func },
+    -- negative mappings
+    { key = self.cfg.mappings.up:upper(),    dir = "up",                       amount = -self.cfg.vertical_resize_amount,   func = resize_func },
+    { key = self.cfg.mappings.down:upper(),  dir = "down",                     amount = -self.cfg.vertical_resize_amount,   func = resize_func },
+    { key = self.cfg.mappings.left:upper(),  dir = "left",                     amount = -self.cfg.horizontal_resize_amount, func = resize_func },
+    { key = self.cfg.mappings.right:upper(), dir = "right",                    amount = -self.cfg.horizontal_resize_amount, func = resize_func },
+    { key = self.cfg.mappings.stop_resizing, func = function() self:stop() end },
+  }
+
+  local it = vim.iter(resize_mappings)
+  it:map(function(mapping)
+    return {
+      lhs = mapping.key,
+      -- map returns the existing mapping so we can restore it later
+      old = map('n', mapping.key, function()
+        mapping.func(mapping.dir, mapping.amount)
+      end, opts),
+    }
+  end)
+  it:totable()
+
+  self.current_mappings = it
 end
 
 function Resizer:stop()
   -- restore old mappings
-  for lhs, mapping in pairs(self.current_mappings) do
-    if next(mapping) ~= nil then
-      vim.fn.mapset(mapping)
+  for mapping in self.current_mappings do
+    if next(mapping.old) ~= nil then
+      vim.fn.mapset(mapping.old)
     else
       -- Mapping was empty so delete the new temporary mapping
-      vim.keymap.del('n', lhs)
+      vim.keymap.del('n', mapping.lhs)
     end
   end
   self.current_mappings = {}
