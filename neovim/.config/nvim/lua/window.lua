@@ -1,10 +1,5 @@
 local M = {}
 
--- TODO: Figure out statusline height dynamically
-local status_line_height = 1
--- TODO: Figure out statuscolumn width dynamically
-local status_column_width = 1
-
 -- Returns true if a is between b and c (inclusive)
 -- @param val The value to check
 -- @param lower The lower bound
@@ -26,6 +21,11 @@ end
 
 function Window:__tostring()
   return string.format("Window(id=%d)", self.id)
+end
+
+function Window:details()
+  return string.format("Window(id=%d, top=%d, bottom=%d, left=%d, right=%d, height=%d, width=%d)",
+    self.id, self:top(), self:bottom(), self:left(), self:right(), self:height(), self:width())
 end
 
 function Window:top()
@@ -53,19 +53,19 @@ function Window:width()
 end
 
 function Window:top_touches(other)
-  return (other:bottom() + status_line_height) == self:top()
+  return (other:bottom() + 1) == self:top()
 end
 
 function Window:bottom_touches(other)
-  return other:top() == (self:bottom() + status_line_height)
+  return other:top() == (self:bottom() + 1)
 end
 
 function Window:left_touches(other)
-  return other:right() == (self:left() - status_column_width)
+  return other:right() == (self:left() - 1)
 end
 
 function Window:right_touches(other)
-  return (other:left() - status_column_width) == self:right()
+  return (other:left() - 1) == self:right()
 end
 
 function Window:horizontal_sides_within(other)

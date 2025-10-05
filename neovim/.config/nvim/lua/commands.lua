@@ -44,4 +44,10 @@ vim.api.nvim_create_user_command('ResizeMode', function()
     relative_resizing = true,
   })
   resizer:start()
-end, { desc = 'Start relative resize mode', count = true })
+end, { desc = 'Start relative resize mode' })
+
+vim.api.nvim_create_user_command('PrintWindowDetails', function()
+  local window = require('window')
+  local win = window.new()
+  vim.print(win:details())
+end, { desc = 'Print window details' })
