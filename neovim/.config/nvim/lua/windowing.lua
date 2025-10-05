@@ -251,53 +251,61 @@ function Window:relative_resize(direction, amount)
   local top_neighbor = self:neighbor("top")
   local bottom_neighbor = self:neighbor("bottom")
 
-  if direction == "left" and left_neighbor and right_neighbor then
-    -- has neighbor on both sides
-    -- narrower
-    self:resize_right(-amount)
-  elseif direction == "left" and left_neighbor then
-    -- only has left neighbor
-    -- wider
-    self:resize_left(amount)
-  elseif direction == "left" and right_neighbor then
-    -- only has right neighbor
-    -- narrower
-    self:resize_right(-amount)
-  elseif direction == "right" and left_neighbor and right_neighbor then
-    -- has neighbor on both sides
-    -- wider
-    self:resize_right(amount)
-  elseif direction == "right" and left_neighbor then
-    -- only has left neighbor
-    -- narrower
-    self:resize_left(-amount)
-  elseif direction == "right" and right_neighbor then
-    -- only has right neighbor
-    -- wider
-    self:resize_right(amount)
-  elseif direction == "up" and top_neighbor and bottom_neighbor then
-    -- has neighbor on above and below
-    -- shorter
-    self:resize_bottom(-amount)
-  elseif direction == "up" and top_neighbor then
-    -- only has top neighbor
-    -- taller
-    self:resize_top(amount)
-  elseif direction == "up" and bottom_neighbor then
-    -- only has bottom neighbor
-    -- shorter
-    self:resize_bottom(-amount)
-  elseif direction == "down" and top_neighbor and bottom_neighbor then
-    -- has neighbor on above and below
-    -- taller
-    self:resize_bottom(amount)
-  elseif direction == "down" and top_neighbor then
-    -- only has top neighbor
-    -- shorter
-    self:resize_top(-amount)
-  elseif direction == "down" and bottom_neighbor then
-    -- only has bottom neighbor
-    self:resize_bottom(amount)
+  if direction == "left" then
+    if left_neighbor and right_neighbor then
+      -- has neighbor on both sides
+      -- narrower
+      self:resize_right(-amount)
+    elseif left_neighbor then
+      -- only has left neighbor
+      -- wider
+      self:resize_left(amount)
+    elseif right_neighbor then
+      -- only has right neighbor
+      -- narrower
+      self:resize_right(-amount)
+    end
+  elseif direction == "right" then
+    if left_neighbor and right_neighbor then
+      -- has neighbor on both sides
+      -- wider
+      self:resize_right(amount)
+    elseif left_neighbor then
+      -- only has left neighbor
+      -- narrower
+      self:resize_left(-amount)
+    elseif right_neighbor then
+      -- only has right neighbor
+      -- wider
+      self:resize_right(amount)
+    end
+  elseif direction == "up" then
+    if top_neighbor and bottom_neighbor then
+      -- has neighbor on above and below
+      -- shorter
+      self:resize_bottom(-amount)
+    elseif top_neighbor then
+      -- only has top neighbor
+      -- taller
+      self:resize_top(amount)
+    elseif bottom_neighbor then
+      -- only has bottom neighbor
+      -- shorter
+      self:resize_bottom(-amount)
+    end
+  elseif direction == "down" then
+    if top_neighbor and bottom_neighbor then
+      -- has neighbor on above and below
+      -- taller
+      self:resize_bottom(amount)
+    elseif direction == "down" and top_neighbor then
+      -- only has top neighbor
+      -- shorter
+      self:resize_top(-amount)
+    elseif direction == "down" and bottom_neighbor then
+      -- only has bottom neighbor
+      self:resize_bottom(amount)
+    end
   end
 end
 
