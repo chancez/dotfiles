@@ -213,11 +213,18 @@ function Window:resize_left(amount)
   end
 end
 
-local resize_directions = {
+local resize_direction_to_side = {
   up    = "top",
   down  = "bottom",
   left  = "left",
   right = "right",
+}
+
+local opposite_directions = {
+  up    = "down",
+  down  = "up",
+  left  = "right",
+  right = "left",
 }
 
 function Window:resize(direction, amount)
@@ -226,7 +233,7 @@ function Window:resize(direction, amount)
     amount = { amount, 'number' }
   }
   amount = amount or 1
-  local dir = resize_directions[direction]
+  local dir = resize_direction_to_side[direction]
   if not dir then
     error(string.format("Invalid direction '%s'. Valid directions are: up, down, left, right", direction))
   end
@@ -242,67 +249,28 @@ function Window:relative_resize(direction, amount)
   }
   amount = amount or 1
 
-  local left_neighbor = self:neighbor("left")
-  local right_neighbor = self:neighbor("right")
-  local top_neighbor = self:neighbor("top")
-  local bottom_neighbor = self:neighbor("bottom")
-
-  if direction == "left" then
-    if left_neighbor and right_neighbor then
-      -- has neighbor on both sides
-      -- narrower
-      self:resize_right(-amount)
-    elseif left_neighbor then
-      -- only has left neighbor
-      -- wider
-      self:resize_left(amount)
-    elseif right_neighbor then
-      -- only has right neighbor
-      -- narrower
-      self:resize_right(-amount)
-    end
-  elseif direction == "right" then
-    if left_neighbor and right_neighbor then
-      -- has neighbor on both sides
-      -- wider
-      self:resize_right(amount)
-    elseif left_neighbor then
-      -- only has left neighbor
-      -- narrower
-      self:resize_left(-amount)
-    elseif right_neighbor then
-      -- only has right neighbor
-      -- wider
-      self:resize_right(amount)
-    end
-  elseif direction == "up" then
-    if top_neighbor and bottom_neighbor then
-      -- has neighbor on above and below
-      -- shorter
-      self:resize_bottom(-amount)
-    elseif top_neighbor then
-      -- only has top neighbor
-      -- taller
-      self:resize_top(amount)
-    elseif bottom_neighbor then
-      -- only has bottom neighbor
-      -- shorter
-      self:resize_bottom(-amount)
-    end
-  elseif direction == "down" then
-    if top_neighbor and bottom_neighbor then
-      -- has neighbor on above and below
-      -- taller
-      self:resize_bottom(amount)
-    elseif direction == "down" and top_neighbor then
-      -- only has top neighbor
-      -- shorter
-      self:resize_top(-amount)
-    elseif direction == "down" and bottom_neighbor then
-      -- only has bottom neighbor
-      self:resize_bottom(amount)
+  -- Right and down are 'priority' directions. If we can grow in that
+  -- direction, we do, unless there's no where to grow in that direction, then we shrink
+  if direction == "right" or direction == "down" then
+    amount = self:neighbor(direction) and amount or -amount
+  else
+    -- Up and left are different, we need to check if we have a neighbor on
+    -- both sides, if we do, we shrink, otherwise we grow if we have a neighbor
+    -- in the direction specified.
+    local opposite_direction = opposite_directions[direction]
+    if self:neighbor(direction) and self:neighbor(opposite_direction) then
+      -- Shrink the opposite side
+      direction = opposite_direction
+      amount = -amount
+    else
+      -- Grow if we have a neighbor in the specified direction, otherwise shrink
+      amount = self:neighbor(direction) and amount or -amount
+      direction = self:neighbor(direction) and direction or opposite_direction
     end
   end
+
+  local side = resize_direction_to_side[direction]
+  self["resize_" .. side](self, amount)
 end
 
 M.Window = Window
