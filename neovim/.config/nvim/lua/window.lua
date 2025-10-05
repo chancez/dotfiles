@@ -311,4 +311,9 @@ end
 
 M.Window = Window
 
+-- Returns a new window
+M.new = function(id)
+  return Window:new(id)
+end
+
 return M

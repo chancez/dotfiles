@@ -1,6 +1,6 @@
 local M = {}
 
-local windowing = require('windowing')
+local window = require('window')
 
 local default_config = {
   vertical_resize_amount = 1,
@@ -18,12 +18,12 @@ local function map(mode, lhs, rhs, opts)
 end
 
 M.resize = function(direction, amount, win_id)
-  local win = windowing.Window:new(win_id)
+  local win = window.new(win_id)
   win:resize(direction, amount)
 end
 
 M.relative_resize = function(direction, amount, win_id)
-  local win = windowing.Window:new(win_id)
+  local win = window.new(win_id)
   win:relative_resize(direction, amount)
 end
 
