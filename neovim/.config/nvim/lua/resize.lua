@@ -17,16 +17,14 @@ local function map(mode, lhs, rhs, opts)
   return current_map
 end
 
-M.ResizeWindow = function(direction, amount, win_id)
-  -- Validate amount is a number
+M.resize = function(direction, amount, win_id)
   local win = windowing.Window:new(win_id)
   win:resize(direction, amount)
 end
 
-M.ResizeWindowRelative = function(direction, amount, win_id)
-  -- Validate amount is a number
+M.relative_resize = function(direction, amount, win_id)
   local win = windowing.Window:new(win_id)
-  win:resize_relative(direction, amount)
+  win:relative_resize(direction, amount)
 end
 
 local Resizer = {}
@@ -54,25 +52,25 @@ function Resizer:start()
     -- Absolute resizing
     self.current_mappings = {
       -- Positive resizing
-      k = map('n', 'k', function() M.ResizeWindow("up", self.cfg.vertical_resize_amount) end, opts),
-      j = map('n', 'j', function() M.ResizeWindow("down", self.cfg.vertical_resize_amount) end, opts),
-      h = map('n', 'h', function() M.ResizeWindow("left", self.cfg.horizontal_resize_amount) end, opts),
-      l = map('n', 'l', function() M.ResizeWindow("right", self.cfg.horizontal_resize_amount) end, opts),
+      k = map('n', 'k', function() M.resize("up", self.cfg.vertical_resize_amount) end, opts),
+      j = map('n', 'j', function() M.resize("down", self.cfg.vertical_resize_amount) end, opts),
+      h = map('n', 'h', function() M.resize("left", self.cfg.horizontal_resize_amount) end, opts),
+      l = map('n', 'l', function() M.resize("right", self.cfg.horizontal_resize_amount) end, opts),
       -- Negative resizing
-      K = map('n', 'K', function() M.ResizeWindow("up", -self.cfg.vertical_resize_amount) end, opts),
-      J = map('n', 'J', function() M.ResizeWindow("down", -self.cfg.vertical_resize_amount) end, opts),
-      H = map('n', 'H', function() M.ResizeWindow("left", -self.cfg.horizontal_resize_amount) end, opts),
-      L = map('n', 'L', function() M.ResizeWindow("right", -self.cfg.horizontal_resize_amount) end, opts),
+      K = map('n', 'K', function() M.resize("up", -self.cfg.vertical_resize_amount) end, opts),
+      J = map('n', 'J', function() M.resize("down", -self.cfg.vertical_resize_amount) end, opts),
+      H = map('n', 'H', function() M.resize("left", -self.cfg.horizontal_resize_amount) end, opts),
+      L = map('n', 'L', function() M.resize("right", -self.cfg.horizontal_resize_amount) end, opts),
       -- Stop resizing
       ['<Esc>'] = map('n', '<Esc>', function() self:stop() end, opts),
     }
   else
     self.current_mappings = {
       -- Relative resizing
-      k = map('n', 'k', function() M.ResizeWindowRelative("up", self.cfg.vertical_resize_amount) end, opts),
-      j = map('n', 'j', function() M.ResizeWindowRelative("down", self.cfg.vertical_resize_amount) end, opts),
-      h = map('n', 'h', function() M.ResizeWindowRelative("left", self.cfg.horizontal_resize_amount) end, opts),
-      l = map('n', 'l', function() M.ResizeWindowRelative("right", self.cfg.horizontal_resize_amount) end, opts),
+      k = map('n', 'k', function() M.relative_resize("up", self.cfg.vertical_resize_amount) end, opts),
+      j = map('n', 'j', function() M.relative_resize("down", self.cfg.vertical_resize_amount) end, opts),
+      h = map('n', 'h', function() M.relative_resize("left", self.cfg.horizontal_resize_amount) end, opts),
+      l = map('n', 'l', function() M.relative_resize("right", self.cfg.horizontal_resize_amount) end, opts),
       -- Stop resizing
       ['<Esc>'] = map('n', '<Esc>', function() self:stop() end, opts),
     }

@@ -234,7 +234,7 @@ function Window:resize(direction, amount)
   f(self, amount)
 end
 
-function Window:resize_relative(direction, amount)
+function Window:relative_resize(direction, amount)
   -- relative resizing takes neighbors into consideration
   vim.validate {
     direction = { direction, 'string' },

@@ -36,8 +36,8 @@ vim.api.nvim_create_user_command('Resize', function(opts)
   end
   local direction = opts.fargs[1]
   local amount = tonumber(opts.fargs[2])
-  resize.ResizeWindow(direction, amount)
-end, { desc = 'Resize window', nargs = '+', count = true })
+  resize.resize(direction, amount)
+end, { desc = 'Resize window', nargs = '+' })
 
 vim.api.nvim_create_user_command('ResizeMode', function()
   local resizer = require('resize').Resizer:new({
