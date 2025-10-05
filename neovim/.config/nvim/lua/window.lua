@@ -240,10 +240,6 @@ function Window:relative_resize(direction, amount)
     direction = { direction, 'string' },
     amount = { amount, 'number' }
   }
-  if amount < 0 then
-    -- Only positive relative resizing is supported
-    error("Relative resizing only supports positive amounts")
-  end
   amount = amount or 1
 
   local left_neighbor = self:neighbor("left")
