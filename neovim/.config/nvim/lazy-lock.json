@@ -1,6 +1,6 @@
 {
   "FixCursorHold.nvim": { "branch": "master", "commit": "1900f89dc17c603eec29960f57c00bd9ae696495" },
-  "auto-session": { "branch": "feat/pre-restore-override", "commit": "b5421fcacea2067dd86905bbd9a66145cf31a33f" },
+  "auto-session": { "branch": "main", "commit": "0385a9ad378d70608c2e6e4c14b3b126ce30fc51" },
   "blink-copilot": { "branch": "main", "commit": "5d35fd07fcc148be20442da1bdd2407e03263d7d" },
   "blink.cmp": { "branch": "main", "commit": "327fff91fe6af358e990be7be1ec8b78037d2138" },
   "blink.download": { "branch": "main", "commit": "86361b98f3c8317904a08e3bd12cf3cdcbe3e925" },

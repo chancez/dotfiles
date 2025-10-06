@@ -51,10 +51,7 @@ end
 
 return {
   {
-    -- 'rmagatti/auto-session',
-    'cameronr/auto-session',
-    -- branch = 'feat/telescope-theme-support',
-    branch = 'feat/pre-restore-override',
+    'rmagatti/auto-session',
     lazy = false,
     ---enables autocomplete for opts
     ---@module "auto-session"
