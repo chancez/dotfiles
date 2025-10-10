@@ -14,7 +14,7 @@ return {
   config = function()
     local resize = require('viewport.resize')
     resize.setup({
-      resize_amount = 1,
+      resize_amount = 5,
       mappings = {
         preset = 'relative',
       },
