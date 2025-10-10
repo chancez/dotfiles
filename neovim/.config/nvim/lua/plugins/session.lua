@@ -57,7 +57,7 @@ return {
     ---@module "auto-session"
     ---@type AutoSession.Config
     opts = {
-      suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/' },
+      suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/', '/tmp', '/private/tmp' },
       session_lens = {
         load_on_setup = false,
         picker = "telescope",
