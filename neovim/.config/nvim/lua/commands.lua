@@ -26,28 +26,3 @@ vim.api.nvim_create_user_command('YQ', function(cmd)
 end, { nargs = '*', bang = true })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
-
-local resize = require('resize')
-
-vim.api.nvim_create_user_command('Resize', function(opts)
-  if #opts.fargs ~= 2 then
-    print("Usage: :Resize <direction> <amount>")
-    return
-  end
-  local direction = opts.fargs[1]
-  local amount = tonumber(opts.fargs[2])
-  resize.resize(direction, amount)
-end, { desc = 'Resize window', nargs = '+' })
-
-vim.api.nvim_create_user_command('ResizeMode', function()
-  local resizer = require('resize').Resizer:new({
-    relative_resizing = true,
-  })
-  resizer:start()
-end, { desc = 'Start relative resize mode' })
-
-vim.api.nvim_create_user_command('PrintWindowDetails', function()
-  local window = require('window')
-  local win = window.new()
-  vim.print(win:details())
-end, { desc = 'Print window details' })
