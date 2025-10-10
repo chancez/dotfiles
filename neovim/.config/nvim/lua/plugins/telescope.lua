@@ -51,6 +51,9 @@ return {
           undo = {},
         },
         defaults = require('telescope.themes').get_ivy {
+          cache_picker = {
+            num_pickers = 10,
+          },
           layout_config = {
             scroll_speed = 5,
           },
