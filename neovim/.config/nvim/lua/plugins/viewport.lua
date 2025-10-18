@@ -7,7 +7,7 @@ return {
     { '<leader>N',    function() require('viewport').start_navigate_mode() end,   desc = 'Start navigate mode' },
     { '<leader>S',    function() require('viewport').start_select_mode() end,     desc = 'Start select mode' },
     { '<leader>sel',  function() require('viewport.actions').select_window() end, desc = 'Select a window to focus' },
-    { '<leader>swap', function() require('viewport.actions').select_swap() end,   desc = 'Select a window to swap with the current window' },
+    { '<leader>swap', function() require('viewport').start_swap_mode() end,       desc = 'Select a window to swap with the current window' },
   },
   cmd    = {
     "ResizeMode",
