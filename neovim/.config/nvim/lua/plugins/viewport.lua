@@ -3,32 +3,33 @@ return {
   dev    = true,
   lazy   = false,
   keys   = {
-    { '<leader>R', function() require('viewport.resize').start() end,                 desc = 'Start resize mode' },
-    { '<leader>N', function() require('viewport.navigate').start() end,               desc = 'Start navigate mode' },
-    { '<leader>S', function() require('viewport.navigate').actions.select_mode() end, desc = 'Start select mode' },
+    { '<leader>R',    function() require('viewport').start_resize_mode() end,     desc = 'Start resize mode' },
+    { '<leader>N',    function() require('viewport').start_navigate_mode() end,   desc = 'Start navigate mode' },
+    { '<leader>S',    function() require('viewport').start_select_mode() end,     desc = 'Start select mode' },
+    { '<leader>sel',  function() require('viewport.actions').select_window() end, desc = 'Select a window to focus' },
+    { '<leader>swap', function() require('viewport.actions').select_swap() end,   desc = 'Select a window to swap with the current window' },
   },
   cmd    = {
     "ResizeMode",
     "NavigateMode",
   },
   config = function()
-    local resize = require('viewport.resize')
-    resize.setup({
-      resize_amount = 5,
-      mappings = {
-        preset = 'relative',
-      },
+    local viewport = require('viewport')
+    viewport.setup({
+      resize_mode = {
+        resize_amount = 5,
+        mappings = {
+          preset = 'relative',
+        },
+      }
     })
 
-    local navigate = require('viewport.navigate')
-    navigate.setup()
-
     vim.api.nvim_create_user_command('ResizeMode', function()
-      resize.start()
+      viewport.start_resize_mode()
     end, { desc = 'Start resize mode' })
 
     vim.api.nvim_create_user_command('NavigateMode', function()
-      navigate.start()
+      viewport.start_navigate_mode()
     end, { desc = 'Start navigate mode' })
   end,
 }
