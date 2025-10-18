@@ -30,7 +30,7 @@ return {
       options = { theme = 'onedark' },
       extensions = { 'toggleterm' },
       sections = {
-        lualine_a = { 'mode' },
+        lualine_a = { 'mode', 'g:viewport_active_mode' },
         lualine_b = { 'diagnostics' },
         lualine_c = {
           {
