@@ -17,6 +17,7 @@ usage = "latest"
 go = [ "latest", "1.25", "1.24" ]
 "go:gotest.tools/gotestsum" = "latest"
 "pipx:beets" = { version = "latest", extras = "scrub,chroma" }
+"pipx:oraios/serena" = "v0.1.4"
 
 [settings]
 experimental = true
