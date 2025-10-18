@@ -195,4 +195,24 @@ return {
     cmd          = { "Kubectl" },
     opts         = {}
   },
+  {
+    "cuducos/yaml.nvim",
+    ft = { "yaml", "yaml.helm-values" },
+    cmd = {
+      "YAMLView",
+      "YAMLYank",
+      "YAMLYankKey",
+      "YAMLYankValue",
+      "YAMLHighlight",
+      "YAMLRemoveHighlight",
+      "YAMLQuickfix",
+      "YAMLTelescope",
+    },
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+    },
+    opts = {
+      ft = { "yaml", "yaml.helm-values" }
+    },
+  },
 }
