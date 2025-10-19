@@ -33,8 +33,31 @@ return {
       "debugloop/telescope-undo.nvim",
     },
     config = function()
+      local builtin = require("telescope.builtin")
       local actions = require("telescope.actions")
       local telescope = require('telescope')
+      local action_state = require("telescope.actions.state")
+
+      local refine_current_dir = function(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+
+        -- Get the directory of the buffer from before the picker was opened
+        local buf = current_picker.original_bufnr
+        local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":p:h")
+        actions.close(prompt_bufnr)
+        local picker = nil
+        -- This is a hack but I cannot figure out how to get the current picker function and then re-run it with a different cwd
+        if current_picker.prompt_title == 'Live Grep' then
+          picker = builtin.live_grep
+        elseif current_picker.prompt_title == 'Find Files' then
+          picker = builtin.find_files
+        end
+        if picker == nil then
+          print("Cannot refine this picker to a directory")
+          return
+        end
+        picker({ cwd = dir })
+      end
 
       telescope.setup {
         extensions = {
@@ -67,7 +90,7 @@ return {
               -- we want ctrl-u to be clear the prompt, so disable the default binding
               ["<C-u>"] = false,
               -- disable c-d because we don't have c-u mapped
-              ["<C-d>"] = false,
+              ["<C-d>"] = refine_current_dir,
               ["<esc>"] = actions.close,
               ["<S-esc>"] = function()
                 -- exit insert mode
