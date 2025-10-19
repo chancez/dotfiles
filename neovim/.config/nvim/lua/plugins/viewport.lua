@@ -24,6 +24,16 @@ return {
       }
     })
 
+    -- Refresh lualine on viewport mode changes
+    local grp = vim.api.nvim_create_augroup("viewport", { clear = true })
+    vim.api.nvim_create_autocmd("User", {
+      group = grp,
+      pattern = viewport.modes.mode_change_autocmd,
+      callback = function()
+        require('lualine').refresh()
+      end,
+    })
+
     vim.api.nvim_create_user_command('ResizeMode', function()
       viewport.start_resize_mode()
     end, { desc = 'Start resize mode' })
