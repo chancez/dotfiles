@@ -1,0 +1,6 @@
+.git/
+vendor
+.terraform
+node_modules
+!scratch/
+!*override*yaml
