@@ -37,6 +37,7 @@ return {
       local actions = require("telescope.actions")
       local telescope = require('telescope')
       local action_state = require("telescope.actions.state")
+      local fb_actions = require "telescope".extensions.file_browser.actions
 
       local refine_current_dir = function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -72,6 +73,11 @@ return {
             theme = "ivy",
             -- disables netrw and use telescope-file-browser in its place
             hijack_netrw = true,
+            mappings = {
+              ["i"] = {
+                ["<C-o>"] = fb_actions.goto_parent_dir,
+              },
+            },
           },
           undo = {},
         },
