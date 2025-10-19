@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "serena": {
+      "type": "local",
+      "command": "serena",
+      "tools": [
+        "*"
+      ],
+      "args": [
+        "start-mcp-server"
+      ]
+    }
+  }
+}

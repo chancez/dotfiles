@@ -9,9 +9,13 @@
       "args": [
         "mcp-server-kubernetes"
       ]
+    },
+    "serena": {
+      "command": "serena",
+      "args": [
+        "start-mcp-server"
+      ]
     }
   },
-  "nativeMCPServers": [
-    
-  ]
+  "nativeMCPServers": []
 }
