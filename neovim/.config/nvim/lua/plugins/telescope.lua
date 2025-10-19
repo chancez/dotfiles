@@ -39,14 +39,7 @@ return {
       local action_state = require("telescope.actions.state")
       local fb_actions = require "telescope".extensions.file_browser.actions
 
-      local refine_current_dir = function(prompt_bufnr)
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local line = action_state.get_current_line()
-
-        -- Get the directory of the buffer from before the picker was opened
-        local buf = current_picker.original_bufnr
-        local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":p:h")
-        actions.close(prompt_bufnr)
+      local recreate_picker = function(current_picker, opts)
         local picker = nil
         -- This is a hack but I cannot figure out how to get the current picker function and then re-run it with a different cwd
         if current_picker.prompt_title == 'Live Grep' then
@@ -58,7 +51,55 @@ return {
           print("Cannot refine this picker to a directory")
           return
         end
-        picker({ cwd = dir, default_text = line })
+        picker(opts)
+      end
+
+      -- Refine to directory of current buffer
+      local refine_current_dir = function(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local line = action_state.get_current_line()
+
+        -- Get the directory of the buffer from before the picker was opened
+        local buf = current_picker.original_bufnr
+        local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":p:h")
+
+        recreate_picker(current_picker, {
+          results_title = dir .. "/",
+          cwd = dir,
+          default_text = line,
+        })
+      end
+
+      local previous = nil
+      -- Refine to parent directory of current cwd
+      local refine_current_dir_parent = function(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local line = action_state.get_current_line()
+
+        local cwd = current_picker.cwd
+        previous = cwd
+        local parent_dir = vim.fn.fnamemodify(cwd .. "/..", ":p:h")
+
+        recreate_picker(current_picker, {
+          results_title = parent_dir,
+          cwd = parent_dir,
+          default_text = line,
+        })
+      end
+
+      -- Refine to previous directory
+      local refine_previous_dir = function(prompt_bufnr)
+        if previous == nil then
+          return
+        end
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local line = action_state.get_current_line()
+
+        recreate_picker(current_picker, {
+          results_title = previous,
+          cwd = previous,
+          default_text = line,
+        })
       end
 
       telescope.setup {
@@ -96,14 +137,14 @@ return {
               ["<M-j>"] = actions.preview_scrolling_down,
               -- we want ctrl-u to be clear the prompt, so disable the default binding
               ["<C-u>"] = false,
-              -- disable c-d because we don't have c-u mapped
               ["<C-d>"] = refine_current_dir,
+              ["<C-o>"] = refine_current_dir_parent,
+              ["<C-i>"] = refine_previous_dir,
               ["<esc>"] = actions.close,
               ["<S-esc>"] = function()
                 -- exit insert mode
                 vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-[>", true, false, true), "n", true)
               end,
-              ["<C-h>"] = "which_key",
               ["<C-s>"] = actions.cycle_previewers_next,
               ["<C-a>"] = actions.cycle_previewers_prev,
               ["<C-Space>"] = actions.to_fuzzy_refine,
