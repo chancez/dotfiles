@@ -175,7 +175,7 @@ return {
         },
         pickers = {
           find_files = {
-            find_command = { 'rg', '--files', '--hidden', '--no-binary' },
+            find_command = { 'fd', '--type', 'f', '--hidden' },
           },
           buffers = {
             ignore_current_buffer = true,
