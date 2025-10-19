@@ -77,7 +77,7 @@ return {
       end
 
       -- Refine to parent directory of current cwd
-      local refine_current_dir_parent = function(prompt_bufnr)
+      local refine_parent_dir = function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local line = action_state.get_current_line()
 
@@ -156,7 +156,7 @@ return {
               -- we want ctrl-u to be clear the prompt, so disable the default binding
               ["<C-u>"] = false,
               ["<C-d>"] = refine_current_dir,
-              ["<C-o>"] = refine_current_dir_parent,
+              ["<C-o>"] = refine_parent_dir,
               ["<C-i>"] = refine_previous_dir,
               ["<esc>"] = actions.close,
               ["<S-esc>"] = function()
