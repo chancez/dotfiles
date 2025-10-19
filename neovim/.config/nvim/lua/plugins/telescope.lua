@@ -54,6 +54,9 @@ return {
         picker(opts)
       end
 
+      -- A stack of previous directories
+      local previous_directories = {}
+
       -- Refine to directory of current buffer
       local refine_current_dir = function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -63,21 +66,28 @@ return {
         local buf = current_picker.original_bufnr
         local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":p:h")
 
+        -- Add current cwd to previous stack
+        table.insert(previous_directories, current_picker.cwd)
+
         recreate_picker(current_picker, {
-          results_title = dir .. "/",
+          results_title = dir,
           cwd = dir,
           default_text = line,
         })
       end
 
-      local previous = nil
       -- Refine to parent directory of current cwd
       local refine_current_dir_parent = function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local line = action_state.get_current_line()
 
         local cwd = current_picker.cwd
-        previous = cwd
+        if cwd == nil then
+          cwd = vim.fn.getcwd()
+        end
+        -- Add current cwd to previous stack
+        table.insert(previous_directories, cwd)
+
         local parent_dir = vim.fn.fnamemodify(cwd .. "/..", ":p:h")
 
         recreate_picker(current_picker, {
@@ -89,15 +99,23 @@ return {
 
       -- Refine to previous directory
       local refine_previous_dir = function(prompt_bufnr)
-        if previous == nil then
+        -- Check if there is a previous directory to jump to
+        if #previous_directories == 0 then
           return
         end
+
+        -- Pop from previous dirs stack
+        local previous_dir = table.remove(previous_directories)
+        if not previous_dir then
+          return
+        end
+
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local line = action_state.get_current_line()
 
         recreate_picker(current_picker, {
-          results_title = previous,
-          cwd = previous,
+          results_title = previous_dir,
+          cwd = previous_dir,
           default_text = line,
         })
       end
