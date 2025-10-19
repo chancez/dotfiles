@@ -40,6 +40,7 @@ return {
 
       local refine_current_dir = function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local line = action_state.get_current_line()
 
         -- Get the directory of the buffer from before the picker was opened
         local buf = current_picker.original_bufnr
@@ -56,7 +57,7 @@ return {
           print("Cannot refine this picker to a directory")
           return
         end
-        picker({ cwd = dir })
+        picker({ cwd = dir, default_text = line })
       end
 
       telescope.setup {
