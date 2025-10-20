@@ -53,6 +53,10 @@ vim.opt.foldnestmax = 10    -- 10 nested fold max
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 
+-- Splits
+vim.opt.splitright = true
+
+-- Load .nvmrc
 vim.opt.exrc = true
 
 -- https://github.com/rmagatti/auto-session?tab=readme-ov-file#recommended-sessionoptions-config

@@ -64,7 +64,7 @@ return {
 
         -- Get the directory of the buffer from before the picker was opened
         local buf = current_picker.original_bufnr
-        local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":p:h")
+        local dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":~:.:h")
 
         -- Add current cwd to previous stack
         table.insert(previous_directories, current_picker.cwd)
@@ -88,7 +88,7 @@ return {
         -- Add current cwd to previous stack
         table.insert(previous_directories, cwd)
 
-        local parent_dir = vim.fn.fnamemodify(cwd .. "/..", ":p:h")
+        local parent_dir = vim.fn.fnamemodify(cwd .. "/..", ":~:.:h")
 
         recreate_picker(current_picker, {
           results_title = parent_dir,
@@ -118,6 +118,32 @@ return {
           cwd = previous_dir,
           default_text = line,
         })
+      end
+
+      local new_cmd_next_to_selection_action = function(cmd)
+        return function(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          -- Get the directory of the currently selected entry
+          local dir = vim.fn.fnamemodify(selection.path, ":~:.:h") .. "/"
+
+          actions.close(prompt_bufnr)
+
+          local keys = string.format(":%s %s", cmd, dir)
+          -- Use feedkeys to execute the command so that the command can be modified or extended before running
+          vim.api.nvim_feedkeys(keys, "n", true)
+        end
+      end
+
+      -- Open a file next to the current selection
+      local edit_file_next_to_selection = function(prompt_bufnr)
+        local action = new_cmd_next_to_selection_action("edit")
+        action(prompt_bufnr)
+      end
+
+      -- Open a file next to the current selection in a vsplit
+      local vsplit_file_next_to_selection = function(prompt_bufnr)
+        local action = new_cmd_next_to_selection_action("vsplit")
+        action(prompt_bufnr)
       end
 
       telescope.setup {
@@ -158,6 +184,8 @@ return {
               ["<C-d>"] = refine_current_dir,
               ["<C-o>"] = refine_parent_dir,
               ["<C-i>"] = refine_previous_dir,
+              ["<C-e>"] = edit_file_next_to_selection,
+              ["<C-S-e>"] = vsplit_file_next_to_selection,
               ["<esc>"] = actions.close,
               ["<S-esc>"] = function()
                 -- exit insert mode
