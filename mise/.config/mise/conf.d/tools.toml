@@ -1,0 +1,24 @@
+[tools]
+usage = "latest"
+
+kubectl = "latest"
+neovim = "0.11"
+uv = "latest"
+terraform = "latest"
+
+golangci-lint = "latest"
+"go:gotest.tools/gotestsum" = "latest"
+
+# Decode and validate JWTs locally
+"npm:jwt-cli" = "latest"
+
+# For neovim
+"npm:tree-sitter-cli" = "latest"
+
+# Music manager
+"pipx:beets" = { version = "latest", extras = "scrub,chroma" }
+
+# AI Tools
+"npm:@github/copilot" = "latest"
+"npm:mcp-hub" = "latest"
+"pipx:oraios/serena" = "v0.1.4" # MCP using LSPs
