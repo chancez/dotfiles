@@ -29,39 +29,68 @@ return {
   },
 
   {
-    "olimorris/codecompanion.nvim",
-    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionCmd", "CodeCompanionActions" },
+    "yetone/avante.nvim",
+    build = vim.fn.has("win32") ~= 0
+        and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+        or "make",
+    event = "VeryLazy",
+    version = false, -- Never set this value to "*"! Never!
+    ---@module 'avante'
+    ---@type avante.Config
     opts = {
-      strategies = {
-        chat = {
-          adapter = "copilot",
-        },
-        inline = {
-          adapter = "copilot",
-        },
-        cmd = {
-          adapter = "copilot",
+      -- this file can contain specific instructions for your project
+      instructions_file = "avante.md",
+      -- for example
+      provider = "copilot",
+      providers = {
+        copilot = {
+          endpoint = "https://api.githubcopilot.com",
+          -- model = "claude-sonnet-4.5",
+          -- model = "gpt-4o-2024-11-20",
+          timeout = 30000,
+          context_window = 64000,
+          extra_request_body = {
+            temperature = 0.75,
+            max_tokens = 20480,
+          },
         },
       },
-      extensions = {
-        mcphub = {
-          callback = "mcphub.extensions.codecompanion",
-          opts = {
-            make_vars = true,
-            make_slash_commands = true,
-            show_result_in_chat = true
-          }
-        }
-      }
+      behaviour = {
+        auto_suggestions = false,
+        auto_approve_tool_permissions = false,
+      },
+      input = {
+        provider = "snacks",
+        provider_opts = {
+          title = "Avante Input",
+          icon = " ",
+        },
+      },
+      windows = {
+        input = {
+          prefix = "> ",
+          height = 20, -- Height of the input window in vertical layout
+        },
+        ask = {
+          start_insert = false,
+        },
+      },
     },
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
+      "MunifTanjim/nui.nvim",
+      "folke/snacks.nvim",
+      --- The below dependencies are optional,
+      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+      "nvim-tree/nvim-web-devicons",   -- or echasnovski/mini.icons
+      "zbirenbaum/copilot.lua",        -- for providers='copilot'
       {
-        "ravitemer/mcphub.nvim",
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
         opts = {
-          cmd = 'mcp-hub'
-        }
+          file_types = { "markdown", "Avante" },
+        },
+        ft = { "markdown", "Avante" },
       },
     },
   },
