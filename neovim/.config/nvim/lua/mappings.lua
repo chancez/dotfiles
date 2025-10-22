@@ -20,8 +20,7 @@ map('n', '<leader>ev', ':e $MYVIMRC<CR>', { desc = 'Edit neovim init.lua' })
 -- Get rid of annoying mistakes
 map('c', 'WQ', 'wq')
 map('c', 'wQ', 'wq')
-map({ 'n', 'v' }, ';', ':')
-map({ 'n', 'v' }, ';;', ';')
+map({ 'n', 'v' }, ';', ':', { nowait = true })
 map({ 'n', 'v' }, ',,', ',')
 map('n', ';', ':')
 
