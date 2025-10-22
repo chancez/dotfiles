@@ -21,7 +21,7 @@ return {
           advanced = {
             listCount = 10,         -- #completions for panel
             inlineSuggestCount = 3, -- #completions for getCompletions
-            length = 100,           -- max length of copilot suggestions
+            length = 300,           -- max length of copilot suggestions
           }
         },
       }
