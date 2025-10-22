@@ -26,6 +26,7 @@ function HighlightWhitespace()
   end
 end
 
+-- Lua match patterns to ignore certain filetypes
 local whitespaceIgnoreFileTypes = {
   'terminal',
   'toggleterm',
@@ -33,15 +34,23 @@ local whitespaceIgnoreFileTypes = {
   'mcphub',
   'markdown',
   'help',
-  'k8s_*',
-  'blink-cmp-menu',
+  'k8s_.*',
+  -- Dashes need to be escaped
+  vim.pesc('blink-cmp-menu'),
+  'Avante.*'
 }
 
 vim.api.nvim_create_autocmd({ 'FileType' }, {
+  -- Apply to all filetypes because we will filter inside the callback since
+  -- there is no way to use patterns in the FileType autocmd to do an ignore
+  -- list without inverting all patterns directly
   pattern = '*',
-  callback = function()
-    if vim.tbl_contains(whitespaceIgnoreFileTypes, vim.bo.filetype) then
-      return
+  callback = function(ev)
+    -- Check if the current filetype matches any pattern in the ignore list
+    for _, pattern in ipairs(whitespaceIgnoreFileTypes) do
+      if vim.bo.filetype:match('^' .. pattern .. '$') then
+        return
+      end
     end
     HighlightWhitespace()
   end
