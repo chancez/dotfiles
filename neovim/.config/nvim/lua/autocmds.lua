@@ -37,7 +37,8 @@ local whitespaceIgnoreFileTypes = {
   'k8s_.*',
   -- Dashes need to be escaped
   vim.pesc('blink-cmp-menu'),
-  'Avante.*'
+  'Avante.*',
+  'opencode.*',
 }
 
 vim.api.nvim_create_autocmd({ 'FileType' }, {

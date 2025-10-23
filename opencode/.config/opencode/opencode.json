@@ -1,0 +1,6 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "onedark",
+  "model": "github-copilot/claude-sonnet-4.5",
+  "autoupdate": true,
+}
