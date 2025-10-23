@@ -1,9 +1,10 @@
 -- misc global opts
 vim.opt.spell = true
 vim.opt.mouse = 'a'
-vim.opt.colorcolumn = '80,100'
-vim.opt.cursorline = true
-vim.opt.cursorcolumn = true
+-- Configured via autocmds on the active window
+-- vim.opt.colorcolumn = '80,100'
+-- vim.opt.cursorline = true
+-- vim.opt.cursorcolumn = true
 vim.opt.completeopt = 'menu,menuone,longest,noinsert,noselect'
 vim.opt.autoread = true
 vim.opt.hidden = true

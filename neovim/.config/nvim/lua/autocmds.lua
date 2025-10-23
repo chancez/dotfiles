@@ -100,3 +100,23 @@ vim.api.nvim_create_autocmd({ 'TextYankPost' }, {
     vim.hl.on_yank({ higroup = 'IncSearch', timeout = 300 })
   end,
 })
+
+-- Disable cursorline and cursorcolumn in non-active windows
+vim.api.nvim_create_autocmd({ 'WinLeave' }, {
+  pattern = '*',
+  callback = function()
+    vim.wo.cursorline = false
+    vim.wo.cursorcolumn = false
+    vim.wo.colorcolumn = ''
+  end,
+})
+
+-- Enable cursorline and cursorcolumn in active window
+vim.api.nvim_create_autocmd({ 'WinEnter' }, {
+  pattern = '*',
+  callback = function()
+    vim.wo.cursorline = true
+    vim.wo.cursorcolumn = true
+    vim.wo.colorcolumn = '80,100'
+  end,
+})
