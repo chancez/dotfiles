@@ -83,6 +83,9 @@ return {
       no_restore_cmds = {
         -- If there is no existing session, clear out all buffers
         function(is_startup)
+          if not vim.g.auto_session_enabled then
+            return
+          end
           if (is_startup) then
             return
           end
