@@ -94,9 +94,25 @@ return {
   },
 
   {
-    "nvim-zh/colorful-winsep.nvim",
-    event = { "WinLeave" },
-    opts = {},
+    'tadaa/vimade',
+    event = 'VeryLazy',
+    opts = {
+      recipe = { 'default', { animate = false } },
+      ncmode = 'windows', -- fade/tint inactive windows
+      fadelevel = 0.9,    -- 90% opaque for inactive windows
+      tint = {
+        -- bg = { rgb = { 0, 0, 0 }, intensity = 0.1 },       -- 10% black background
+        fg = { rgb = { 120, 120, 120 }, intensity = 0.1 }, -- 10% grey foreground
+      },
+      link = {
+        telescope = function(win, active)
+          if active and active.buf_opts.filetype == 'TelescopePrompt' then
+            return true
+          end
+          return false
+        end,
+      }
+    }
   },
 
   { 'lewis6991/gitsigns.nvim', event = "VeryLazy", dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
