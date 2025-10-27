@@ -71,6 +71,7 @@ return {
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
     opts = {
       enable = true,
+      multiwindow = true,
       patterns = {
         json = {
           "object",
@@ -94,25 +95,78 @@ return {
     'nvim-treesitter/nvim-treesitter-textobjects',
     branch = 'main',
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
-    opts = {},
+    opts = {
+      select = {
+        -- Automatically jump forward to textobj, similar to targets.vim
+        lookahead = true,
+      },
+      move = {
+        set_jumps = true,
+      },
+    },
     config = function(_, opts)
       require("nvim-treesitter-textobjects").setup(opts)
       local select = require("nvim-treesitter-textobjects.select")
+      local move = require("nvim-treesitter-textobjects.move")
+
+      local desc_from_query = function(query)
+        return query:sub(2):gsub('(%a+).(%a+)', '%2 %1')
+      end
+
+      local set_query_keymap = function(mode, f, keys, query)
+        vim.keymap.set(mode, keys, function()
+          f(query, "textobjects")
+        end, { desc = desc_from_query(query) })
+      end
+
+      local set_query_keymaps = function(mode, f, mappings)
+        for keys, query in pairs(mappings) do
+          set_query_keymap(mode, f, keys, query)
+        end
+      end
 
       local keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        ['af'] = '@function.outer',
-        ['if'] = '@function.inner',
-        ['ac'] = '@class.outer',
-        ['ic'] = '@class.inner',
+        {
+          f = select.select_textobject,
+          modes = { "o", "x" },
+          mappings = {
+            ['af'] = '@function.outer',
+            ['if'] = '@function.inner',
+            ['ac'] = '@class.outer',
+            ['ic'] = '@class.inner',
+            ['ib'] = '@block.inner',
+            ['ab'] = '@block.outer',
+            ['al'] = '@loop.outer',
+            ['il'] = '@loop.inner',
+            ['aa'] = '@parameter.outer',
+            ['ia'] = '@parameter.inner',
+            ['is'] = '@statement.outer',
+          },
+        },
+        {
+          f = move.goto_next_start,
+          modes = { "n", "x", "o" },
+          mappings = {
+            [']f'] = '@function.outer',
+            [']c'] = '@class.outer',
+            [']b'] = '@block.outer',
+            [']l'] = '@loop.outer',
+          },
+        },
+        {
+          f = move.goto_previous_start,
+          modes = { "n", "x", "o" },
+          mappings = {
+            ['[f'] = '@function.outer',
+            ['[c'] = '@class.outer',
+            ['[b'] = '@block.outer',
+            ['[l'] = '@loop.outer',
+          },
+        },
       }
 
-      for keys, query in pairs(keymaps) do
-        -- Convert "@foo.bar" into "bar foo"
-        local desc = query:sub(2):gsub('(%a+).(%a+)', '%2 %1')
-        vim.keymap.set({ "x", "o" }, keys, function()
-          select.select_textobject(query, "textobjects")
-        end, { desc = desc })
+      for _, keymap in ipairs(keymaps) do
+        set_query_keymaps(keymap.modes, keymap.f, keymap.mappings)
       end
     end,
   },
