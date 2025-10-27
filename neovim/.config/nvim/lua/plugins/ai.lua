@@ -32,7 +32,7 @@ return {
     dependencies = {
       -- Recommended for `ask()` and `select()`.
       -- Required for `toggle()`.
-      { "folke/snacks.nvim", opts = { input = {}, picker = {} } },
+      -- { "folke/snacks.nvim", opts = { input = {}, picker = {} } },
     },
     config = function()
       vim.g.opencode_opts = {
@@ -96,7 +96,7 @@ return {
         auto_approve_tool_permissions = false,
       },
       input = {
-        provider = "snacks",
+        -- provider = "snacks",
         provider_opts = {
           title = "Avante Input",
           icon = " ",
@@ -115,7 +115,7 @@ return {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
-      "folke/snacks.nvim",
+      -- "folke/snacks.nvim",
       --- The below dependencies are optional,
       "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
       "nvim-tree/nvim-web-devicons",   -- or echasnovski/mini.icons

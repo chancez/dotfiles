@@ -48,7 +48,6 @@
   "remote-sshfs.nvim": { "branch": "main", "commit": "45502b3892774811153aeab5f7f9b0033c82005c" },
   "render-markdown.nvim": { "branch": "main", "commit": "475d3ad8cae486b0df6fc6050cf5b5ea1de42db8" },
   "screenkey.nvim": { "branch": "main", "commit": "16390931d847b1d5d77098daccac4e55654ac9e2" },
-  "snacks.nvim": { "branch": "main", "commit": "a2c1e69245b4c9cc513f78af31c517e5535dad30" },
   "telescope-dap.nvim": { "branch": "master", "commit": "783366bd6c1e7fa0a5c59c07db37f49c805a28df" },
   "telescope-file-browser.nvim": { "branch": "master", "commit": "3610dc7dc91f06aa98b11dca5cc30dfa98626b7e" },
   "telescope-frecency.nvim": { "branch": "master", "commit": "463e356293b71fd0df601fc52054bd788b7c4010" },
