@@ -126,8 +126,6 @@ return {
   { 'chentoast/marks.nvim',    event = "VeryLazy", opts = { default_mappings = false } },
 
   -- utilities that leverage vim verbs
-  { 'tpope/vim-repeat' },
-  { 'tpope/vim-unimpaired' },
   { 'tpope/vim-surround' },
 
   -- utilities
