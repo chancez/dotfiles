@@ -1,6 +1,7 @@
 return {
   {
     "nvim-neotest/neotest",
+    event = "VeryLazy",
     cmd = {
       'Neotest',
     },
