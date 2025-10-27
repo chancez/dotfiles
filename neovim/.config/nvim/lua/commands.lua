@@ -26,3 +26,19 @@ vim.api.nvim_create_user_command('YQ', function(cmd)
 end, { nargs = '*', bang = true })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
+
+-- Reverse the lines of the selection in visual mode
+vim.api.nvim_create_user_command('ReverseLines', function()
+  local start_line = vim.fn.line("'<")
+  local end_line = vim.fn.line("'>")
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
+
+  -- Reverse the lines
+  local reversed_lines = {}
+  for i = #lines, 1, -1 do
+    table.insert(reversed_lines, lines[i])
+  end
+
+  -- Set the reversed lines back to the buffer
+  vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, reversed_lines)
+end, { range = true })
