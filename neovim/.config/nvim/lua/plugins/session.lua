@@ -58,6 +58,7 @@ return {
     ---@type AutoSession.Config
     opts = {
       suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/', '/tmp', '/private/tmp' },
+      close_filetypes_on_save = { "neotest-output", "neotest-output-panel", "neotest-summary" },
       session_lens = {
         load_on_setup = false,
         picker = "telescope",

@@ -213,12 +213,20 @@ end
 M.auto_install_servers = vim.tbl_keys(auto_install_servers)
 M.server_names = vim.tbl_keys(servers)
 
+local ignored_filetypes = {
+  'neotest-output-panel',
+}
+
 M.setup = function()
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(ev)
       local bufnr = ev.buf
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
       if not client then
+        return
+      end
+      local filetype = vim.bo[bufnr].filetype
+      if vim.tbl_contains(ignored_filetypes, filetype) then
         return
       end
       lspAttach(bufnr, client)

@@ -65,12 +65,34 @@ return {
           enabled = true,
           open = true
         },
+        output = {
+          open_on_run = false,
+        },
         icons = {
           passed = "",
           running = "",
           skipped = "",
           unknown = "",
         },
+        consumers = {
+          clear_marked = function(client)
+            client.listeners.run = function()
+              -- Clear the output panel
+              neotest.output_panel.clear()
+            end
+          end,
+        },
+      })
+
+      -- Add filetype buffer mappings for neotest-output floating window
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "neotest-output",
+        callback = function()
+          local opts = { noremap = true, silent = true, buffer = true }
+          -- Close the window with 'q' or 'Esc'
+          vim.keymap.set("n", "q", function() vim.api.nvim_win_close(0, true) end, opts)
+          vim.keymap.set("n", "<Esc>", function() vim.api.nvim_win_close(0, true) end, opts)
+        end,
       })
     end
   }
