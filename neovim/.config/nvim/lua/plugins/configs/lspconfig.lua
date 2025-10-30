@@ -179,9 +179,9 @@ local function lspAttach(bufnr, client)
   if client.server_capabilities.documentFormattingProvider then
     lspCommand('LspFormat', function() vim.lsp.buf.format() end)
     lspCommand('LspOrgImports', function() LspOrgImports() end)
-    lspCommandMap('LspToggleAutoFormat', '<leader>tafg', function() LspToggleAutoFormat() end,
+    lspCommand('LspToggleAutoFormat', function() LspToggleAutoFormat() end,
       'Toggle auto-formatting on save globally')
-    lspCommandMap('LspToggleAutoFormatBuffer', '<leader>tafb', function() LspToggleAutoFormat() end,
+    lspCommand('LspToggleAutoFormatBuffer', function() LspToggleAutoFormat() end,
       'Toggle auto-formatting on save for this buffer')
 
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
