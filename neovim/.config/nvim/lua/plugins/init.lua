@@ -192,6 +192,7 @@ return {
 
   -- git
   { 'tpope/vim-fugitive' },
+  { 'tpope/vim-rhubarb' },
   --
   -- language/syntax integrations
   { 'jjo/vim-cue' },
