@@ -121,3 +121,14 @@ vim.api.nvim_create_autocmd({ 'WinEnter' }, {
     vim.wo.colorcolumn = '80,100'
   end,
 })
+
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+  pattern = '*',
+  desc = 'Auto create parent directory if it does not exist',
+  callback = function(ev)
+    local dir = vim.fn.fnamemodify(ev.file, ':p:h')
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, 'p')
+    end
+  end,
+})
