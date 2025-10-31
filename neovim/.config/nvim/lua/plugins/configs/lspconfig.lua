@@ -78,7 +78,7 @@ local manually_managed_servers = {
 
 local servers = vim.tbl_extend("error", auto_install_servers, manually_managed_servers)
 
-function LspOrgImports()
+local function LspOrgImports()
   vim.lsp.buf.code_action({
     ---@diagnostic disable-next-line: missing-fields
     context = {
@@ -88,7 +88,7 @@ function LspOrgImports()
   })
 end
 
-function LspFixAll()
+local function LspFixAll()
   vim.lsp.buf.code_action({
     ---@diagnostic disable-next-line: missing-fields
     context = {
@@ -102,19 +102,19 @@ end
 vim.g.autoFormat = true
 vim.b.autoFormat = nil
 
-function LspToggleAutoFormat()
+local function LspToggleAutoFormat()
   vim.g.autoFormat = not vim.g.autoFormat
   local status = vim.g.autoFormat and "enabled" or "disabled"
   print("Auto-formatting on save " .. status)
 end
 
-function LspToggleAutoFormatBuffer()
+local function LspToggleAutoFormatBuffer()
   vim.b.autoFormat = not vim.b.autoFormat
   local status = vim.b.autoFormat and "enabled" or "disabled"
   print("Auto-formatting on save for this buffer " .. status)
 end
 
-function IsLspAutoFormatEnabled()
+local function IsLspAutoFormatEnabled()
   if vim.b.autoFormat == nil then
     return vim.g.autoFormat
   else

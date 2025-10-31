@@ -11,7 +11,7 @@ local event_to_pattern = {
 
 vim.api.nvim_set_hl(0, 'ExtraWhitespace', { bg = 'red' })
 
-function HighlightWhitespace()
+local function HighlightWhitespace()
   for event, pattern in pairs(event_to_pattern) do
     vim.api.nvim_create_autocmd(event, {
       buffer = 0,
@@ -57,7 +57,7 @@ vim.api.nvim_create_autocmd({ 'FileType' }, {
   end
 })
 
-function StripTrailingWhitespace()
+local function StripTrailingWhitespace()
   -- Get all lines in the buffer
   local lines = util.GetBufferLines()
   local changed = false
@@ -75,7 +75,7 @@ function StripTrailingWhitespace()
   end
 end
 
-function ToggleStripTrailingWhitespace()
+local function ToggleStripTrailingWhitespace()
   vim.b.noStripWhitespace = not vim.b.noStripWhitespace
   local status = vim.b.noStripWhitespace and "disabled" or "enabled"
   print("StripTrailingWhitespace on save for this buffer " .. status)
