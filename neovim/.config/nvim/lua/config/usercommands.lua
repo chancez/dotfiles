@@ -34,6 +34,13 @@ vim.api.nvim_create_user_command('YQ', function(cmd)
   util.ReplaceBufferWithCommandOutput('yq', args, input)
 end, { nargs = '*', bang = true })
 
+-- Replace the current buffer with the output of a shell command
+vim.api.nvim_create_user_command('Cmd', function(cmd)
+  local input = util.GetBufferLines()
+  local args = cmd.fargs or {}
+  util.ReplaceBufferWithCommandOutput(args[1], vim.list_slice(args, 2), input)
+end, { nargs = '+', complete = 'shellcmdline' })
+
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
 
 -- Reverse the lines of the selection in visual mode
