@@ -22,6 +22,9 @@ return {
       preset = 'enter',
       ['<C-k>'] = { 'select_prev', 'fallback' },
       ['<C-j>'] = { 'select_next', 'fallback' },
+      -- Jump between different completion sources
+      ['<C-S-k>'] = { function(cmp) cmp.select_prev({ jump_by = 'source_id' }) end },
+      ['<C-S-j>'] = { function(cmp) cmp.select_next({ jump_by = 'source_id' }) end },
       -- Jump between snippet placeholders if a snippet is active, otherwise jump to the next item in the completion menu
       ['<Tab>'] = { 'snippet_forward', 'select_next', 'fallback' },
       ['<S-Tab>'] = { 'snippet_backward', 'select_prev', 'fallback' },
