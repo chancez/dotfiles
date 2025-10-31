@@ -20,6 +20,8 @@ return {
       { '<leader>fd', function() require('telescope.builtin').diagnostics() end,                  desc = 'Telescope Diagnostics' },
       { '<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end, desc = 'Telescope file_browser' },
       { '<leader>u',  function() require('telescope').extensions.undo.undo() end,                 desc = 'Telescope undo' },
+      { '<leader>fi', function() require('telescope').extensions.hierarchy.incoming_calls() end,  desc = 'Telescope incoming call tree' },
+      { '<leader>fo', function() require('telescope').extensions.hierarchy.outgoing_calls() end,  desc = 'Telescope outgoing call tree' },
     },
     dependencies = {
       'nvim-lua/popup.nvim',
@@ -31,6 +33,7 @@ return {
       'nvim-telescope/telescope-symbols.nvim',
       'nvim-telescope/telescope-ui-select.nvim',
       "debugloop/telescope-undo.nvim",
+      "jmacadie/telescope-hierarchy.nvim",
     },
     config = function()
       local builtin = require("telescope.builtin")
@@ -38,6 +41,7 @@ return {
       local telescope = require('telescope')
       local action_state = require("telescope.actions.state")
       local fb_actions = require "telescope".extensions.file_browser.actions
+      local hierarchy_actions = require("telescope-hierarchy.actions")
 
       local recreate_picker = function(current_picker, opts)
         local picker = nil
@@ -165,6 +169,22 @@ return {
             },
           },
           undo = {},
+          hierarchy = {
+            initial_multi_expand = true, -- Should the hierarchy picker do an initial multi-expand when opened?
+            multi_depth = 10,            -- How many layers deep should a multi-expand go?
+            -- initial_mode = 'insert',
+            theme = "ivy",
+            layout_strategy = "bottom_pane",
+            mappings = {
+              i = {
+                ["C-e"] = hierarchy_actions.expand,
+                ["C-m"] = hierarchy_actions.multi_expand,
+                ["C-h"] = hierarchy_actions.collapse,
+                ["C-t"] = hierarchy_actions.toggle,
+                ["C-s"] = hierarchy_actions.switch,
+              },
+            },
+          },
         },
         defaults = require('telescope.themes').get_ivy {
           cache_picker = {
@@ -179,6 +199,8 @@ return {
               ["<C-j>"] = actions.move_selection_next,
               ["<M-k>"] = actions.preview_scrolling_up,
               ["<M-j>"] = actions.preview_scrolling_down,
+              ["<M-l>"] = actions.preview_scrolling_right,
+              ["<M-h>"] = actions.preview_scrolling_left,
               -- we want ctrl-u to be clear the prompt, so disable the default binding
               ["<C-u>"] = false,
               ["<C-d>"] = refine_current_dir,
@@ -219,6 +241,7 @@ return {
       telescope.load_extension('dap')
       telescope.load_extension('ui-select')
       telescope.load_extension('undo')
+      telescope.load_extension("hierarchy")
 
       vim.api.nvim_create_user_command('Diagnostics', function() require('telescope.builtin').diagnostics() end, {})
     end,

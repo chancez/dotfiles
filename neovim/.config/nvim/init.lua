@@ -38,6 +38,10 @@ require("lazy").setup("plugins", {
   },
   dev = {
     path = "~/projects",
-    patterns = { "chancez" }
+    patterns = {
+      "chancez",
+      "telescope-hierarchy",
+    },
+    fallback = true, -- Fallback to git when local plugin doesn't exist
   },
 })
