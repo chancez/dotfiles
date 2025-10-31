@@ -1,4 +1,4 @@
-local util = require 'util'
+local util = require('config.util')
 
 -- Open help in a new tab
 vim.api.nvim_create_user_command('HelpTab', ':help <args> | wincmd T', { nargs = 1, complete = 'help' })

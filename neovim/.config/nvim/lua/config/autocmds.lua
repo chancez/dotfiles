@@ -1,4 +1,4 @@
-local util = require 'util'
+local util = require('config.util')
 
 local event_to_pattern = {
   -- highlight trailing whitespace when we enter into a buffer

@@ -19,7 +19,10 @@ vim.opt.rtp:prepend(lazypath)
 vim.loader.enable()
 
 -- set options (mapleader) before loading lazy
-require 'options'
+require 'config.options'
+require 'config.commands'
+require 'config.autocmds'
+require 'config.mappings'
 
 require("lazy").setup("plugins", {
   -- do not automatically check for plugin updates
@@ -38,7 +41,3 @@ require("lazy").setup("plugins", {
     patterns = { "chancez" }
   },
 })
-
-require 'commands'
-require 'autocmds'
-require 'mappings'
