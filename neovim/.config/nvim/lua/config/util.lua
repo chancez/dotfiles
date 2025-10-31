@@ -5,7 +5,12 @@ function M.ReplaceBufferLines(content)
 end
 
 function M.ReplaceBufferString(content)
-  M.ReplaceBufferLines(vim.split(content, '\n'))
+  local lines = vim.split(content, '\n')
+  -- If the content ends with a newline, remove the last empty line added by split
+  if lines[#lines] == '' then
+    table.remove(lines, #lines)
+  end
+  M.ReplaceBufferLines(lines)
 end
 
 function M.GetBufferLines()
@@ -16,8 +21,19 @@ function M.GetBufferString()
   return table.concat(M.GetBufferLines(), '\n')
 end
 
-function M.RunCommand(binary, input, args)
-  local cmd = { binary, args }
+-- Runs a command with given input and replaces the current buffer with the command's output.
+-- @param binary (string) The command to run.
+-- @param input (string) The input to pass to the command's stdin.
+-- @param args (table|string) Additional arguments to pass to the command.
+function M.ReplaceBufferWithCommandOutput(binary, args, input)
+  if type(args) == 'string' then
+    args = { args }
+  end
+  if args == nil then
+    args = {}
+  end
+  local cmd = { binary }
+  vim.list_extend(cmd, args)
 
   vim.system(cmd, { stdin = input, text = true }, function(result)
     vim.schedule(function()
@@ -25,7 +41,8 @@ function M.RunCommand(binary, input, args)
         M.ReplaceBufferString(result.stdout)
       else
         local cmd_str = table.concat(cmd, ' ')
-        vim.api.nvim_echo({ { string.format("Error running %q: %s", cmd_str, result.stderr) } }, false, { err = true })
+        vim.api.nvim_echo({ { string.format("Error running %q: %s", cmd_str, result.stderr) } }, false,
+          { err = true })
       end
     end)
   end)

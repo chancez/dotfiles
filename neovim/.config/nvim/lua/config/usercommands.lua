@@ -17,15 +17,21 @@ end, {
 -- JQ formats JSON in the current buffer
 vim.api.nvim_create_user_command('JQ', function(cmd)
   local input = util.GetBufferLines()
-  local args = cmd.args or '.'
-  util.RunCommand('jq', input, args)
+  local args = cmd.fargs or {}
+  if #args == 0 then
+    args = { '.' }
+  end
+  util.ReplaceBufferWithCommandOutput('jq', args, input)
 end, { nargs = '*', bang = true })
 
 -- YQ formats YAML in the current buffer
 vim.api.nvim_create_user_command('YQ', function(cmd)
   local input = util.GetBufferLines()
-  local args = cmd.args or '.'
-  util.RunCommand('yq', input, args)
+  local args = cmd.fargs or {}
+  if #args == 0 then
+    args = { '.' }
+  end
+  util.ReplaceBufferWithCommandOutput('yq', args, input)
 end, { nargs = '*', bang = true })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
