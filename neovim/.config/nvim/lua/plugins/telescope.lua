@@ -194,6 +194,8 @@ return {
               ["<C-s>"] = actions.cycle_previewers_next,
               ["<C-a>"] = actions.cycle_previewers_prev,
               ["<C-Space>"] = actions.to_fuzzy_refine,
+              ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+              ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
             },
             n = {
               ["<C-k>"] = actions.move_selection_previous,
