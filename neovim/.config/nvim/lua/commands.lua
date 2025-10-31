@@ -5,11 +5,14 @@ vim.api.nvim_create_user_command('HelpTab', ':help <args> | wincmd T', { nargs =
 vim.api.nvim_create_user_command('HelpVert', ':vert botright help <args>', { nargs = 1, complete = 'help' })
 
 -- Quit all buffers and delete the current session
-vim.api.nvim_create_user_command('Qas', function()
+vim.api.nvim_create_user_command('Qas', function(opts)
   vim.cmd(':silent AutoSession delete')
   vim.cmd(':silent AutoSession disable')
-  vim.cmd(':qa')
-end, {})
+  local quit_cmd = opts.bang and ':qa!' or ':qa'
+  vim.cmd(quit_cmd)
+end, {
+  bang = true,
+})
 
 -- JQ formats JSON in the current buffer
 vim.api.nvim_create_user_command('JQ', function(cmd)
