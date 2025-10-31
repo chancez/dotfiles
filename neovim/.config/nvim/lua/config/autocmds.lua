@@ -132,3 +132,11 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
     end
   end,
 })
+
+-- Automatically open help as a vertical split
+vim.api.nvim_create_autocmd({ 'FileType' }, {
+  pattern = 'help',
+  callback = function()
+    vim.cmd('wincmd L')
+  end,
+})
