@@ -173,7 +173,7 @@ return {
           hierarchy = {
             initial_multi_expand = true, -- Should the hierarchy picker do an initial multi-expand when opened?
             multi_depth = 10,            -- How many layers deep should a multi-expand go?
-            -- initial_mode = 'insert',
+            initial_mode = 'insert',
             theme = "ivy",
             layout_strategy = "bottom_pane",
             mappings = {
