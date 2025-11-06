@@ -46,6 +46,7 @@ return {
         "lua",
         "make",
         "markdown",
+        "nim",
         "proto",
         "python",
         "regex",

@@ -69,6 +69,7 @@ local auto_install_servers = {
       ["graphql-config.load.legacy"] = true,
     }
   },
+  nim_langserver         = {},
 }
 
 
