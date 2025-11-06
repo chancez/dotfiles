@@ -81,3 +81,5 @@ vim.g.mapleader = ','
 
 -- Silence writes via netrw
 vim.g.netrw_silent = 1
+
+vim.g.project_directory = os.getenv('HOME') .. '/projects'
