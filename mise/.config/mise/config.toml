@@ -2,4 +2,4 @@
 
 [settings]
 experimental = true
-idiomatic_version_file_enable_tools = ["go"]
+idiomatic_version_file_enable_tools = ["go", "node"]
