@@ -161,7 +161,6 @@ if ! zgenom saved; then
   # zsh plugins
   zgenom load jonmosco/kube-ps1
   zgenom load zsh-users/zsh-autosuggestions
-  # zgenom load unixorn/fzf-zsh-plugin
   zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy
@@ -183,16 +182,6 @@ fi
 unsetopt noclobber
 
 function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
-
-if source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"; then
-  source_if_exists "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
-elif source_if_exists "/usr/share/doc/fzf/examples/completion.zsh"; then
-   source_if_exists  "/usr/share/doc/fzf/examples/key-bindings.zsh"
-else
-  # fallback
-  source_if_exists "$HOME/.fzf.zsh"
-fi
-
 
 source_if_exists "$HOME/.cargo/env"
 
@@ -445,20 +434,17 @@ if [[ $(uname -r) == *Microsoft ]]; then
   export BROWSER=wsl-open
 fi
 
-if (( $+commands[rg] )); then
-    export FZF_DEFAULT_COMMAND='rg --files'
-elif (( $+commands[ag] )); then
-    export FZF_DEFAULT_COMMAND='ag -l -g ""'
-else
-    echo "missing rg/ag for fzf"
-fi
-
+# Set FZF options before loading fzf plugin
+export FZF_DEFAULT_COMMAND='rg --files'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 # adds previews to completion
 export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -C {}) 2> /dev/null | head -200'"
 export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
+
+# TODO: figure out why ohmyzsh fzf plugin doesn't work
+eval "$(fzf --zsh)"
 
 # fzf based cd without args
 function cd() {
