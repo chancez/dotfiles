@@ -1,0 +1,104 @@
+provision:
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt update -y
+    # Utilities to always install
+    apt install -y gpg wget curl tcpdump jq git unzip net-tools
+
+    # install kitty so that kitty ssh kitten works as expected
+    apt install -y kitty
+    # for kitty terminal when sshing into the VM
+    echo 'Defaults env_keep += "TERM TERMINFO"' > /etc/sudoers.d/preserve-terminfo
+
+
+- mode: data
+  path: "{{.Home}}/.ssh/known_hosts"
+  content: |
+    github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+    github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+    github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+  owner: "{{.User}}"
+  permissions: 600
+  overwrite: false
+
+- mode: user
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+
+    # Check env to see if we should skip user setup
+    if [[ "${SKIP_SETUP_HOME:-}" == "1" ]]; then
+      echo "SKIP_SETUP_HOME is set, skipping home setup."
+      exit 0
+    fi
+
+    if [[ -f ~/.setup_done ]]; then
+      echo "User setup already completed, skipping."
+      exit 0
+    fi
+
+    touch ~/.setup_done
+
+    # Utilities and tools for development
+    sudo apt install -y zsh stow
+    # Mason cannot install clangd on Linux aarch64
+    sudo apt install -y clangd
+
+    # For python to be built via mise pyenv
+    # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+    sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+    libbz2-dev libreadline-dev libsqlite3-dev curl git \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+    # Install mise
+    curl https://mise.run | sh
+    mise --version
+
+    # Hack to make nvim mason use local clangd
+    # https://github.com/mason-org/mason.nvim/issues/1578
+    mkdir -p ~/.local/share/nvim/mason/packages/clangd/mason-schemas
+    curl https://raw.githubusercontent.com/clangd/vscode-clangd/master/package.json \
+        | jq .contributes.configuration > ~/.local/share/nvim/mason/packages/clangd/mason-schemas/lsp.json
+    echo '{"schema_version":"1.1","primary_source":{"type":"local"},"name":"clangd","links":{"share":{"mason-schemas/lsp/clangd.json":"mason-schemas/lsp.json"}}}' \
+        > ~/.local/share/nvim/mason/packages/clangd/mason-receipt.json
+    )
+
+    # Configure dotfiles
+    git clone https://github.com/chancez/dotfiles.git ~/.dotfiles
+    cd ~/.dotfiles
+    # Remove existing zshrc to avoid conflicts
+    if ! [[ -L ~/.zshrc ]]; then
+      rm ~/.zshrc
+    fi
+    ./setup.sh
+
+    sudo chsh -s /bin/zsh "{{.User}}"
+
+    # Use copilot credentials from host
+    ln -s /Users/chancez/.config/github-copilot/apps.json ~/.config/github-copilot/apps.json
+
+    # Install tools via mise
+    zsh --login <<EOF
+    set -x
+    cd ~
+    mise trust --all
+    mise install
+    mise install
+    EOF
+
+    # Install neovim plugins
+    nvim --headless "+Lazy! sync" +qa
+
+user:
+  name: chancez
+
+env:
+  MISE_PREFER_OFFLINE: 1
+
+ssh:
+  loadDotSSHPubKeys: true
+  forwardAgent: true
