@@ -2,7 +2,7 @@
 usage = "latest"
 
 kubectl = "latest"
-neovim = "0.11"
+"aqua:neovim/neovim" = "0.11"
 uv = "latest"
 terraform = "latest"
 
@@ -29,3 +29,5 @@ ripgrep = "latest"
 fd = "latest"
 jq = "latest"
 fzf = "latest"
+gh = "latest"
+aws-cli = "latest"
