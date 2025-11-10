@@ -48,7 +48,6 @@ return {
       local serverNames = myLspConfigs.auto_install_servers
       require("mason-lspconfig").setup({
         ensure_installed = serverNames,
-        automatic_installation = true,
         automatic_enable = false,
       })
       myLspConfigs.setup()
