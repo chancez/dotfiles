@@ -151,6 +151,14 @@ return {
         action(prompt_bufnr)
       end
 
+      local file_related_mappings = {
+        ["<C-d>"] = refine_current_dir,
+        ["<C-o>"] = refine_parent_dir,
+        ["<C-i>"] = refine_previous_dir,
+        ["<C-e>"] = edit_file_next_to_selection,
+        ["<C-S-e>"] = vsplit_file_next_to_selection,
+      }
+
       telescope.setup {
         extensions = {
           fzf = {
@@ -204,11 +212,6 @@ return {
               ["<M-h>"] = actions.preview_scrolling_left,
               -- we want ctrl-u to be clear the prompt, so disable the default binding
               ["<C-u>"] = false,
-              ["<C-d>"] = refine_current_dir,
-              ["<C-o>"] = refine_parent_dir,
-              ["<C-i>"] = refine_previous_dir,
-              ["<C-e>"] = edit_file_next_to_selection,
-              ["<C-S-e>"] = vsplit_file_next_to_selection,
               ["<esc>"] = actions.close,
               ["<S-esc>"] = function()
                 -- exit insert mode
@@ -229,6 +232,20 @@ return {
         pickers = {
           find_files = {
             find_command = { 'fd', '--type', 'f', '--hidden' },
+            attach_mappings = function(_, map)
+              for key, action in pairs(file_related_mappings) do
+                map('i', key, action)
+              end
+              return true
+            end,
+          },
+          live_grep = {
+            attach_mappings = function(_, map)
+              for key, action in pairs(file_related_mappings) do
+                map('i', key, action)
+              end
+              return true
+            end,
           },
           buffers = {
             ignore_current_buffer = true,
