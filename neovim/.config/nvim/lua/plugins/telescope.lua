@@ -159,6 +159,52 @@ return {
         ["<C-S-e>"] = vsplit_file_next_to_selection,
       }
 
+      local function toggleHiddenFileSearch(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local prevTitle = current_picker.prompt_title
+        local includeIgnoreHidden = not prevTitle:find('hidden')
+        local line = action_state.get_current_line()
+        local title = prevTitle
+        if includeIgnoreHidden then
+          title = title .. ' (hidden)'
+        else
+          title = title:gsub(' %(hidden%)', '')
+        end
+
+        -- Close the current picker
+        actions.close(prompt_bufnr)
+
+        -- Re-open with new options
+        builtin.find_files({
+          hidden = includeIgnoreHidden,
+          prompt_title = title,
+          default_text = line,
+        })
+      end
+
+      local function toggleIgnoreFileSearch(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local prevTitle = current_picker.prompt_title
+        local includeIgnore = not prevTitle:find('ignore')
+        local line = action_state.get_current_line()
+        local title = prevTitle
+        if includeIgnore then
+          title = title .. ' (ignore)'
+        else
+          title = title:gsub(' %(ignore%)', '')
+        end
+
+        -- Close the current picker
+        actions.close(prompt_bufnr)
+
+        -- Re-open with new options
+        builtin.find_files({
+          no_ignore = includeIgnore,
+          prompt_title = title,
+          default_text = line,
+        })
+      end
+
       telescope.setup {
         extensions = {
           fzf = {
@@ -236,6 +282,8 @@ return {
               for key, action in pairs(file_related_mappings) do
                 map('i', key, action)
               end
+              map('i', '<C-h>', toggleHiddenFileSearch)
+              map('i', '<C-z>', toggleIgnoreFileSearch)
               return true
             end,
           },
