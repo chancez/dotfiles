@@ -114,6 +114,32 @@ return {
     },
     dependencies = { 'kyazdani42/nvim-web-devicons', opt = true }
   },
+
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
+    keys = {
+      { "<leader>j", mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash" },
+      { "<leader>T", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "<c-s>",     mode = { "c" },           function() require("flash").toggle() end,     desc = "Toggle Flash Search" },
+      vim.keymap.set({ "n", "x", "o" }, "<c-space>", function()
+        require("flash").treesitter({
+          actions = {
+            ["<c-space>"] = "next",
+            ["<BS>"] = "prev"
+          }
+        })
+      end, { desc = "Treesitter incremental selection" })
+    },
+    opts = {
+      modes = {
+        char = {
+          enabled = false,
+        },
+      },
+    },
+  },
   { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
 
   {
