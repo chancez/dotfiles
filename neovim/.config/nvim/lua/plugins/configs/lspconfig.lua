@@ -195,15 +195,6 @@ local function lspAttach(bufnr, client)
         if not IsLspAutoFormatEnabled() then
           return
         end
-        -- Suppress No code actions available message
-        -- https://github.com/neovim/neovim/issues/17758#issuecomment-1704694075
-        local orignal = vim.notify
-        vim.notify = function(msg, level, opts)
-          if msg == 'No code actions available' then
-            return
-          end
-          orignal(msg, level, opts)
-        end
         LspOrgImports()
         vim.lsp.buf.format()
       end,
@@ -220,6 +211,16 @@ local ignored_filetypes = {
 }
 
 M.setup = function()
+  -- Suppress No code actions available message
+  -- https://github.com/neovim/neovim/issues/17758#issuecomment-1704694075
+  local original_vim_notify = vim.notify
+  vim.notify = function(msg, level, opts)
+    if msg == 'No code actions available' then
+      return
+    end
+    original_vim_notify(msg, level, opts)
+  end
+
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(ev)
       local bufnr = ev.buf
