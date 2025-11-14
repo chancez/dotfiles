@@ -58,3 +58,8 @@ vim.api.nvim_create_user_command('ReverseLines', function()
   -- Set the reversed lines back to the buffer
   vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, reversed_lines)
 end, { range = true })
+
+-- Toggle diagnostics on and off for the current buffer
+vim.api.nvim_create_user_command('ToggleDiagnostics', function()
+  vim.diagnostic.enable(not vim.diagnostic.is_enabled(), { bufnr = 0 })
+end, {})

@@ -107,6 +107,6 @@ map('n', 'gf', function() GoToFile() end, { desc = 'Go to file under cursor' })
 map('n', '[d', function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = 'Diagnostics goto previous' })
 map('n', ']d', function() vim.diagnostic.jump({ count = -1, float = true }) end, { desc = 'Diagnostics goto next' })
 map('n', '<leader>tq', function() vim.diagnostic.setqflist() end, { desc = 'Send diagnostics to quickfix' })
-map('n', '<leader>td', function() vim.diagnostic.enable(not vim.diagnostic.is_enabled()) end,
-  { desc = 'Toggle diagnostics' })
+
+map('n', '<leader>td', ':ToggleDiagnostics<CR>', { desc = 'Toggle diagnostics', silent = true })
 map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
