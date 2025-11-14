@@ -55,4 +55,18 @@ function M.table_concat(t1, t2)
   return result
 end
 
+-- Map a command to a keybinding. The command must already be defined.
+function M.map_user_command(cmd, lhs, bufnr)
+  local rhs = '<cmd>' .. cmd .. '<CR>'
+  local mode = 'n'
+  vim.keymap.set(mode, lhs, rhs, { desc = cmd, silent = true, buffer = bufnr or 0 })
+end
+
+-- Define a command and map it to a keybinding
+function M.map_and_define_user_command(name, lhs, command, bufnr)
+  bufnr = bufnr or 0
+  vim.api.nvim_buf_create_user_command(bufnr, name, command, { desc = name })
+  M.map_user_command(name, lhs, bufnr)
+end
+
 return M

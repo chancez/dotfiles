@@ -134,56 +134,44 @@ local function lspAttach(bufnr, client)
 
   vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
 
-  -- Define an lsp command that can be used in the command line
-  local lspCommand = function(name, command, desc)
-    vim.api.nvim_buf_create_user_command(bufnr, name, command, { bang = true, desc = desc })
-  end
+  util.map_and_define_user_command('LspRename', '<leader>rn', function() vim.lsp.buf.rename() end, bufnr)
+  util.map_and_define_user_command('LspDeclaration', 'gD', function() vim.lsp.buf.declaration() end, bufnr)
+  util.map_and_define_user_command('LspDefinition', 'gd',
+    function() require("telescope.builtin").lsp_definitions({ fname_width = 75 }) end, bufnr)
+  util.map_and_define_user_command('LspTypeDefinition', '<leader>D',
+    function() require("telescope.builtin").lsp_type_definitions() end, bufnr)
+  util.map_and_define_user_command('LspReferences', 'gr',
+    function() require("telescope.builtin").lsp_references({ fname_width = 75 }) end, bufnr)
+  util.map_and_define_user_command('LspImplementation', 'gi',
+    function() require("telescope.builtin").lsp_implementations() end, bufnr)
 
-  -- Map an lsp command to a keybinding. The command must already be defined.
-  local mapLspCommand = function(cmd, lhs, desc)
-    local rhs = '<cmd>' .. cmd .. '<CR>'
-    local description = desc or cmd
-    local mode = 'n'
-    vim.keymap.set(mode, lhs, rhs, { desc = description, silent = true, buffer = bufnr })
-  end
+  util.map_and_define_user_command('LspCodeAction', '<leader>ca', function() vim.lsp.buf.code_action() end, bufnr)
+  util.map_and_define_user_command('LspHover', 'K', function() vim.lsp.buf.hover() end, bufnr)
+  util.map_and_define_user_command('LspSignatureHelp', '<C-k>', function() vim.lsp.buf.signature_help() end, bufnr)
 
-  -- Define an lsp command and map it to a keybinding
-  local lspCommandMap = function(name, lhs, command, desc)
-    lspCommand(name, command, desc)
-    mapLspCommand(name, lhs, desc)
-  end
+  util.map_and_define_user_command('LspAddWorkspaceFolder', '<leader>wa',
+    function() vim.lsp.buf.add_workspace_folder() end, bufnr)
+  util.map_and_define_user_command('LspRemoveWorkspaceFolder', '<leader>wr',
+    function() vim.lsp.buf.remove_workspace_folder() end, bufnr)
+  util.map_and_define_user_command('LspListWorkspaceFolders', '<leader>wl',
+    function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufnr)
 
-  lspCommandMap('LspRename', '<leader>rn', function() vim.lsp.buf.rename() end)
-  lspCommandMap('LspDeclaration', 'gD', function() vim.lsp.buf.declaration() end)
-  lspCommandMap('LspDefinition', 'gd', function() require("telescope.builtin").lsp_definitions({ fname_width = 75 }) end)
-  lspCommandMap('LspTypeDefinition', '<leader>D', function() require("telescope.builtin").lsp_type_definitions() end)
-  lspCommandMap('LspReferences', 'gr', function() require("telescope.builtin").lsp_references({ fname_width = 75 }) end)
-  lspCommandMap('LspImplementation', 'gi', function() require("telescope.builtin").lsp_implementations() end)
-
-  lspCommandMap('LspCodeAction', '<leader>ca', function() vim.lsp.buf.code_action() end)
-  lspCommandMap('LspHover', 'K', function() vim.lsp.buf.hover() end)
-  lspCommandMap('LspSignatureHelp', '<C-k>', function() vim.lsp.buf.signature_help() end)
-
-  lspCommandMap('LspAddWorkspaceFolder', '<leader>wa', function() vim.lsp.buf.add_workspace_folder() end)
-  lspCommandMap('LspRemoveWorkspaceFolder', '<leader>wr', function() vim.lsp.buf.remove_workspace_folder() end)
-  lspCommandMap('LspListWorkspaceFolders', '<leader>wl',
-    function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
-
-  lspCommandMap('LspDocumentSymbols', '<m-O>', function() require("telescope.builtin").lsp_document_symbols() end)
-  lspCommandMap('LspWorkspaceSymbols', '<m-p>',
-    function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end)
-  lspCommand('LspIncomingCalls', function() require("telescope.builtin").lsp_incoming_calls() end)
-  lspCommand('LspOutgoingCalls', function() require("telescope.builtin").lsp_outgoing_calls() end)
-  lspCommand('LspFixAll', function() LspFixAll() end)
+  util.map_and_define_user_command('LspDocumentSymbols', '<m-O>',
+    function() require("telescope.builtin").lsp_document_symbols() end, bufnr)
+  util.map_and_define_user_command('LspWorkspaceSymbols', '<m-p>',
+    function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end, bufnr)
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspIncomingCalls',
+    function() require("telescope.builtin").lsp_incoming_calls() end, {})
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCalls',
+    function() require("telescope.builtin").lsp_outgoing_calls() end, {})
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspFixAll', function() LspFixAll() end, {})
 
   -- formatting
   if client.server_capabilities.documentFormattingProvider then
-    lspCommand('LspFormat', function() vim.lsp.buf.format() end)
-    lspCommand('LspOrgImports', function() LspOrgImports() end)
-    lspCommand('LspToggleAutoFormat', function() LspToggleAutoFormat() end,
-      'Toggle auto-formatting on save globally')
-    lspCommand('LspToggleAutoFormatBuffer', function() LspToggleAutoFormat() end,
-      'Toggle auto-formatting on save for this buffer')
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, {})
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() LspOrgImports() end, {})
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspToggleAutoFormat', function() LspToggleAutoFormat() end, {})
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspToggleAutoFormatBuffer', function() LspToggleAutoFormat() end, {})
 
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
