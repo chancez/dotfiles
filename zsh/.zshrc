@@ -186,6 +186,11 @@ function source_if_exists() { [[ -s $1 ]] && source $1 && return 0 || return 1}
 source_if_exists "$HOME/.cargo/env"
 
 alias gst='git status'
+alias gd='git diff'
+alias gdc='git diff --cached'
+alias gc='git commit'
+alias gcv='git commit --verbose'
+alias ga='git add'
 
 function git-prune-branches-list() {
   git fetch --prune && (
