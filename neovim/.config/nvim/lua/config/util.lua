@@ -48,4 +48,11 @@ function M.ReplaceBufferWithCommandOutput(binary, args, input)
   end)
 end
 
+function M.table_concat(t1, t2)
+  local result = {}
+  vim.list_extend(result, t1)
+  vim.list_extend(result, t2)
+  return result
+end
+
 return M

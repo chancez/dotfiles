@@ -1,6 +1,8 @@
+local util = require('config.util')
+
 local M = {}
 
-local auto_install_servers = {
+local auto_enable_servers = {
   clangd                 = {
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }, -- remove proto, handled by bufls
   },
@@ -70,13 +72,12 @@ local auto_install_servers = {
     }
   },
   nim_langserver         = {},
-  copilot                = {},
 }
 
 
-local manually_managed_servers = {}
-
-local servers = vim.tbl_extend("error", auto_install_servers, manually_managed_servers)
+local install_only_servers = {
+  "copilot",
+}
 
 local function LspOrgImports()
   vim.lsp.buf.code_action({
@@ -210,8 +211,9 @@ local function lspAttach(bufnr, client)
   end
 end
 
-M.auto_install_servers = vim.tbl_keys(auto_install_servers)
-M.server_names = vim.tbl_keys(servers)
+local auto_install_servers = util.table_concat(vim.tbl_keys(auto_enable_servers), install_only_servers)
+
+M.auto_install_servers = auto_install_servers
 
 local ignored_filetypes = {
   'neotest-output-panel',
@@ -234,7 +236,7 @@ M.setup = function()
   })
 
 
-  for server_name, server_specific_opts in pairs(servers) do
+  for server_name, server_specific_opts in pairs(auto_enable_servers) do
     local server_opts = {
       flags = {
         debounce_text_changes = 150,
