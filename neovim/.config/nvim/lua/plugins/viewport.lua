@@ -28,7 +28,7 @@ return {
     local grp = vim.api.nvim_create_augroup("viewport", { clear = true })
     vim.api.nvim_create_autocmd("User", {
       group = grp,
-      pattern = viewport.modes.mode_change_autocmd,
+      pattern = viewport.mode_change_autocmd,
       callback = function()
         require('lualine').refresh()
       end,
