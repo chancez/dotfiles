@@ -2,11 +2,12 @@ return {
   "chancez/viewport.nvim",
   dev    = true,
   keys   = {
-    { '<leader>R',    function() require('viewport').start_resize_mode() end,     desc = 'Start resize mode' },
-    { '<leader>N',    function() require('viewport').start_navigate_mode() end,   desc = 'Start navigate mode' },
-    { '<leader>S',    function() require('viewport').start_select_mode() end,     desc = 'Start select mode' },
-    { '<leader>sel',  function() require('viewport.actions').select_window() end, desc = 'Select a window to focus' },
-    { '<leader>swap', function() require('viewport').start_swap_mode() end,       desc = 'Select a window to swap with the current window' },
+    { '<leader>R',    function() require('viewport').start_resize_mode() end,       desc = 'Start resize mode' },
+    { '<leader>N',    function() require('viewport').start_navigate_mode() end,     desc = 'Start navigate mode' },
+    { '<leader>S',    function() require('viewport').start_select_mode() end,       desc = 'Start select mode' },
+    { '<leader>sel',  function() require('viewport.actions').select_window() end,   desc = 'Select a window to focus' },
+    { '<leader>swap', function() require('viewport').start_swap_mode() end,         desc = 'Select a window to swap with the current window' },
+    { '<c-w>0',       function() require('viewport.actions').toggle_maximize() end, desc = 'Toggle maximize current window' },
   },
   cmd    = {
     "ResizeMode",

@@ -142,12 +142,6 @@ return {
   },
   { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
 
-  {
-    'szw/vim-maximizer',
-    keys = {
-      { '<c-w>0', ':MaximizerToggle<CR>', mode = { 'n' } },
-    },
-  },
   { 'nicwest/vim-camelsnek' },
   {
     'stevearc/quicker.nvim',

@@ -66,7 +66,6 @@
   "vim-helm": { "branch": "master", "commit": "2c8525fd98e57472769d137317bca83e477858ce" },
   "vim-jsonnet": { "branch": "master", "commit": "4ebc6619ddce5d032a985b42a9864154c3d20e4a" },
   "vim-kitty": { "branch": "main", "commit": "5c3efc79af70dc2c22cad03e6a7374a5f81205d9" },
-  "vim-maximizer": { "branch": "master", "commit": "2e54952fe91e140a2e69f35f22131219fcd9c5f1" },
   "vim-rhubarb": { "branch": "master", "commit": "5496d7c94581c4c9ad7430357449bb57fc59f501" },
   "vim-suda": { "branch": "master", "commit": "9adda7d195222d4e2854efb2a88005a120296c47" },
   "vim-surround": { "branch": "master", "commit": "3d188ed2113431cf8dac77be61b842acb64433d9" },
