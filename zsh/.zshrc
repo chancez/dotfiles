@@ -473,7 +473,7 @@ _fzf_complete_git() {
 
 # TODO: figure out why ohmyzsh fzf plugin doesn't work
 # TODO: Put back into zgenom eval step?
-if [[ $+commands[fzf] ]]; then
+if (( $+commands[fzf] )); then
   eval "$(fzf --zsh)"
 fi
 
