@@ -164,6 +164,7 @@ if ! zgenom saved; then
   zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy
+  zgenom load junegunn/fzf-git.sh
 
   # custom extensions
   (( $+commands[direnv] )) && zgenom eval --name direnv < <(direnv hook zsh)
@@ -191,6 +192,32 @@ alias gdc='git diff --cached'
 alias gc='git commit'
 alias gcv='git commit --verbose'
 alias ga='git add'
+
+function correct_git_commands() {
+  local final_command=()
+  local changes_made=false
+  for arg in "$@"; do
+    # if arg starts with refs/heads or if it's a path then we don't need to modify it
+    if [[ "$arg" == refs/heads/* || "$arg" == */head* ]]; then
+      final_command+=("$arg")
+      continue
+    fi
+    # Use parameter substitution to replace 'head' with 'HEAD' in the argument
+    corrected_arg="${arg//head/HEAD}"
+    final_command+=("$corrected_arg")
+    if [[ "$corrected_arg" != "$arg" ]]; then
+      changes_made=true
+    fi
+  done
+  if $changes_made; then
+    echo "Executing corrected command: git ${final_command[*]}"
+  fi
+  command git "${final_command[@]}"
+}
+
+function git() {
+  correct_git_commands "$@"
+}
 
 function git-prune-branches-list() {
   git fetch --prune && (
@@ -519,26 +546,3 @@ fi
 # open the currently entered command in a text editor using 'v' in normal mode
 bindkey -M vicmd v edit-command-line
 
-function correct_git_commands() {
-  local final_command=()
-  local changes_made=false
-  for arg in "$@"; do
-    # if arg starts with refs/heads or if it's a path then we don't need to modify it
-    if [[ "$arg" == refs/heads/* || "$arg" == */head* ]]; then
-      final_command+=("$arg")
-      continue
-    fi
-    # Use parameter substitution to replace 'head' with 'HEAD' in the argument
-    corrected_arg="${arg//head/HEAD}"
-    final_command+=("$corrected_arg")
-    if [[ "$corrected_arg" != "$arg" ]]; then
-      changes_made=true
-    fi
-  done
-  if $changes_made; then
-    echo "Executing corrected command: git ${final_command[*]}"
-  fi
-  command git "${final_command[@]}"
-}
-
-alias git=correct_git_commands
