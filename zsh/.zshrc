@@ -448,8 +448,34 @@ export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat 
 export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
+# Custom fuzzy completion for "git" command
+_fzf_complete_git() {
+  local args=$1
+  local -a tokens
+  tokens=(${(z)args})
+  subcommand=${tokens[2]}
+
+  local matches
+  case "$subcommand" in
+    add|rm|reset|restore)
+      matches=$(_fzf_git_files)
+      ;;
+    *)
+      _fzf_path_completion "$prefix" "$1"
+      return
+      ;;
+  esac
+
+  if [ -n "$matches" ]; then
+    LBUFFER="$args$matches"
+  fi
+}
+
 # TODO: figure out why ohmyzsh fzf plugin doesn't work
-eval "$(fzf --zsh)"
+# TODO: Put back into zgenom eval step?
+if [[ $+commands[fzf] ]]; then
+  eval "$(fzf --zsh)"
+fi
 
 # fzf based cd without args
 function cd() {
