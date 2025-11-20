@@ -154,7 +154,9 @@ return {
       local file_related_mappings = {
         ["<C-d>"] = refine_current_dir,
         ["<C-o>"] = refine_parent_dir,
-        ["<C-i>"] = refine_previous_dir,
+        -- Disabled because it interferes with normal tab mapping due to
+        -- terminal sending <C-i> for tab
+        -- ["<C-i>"] = refine_previous_dir,
         ["<C-e>"] = edit_file_next_to_selection,
         ["<C-S-e>"] = vsplit_file_next_to_selection,
       }
