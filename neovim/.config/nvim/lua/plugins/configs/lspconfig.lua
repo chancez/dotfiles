@@ -10,6 +10,7 @@ local auto_enable_servers = {
   pyright                = {},
   ts_ls                  = {},
   bashls                 = {
+    filetypes = { "bash", "sh", "zsh" },
     bashIde = {
       enableSourceErrorDiagnostics = true,
       shellcheckPath = vim.fn.stdpath("data") .. "/mason/bin/shellcheck",
