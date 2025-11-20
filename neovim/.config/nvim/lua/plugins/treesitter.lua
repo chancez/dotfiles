@@ -29,7 +29,10 @@ return {
         },
       })
 
+      vim.treesitter.language.register('bash', { 'zsh' })
+
       local filetypes = {
+        "bash",
         "c",
         "comment",
         "dockerfile",
