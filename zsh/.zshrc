@@ -475,6 +475,27 @@ export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat 
 export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
+_args_index() {
+  local needle=$1
+  shift
+  local index=0
+  for arg in "$@"; do
+    (( index++ ))
+    if [[ "$arg" == "$needle"* ]]; then
+      echo $index
+      return 0
+    fi
+  done
+  return 1
+}
+
+_args_contains() {
+  local needle=$1
+  shift
+  # Ignore the index output
+  _args_index "$needle" "$@" >/dev/null
+}
+
 # Custom fuzzy completion for "git" command
 _fzf_complete_git() {
   local cmd=$1
@@ -486,18 +507,14 @@ _fzf_complete_git() {
 }
 
 _extract_namespace_from_args() {
-  local namespace namespace_arg_index
-  local args=(${(P)1})
+  local namespace namespace_args_index
   namespace="default"
 
   # Get the index of the --namespace or -n argument if provided
-  namespace_arg_index=${args[(ie)namespace]}
-  if [[ $namespace_arg_index -gt ${#args} ]]; then
-    namespace_arg_index=${args[(ie)-n]}
-  fi
+  namespace_args_index=$(_args_index namespace "$@" || _args_index -n "$@")
 
-  if [[ $namespace_arg_index -le ${#args} ]]; then
-    namespace="${args[$namespace_arg_index + 1]}"
+  if [[ -n "$namespace_args_index" ]]; then
+    namespace="${args[$namespace_args_index + 1]}"
   fi
 
   echo $namespace
@@ -523,14 +540,14 @@ _helper_fzf_complete_kubectl() {
   local args namespace last_arg
   args=(${(z)1})
   last_arg="${args[-1]}"
-  namespace=$(_extract_namespace_from_args args)
+  namespace=$(_extract_namespace_from_args ${args[@]})
 
   if [[ "${last_arg}" == "--namespace" || "${last_arg}" == "-n" ]]; then # Check if the previous arg was --namespace or -n
     _helper_fzf_complete_namespaces "$@"
-  elif [[ ${args[(ie)logs]} -le ${#args} ]]; then # check if "logs" is one of the previous args
+  elif _args_contains logs "${args[@]}"; then # check if "logs" is one of the previous args
     _helper_fzf_complete_pods $namespace "$@"
-  elif [[ ${args[(ie)pods]} -le ${#args} ]]; then # check if "pods" is one of the previous args
-    if [[ ${args[(ie)get]} -le ${#args} || ${args[(ie)describe]} -le ${#args} ]]; then # check if "get/describe" is one of the previous args
+  elif _args_contains pod "${args[@]}"; then # check if "pod" is one of the previous args
+    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}"; then # check if "get/describe" is one of the previous args
       _helper_fzf_complete_pods $namespace "$@"
     fi
   elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
