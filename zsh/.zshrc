@@ -477,25 +477,74 @@ export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
 # Custom fuzzy completion for "git" command
 _fzf_complete_git() {
-  local args=$1
-  local -a tokens
-  tokens=(${(z)args})
-  subcommand=${tokens[2]}
-
-  local matches
-  case "$subcommand" in
-    add|rm|reset|restore)
-      matches=$(_fzf_git_files)
-      ;;
-    *)
-      _fzf_path_completion "$prefix" "$1"
-      return
-      ;;
+  local cmd=$1
+  case "${${(z)cmd}[2]}" in
+    # Function usage from: https://github.com/junegunn/fzf-git.sh
+    add|rm|reset|restore) LBUFFER="${cmd}$(_fzf_git_files | __fzf_git_join)";;
+    *) _fzf_path_completion "$prefix" "$@";;
   esac
+}
 
-  if [ -n "$matches" ]; then
-    LBUFFER="$args$matches"
+_extract_namespace_from_args() {
+  local namespace namespace_arg_index
+  local args=(${(P)1})
+  namespace="default"
+
+  # Get the index of the --namespace or -n argument if provided
+  namespace_arg_index=${args[(ie)namespace]}
+  if [[ $namespace_arg_index -gt ${#args} ]]; then
+    namespace_arg_index=${args[(ie)-n]}
   fi
+
+  if [[ $namespace_arg_index -le ${#args} ]]; then
+    namespace="${args[$namespace_arg_index + 1]}"
+  fi
+
+  echo $namespace
+}
+
+_helper_fzf_complete_pods() {
+  local namespace=${1:?}
+  shift
+
+  # fuzzy complete pod names for logs command
+  _fzf_complete --prompt="pod> " -- "$@" < <(
+    kubectl --namespace="${namespace}" get pods -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+  )
+}
+
+_helper_fzf_complete_namespaces() {
+  _fzf_complete --prompt="namespace> " -- "$@" < <(
+    kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+  )
+}
+
+_helper_fzf_complete_kubectl() {
+  local args namespace last_arg
+  args=(${(z)1})
+  last_arg="${args[-1]}"
+  namespace=$(_extract_namespace_from_args args)
+
+  if [[ "${last_arg}" == "--namespace" || "${last_arg}" == "-n" ]]; then # Check if the previous arg was --namespace or -n
+    _helper_fzf_complete_namespaces "$@"
+  elif [[ ${args[(ie)logs]} -le ${#args} ]]; then # check if "logs" is one of the previous args
+    _helper_fzf_complete_pods $namespace "$@"
+  elif [[ ${args[(ie)pods]} -le ${#args} ]]; then # check if "pods" is one of the previous args
+    if [[ ${args[(ie)get]} -le ${#args} || ${args[(ie)describe]} -le ${#args} ]]; then # check if "get/describe" is one of the previous args
+      _helper_fzf_complete_pods $namespace "$@"
+    fi
+  elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
+    _fzf_path_completion "$prefix" "$@"
+  fi
+}
+
+# shellcheck disable=all
+{
+  for cmd in kubectl k kubecolor; do
+    _fzf_complete_${cmd}() {
+      _helper_fzf_complete_kubectl "$@"
+    }
+  done
 }
 
 # TODO: figure out why ohmyzsh fzf plugin doesn't work
