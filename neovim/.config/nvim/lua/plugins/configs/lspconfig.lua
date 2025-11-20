@@ -183,8 +183,11 @@ local function lspAttach(bufnr, client)
         if not IsLspAutoFormatEnabled() then
           return
         end
-        LspOrgImports()
         vim.lsp.buf.format()
+        -- TODO: Make this synchronous so we can run it before buf.format(). It
+        -- has to go after, otherwise sometimes there's weird corruption issues
+        -- when both write to a file at once.
+        LspOrgImports()
       end,
     })
   end
