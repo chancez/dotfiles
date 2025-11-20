@@ -24,6 +24,7 @@ golangci-lint = "latest"
 "pipx:oraios/serena" = "v0.1.4" # MCP using LSPs
 "npm:opencode-ai" = "latest"
 "aqua:openai/codex" = "latest"
+"npm:@zed-industries/codex-acp" = "latest"
 
 # General purpose CLI tools
 ripgrep = "latest"

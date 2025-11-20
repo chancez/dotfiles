@@ -76,8 +76,8 @@ return {
     opts = {
       -- this file can contain specific instructions for your project
       instructions_file = "AGENTS.md",
-      -- for example
-      provider = "copilot",
+      provider = "codex",
+      -- provider = "copilot",
       providers = {
         copilot = {
           endpoint = "https://api.githubcopilot.com",
@@ -90,6 +90,9 @@ return {
             max_tokens = 20480,
           },
         },
+      },
+      acp_providers = {
+        codex = {},
       },
       behaviour = {
         auto_suggestions = false,
