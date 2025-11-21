@@ -8,7 +8,7 @@ zmodload zsh/zprof
 
 # load zgenom only after fpath is set, as it runs compinit
 source "$XDG_DATA_HOME/zgenom/zgenom.zsh"
-autoload -U +X bashcompinit && bashcompinit
+# autoload -U +X bashcompinit && bashcompinit
 
 # Configure fpath and PATH before loading plugins
 source "$ZDOTDIR/paths.zsh"
