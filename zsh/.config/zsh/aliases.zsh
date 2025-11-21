@@ -2,10 +2,12 @@
 
 alias gst='git status'
 alias gd='git diff'
+alias gb='git branch'
 alias gdc='git diff --cached'
 alias gc='git commit'
 alias gcv='git commit --verbose'
 alias ga='git add'
+alias rm='rm -i'
 
 if (($+commands[nvim])); then
   alias vim='nvim'
@@ -20,6 +22,7 @@ alias kns='switch namespace'
 alias tf=terraform
 
 # we disable autocd so this is an alternative for common path changes
+alias ~='cd ~'
 alias ..='cd ..'
 alias ../..='cd ../..'
 
