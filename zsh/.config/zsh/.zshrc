@@ -25,6 +25,7 @@ source "$ZDOTDIR/fzf.zsh"
 source "$ZDOTDIR/git.zsh"
 source "$ZDOTDIR/kube.zsh"
 source "$ZDOTDIR/prompt.zsh"
+source "$ZDOTDIR/bindings.zsh"
 
 # Allow per-machine overrides and customizations
 if [ -f "$HOME/.zshrc.local" ]; then
