@@ -117,6 +117,12 @@ local function LspToggleAutoFormatBuffer()
 end
 
 local function IsLspAutoFormatEnabled()
+  -- Check if autoformatting is disabled for the filetype
+  if vim.tbl_contains({ 'zsh' }, vim.bo.filetype) then
+    return false
+  end
+
+  -- Check if autoformatting is disabled for the buffer
   if vim.b.autoFormat == nil then
     return vim.g.autoFormat
   else
