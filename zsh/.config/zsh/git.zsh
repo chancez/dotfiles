@@ -41,7 +41,6 @@ git-prune-branches() {
 }
 
 # gco - checkout git branch
-unalias gco
 gco() {
   if [ $# -ne 0 ]; then
     git checkout "$@"

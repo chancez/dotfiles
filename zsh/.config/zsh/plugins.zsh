@@ -15,33 +15,19 @@ if ! zgenom saved; then
   # ohmyzsh plugins
   zgenom ohmyzsh
   zgenom ohmyzsh plugins/gcloud
-
-  # prezto options
-  zgenom prezto prompt theme 'sorin'
-  zgenom prezto editor key-bindings 'vi'
-  zgenom prezto history-substring-search color 'yes'
-  zgenom prezto ssh:load identities  'id_ed25519' 'id_rsa'
-  zgenom prezto '*:*' case-sensitive 'no'
-  zgenom prezto '*:*' color 'yes'
-
-  # prezto plugins
-  zgenom prezto
-  zgenom prezto environment
-  zgenom prezto terminal
-  zgenom prezto editor
-  zgenom prezto history
-  zgenom prezto directory
-  zgenom prezto spectrum
-  zgenom prezto utility
-  zgenom prezto git
-  zgenom prezto prompt
-  zgenom prezto completion
-  zgenom prezto history-substring-search
-  zgenom prezto ssh
+  zgenom ohmyzsh plugins/ssh-agent
+  if (($+commands[starship])) then
+    zgenom eval --name starship < <(starship init zsh)
+  else
+    # Fallback to sorin theme if starship is not installed
+    zgenom ohmyzsh themes/sorin
+    zgenom load jonmosco/kube-ps1
+    PROMPT='$(kube_ps1) '$PROMPT
+  fi
 
   # zsh plugins
-  zgenom load jonmosco/kube-ps1
   zgenom load zsh-users/zsh-autosuggestions
+  zgenom load zsh-users/zsh-history-substring-search
   zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy

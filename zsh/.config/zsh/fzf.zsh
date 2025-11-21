@@ -105,7 +105,6 @@ _helper_fzf_complete_kubectl() {
 }
 
 # fzf based cd without args
-unalias cd
 cd() {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";

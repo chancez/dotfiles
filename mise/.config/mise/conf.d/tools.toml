@@ -1,5 +1,7 @@
 [tools]
 usage = "latest"
+# Prompt
+starship = "latest"
 
 kubectl = "latest"
 "aqua:neovim/neovim" = "0.11"

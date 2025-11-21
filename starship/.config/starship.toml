@@ -1,0 +1,57 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+format = """
+($kubernetes )\
+$username\
+$hostname\
+$directory\
+$character"""
+
+right_format = """
+$status\
+( $git_branch)\
+( $git_status)"""
+
+# lprompt
+[kubernetes]
+format ='(\([☸](blue)|[$context](red)[(:$namespace)](blue)\))'
+disabled = false
+
+[directory]
+style = "blue"
+truncate_to_repo = false
+fish_style_pwd_dir_length = 1
+truncation_length = 1
+
+[character]
+success_symbol = "[❯](purple)"
+error_symbol = "[❯](red)"
+vimcmd_symbol = "[❮](green)"
+
+# rprompt
+[status]
+failure_style = 'bold red'
+symbol = '✘'
+success_symbol = ''
+format = '[($symbol $status)]($style)'
+disabled = false
+
+[git_branch]
+format = "[$branch]($style)"
+style = "green"
+
+[git_status]
+format = '($conflicted$untracked$modified$staged$renamed$deleted)( $ahead_behind)'
+conflicted = '[=](13) '
+ahead = '[⬆ ${count}](13)'
+behind = '[⬇ ${count}](13)'
+diverged = '[⬆ ${ahead_count} ⬇ ${behind_count}](13)'
+up_to_date = ''
+untracked = "[◼](7)"
+stashed = ''
+modified = '[✱](4)'
+staged = '[✚](2)'
+renamed = '[➜](5)'
+deleted = '[✘](1)'

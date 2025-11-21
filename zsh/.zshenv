@@ -6,7 +6,6 @@ export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 export ZDOTDIR=${XDG_CONFIG_HOME}/zsh
 
 # zgen options
-export ZGEN_DIR=$XDG_DATA_HOME/zgenom
 export ZGEN_RESET_ON_CHANGE=(${ZDOTDIR}/.zshrc ${ZDOTDIR}/plugins.zsh)
 
 # zsh-autosuggestions config

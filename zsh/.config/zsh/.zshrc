@@ -4,10 +4,10 @@
 zmodload zsh/zprof
 
 # install zgenom
-[[ ! -d $ZGEN_DIR ]] && git clone https://github.com/jandamm/zgenom $ZGEN_DIR
+[[ ! -d $XDG_DATA_HOME/zgenom ]] && git clone https://github.com/jandamm/zgenom $XDG_DATA_HOME/zgenom
 
 # load zgenom only after fpath is set, as it runs compinit
-source "$ZGEN_DIR/zgenom.zsh"
+source "$XDG_DATA_HOME/zgenom/zgenom.zsh"
 autoload -U +X bashcompinit && bashcompinit
 
 # Configure fpath and PATH before loading plugins
@@ -24,7 +24,6 @@ source "$ZDOTDIR/aliases.zsh"
 source "$ZDOTDIR/fzf.zsh"
 source "$ZDOTDIR/git.zsh"
 source "$ZDOTDIR/kube.zsh"
-source "$ZDOTDIR/prompt.zsh"
 source "$ZDOTDIR/bindings.zsh"
 
 # Allow per-machine overrides and customizations
