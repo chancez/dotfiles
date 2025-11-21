@@ -41,6 +41,11 @@ _fzf_complete_git() {
   esac
 }
 
+_fzf_complete_gco() {
+  shift
+  _fzf_complete_git "git checkout $@"
+}
+
 _extract_namespace_from_args() {
   local namespace namespace_args_index
   namespace="default"
