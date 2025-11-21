@@ -20,7 +20,7 @@ if ! zgenom saved; then
   zgenom prezto prompt theme 'sorin'
   zgenom prezto editor key-bindings 'vi'
   zgenom prezto history-substring-search color 'yes'
-  zgenom prezto ssh:load identities 'id_rsa'
+  zgenom prezto ssh:load identities  'id_ed25519' 'id_rsa'
   zgenom prezto '*:*' case-sensitive 'no'
   zgenom prezto '*:*' color 'yes'
 
