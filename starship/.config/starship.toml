@@ -3,7 +3,7 @@
 add_newline = false
 
 format = """
-($kubernetes )\
+$kubernetes\
 $username\
 $hostname\
 $directory\
@@ -11,12 +11,12 @@ $character"""
 
 right_format = """
 $status\
-( $git_branch)\
-( $git_status)"""
+$git_branch\
+$git_status"""
 
 # lprompt
 [kubernetes]
-format ='(\([☸](blue)|[$context](red)[(:$namespace)](blue)\))'
+format ='(\([☸](blue)|[$context](red)[(:$namespace)](blue)\) )'
 disabled = false
 
 [directory]
@@ -35,15 +35,15 @@ vimcmd_symbol = "[❮](green)"
 failure_style = 'bold red'
 symbol = '✘'
 success_symbol = ''
-format = '[($symbol $status)]($style)'
+format = '[($symbol $status )]($style)'
 disabled = false
 
 [git_branch]
-format = "[$branch]($style)"
+format = "[($branch)]($style)"
 style = "green"
 
 [git_status]
-format = '($conflicted$untracked$modified$staged$renamed$deleted)( $ahead_behind)'
+format = '( $conflicted$untracked$modified$staged$renamed$deleted)( $ahead_behind)'
 conflicted = '[=](13) '
 ahead = '[⬆ ${count}](13)'
 behind = '[⬇ ${count}](13)'
