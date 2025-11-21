@@ -63,6 +63,7 @@ local auto_enable_servers = {
     },
   },
   jsonls                 = {},
+  taplo                  = {},
   helm_ls                = {},
   buf_ls                 = {},
   kotlin_language_server = {},
