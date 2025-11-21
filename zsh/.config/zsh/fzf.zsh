@@ -87,7 +87,7 @@ _helper_fzf_complete_kubectl() {
   elif _args_contains logs "${args[@]}"; then # check if "logs" is one of the previous args
     _helper_fzf_complete_pods $namespace "$@"
   elif _args_contains pod "${args[@]}"; then # check if "pod" is one of the previous args
-    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}"; then # check if "get/describe" is one of the previous args
+    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then # check if "get/describe" is one of the previous args
       _helper_fzf_complete_pods $namespace "$@"
     fi
   elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
