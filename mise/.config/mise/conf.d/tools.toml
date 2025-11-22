@@ -4,6 +4,7 @@ usage = "latest"
 starship = "latest"
 
 kubectl = "latest"
+"aqua:danielfoehrKn/kubeswitch" = "latest"
 "aqua:neovim/neovim" = "0.11"
 uv = "latest"
 terraform = "latest"
