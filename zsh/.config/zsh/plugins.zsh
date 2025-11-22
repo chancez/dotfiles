@@ -6,6 +6,11 @@
 # load zgenom only after fpath is set, as it runs compinit
 source "$XDG_DATA_HOME/zgenom/zgenom.zsh"
 
+# ohmyzsh compinit dump location
+export ZSH_COMPDUMP=$ZDOTDIR/.zcompdump
+# ZGENOM compinit dump location
+export ZGEN_CUSTOM_COMPDUMP=$ZDOTDIR/.zcompdump
+
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
