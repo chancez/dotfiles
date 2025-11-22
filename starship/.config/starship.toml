@@ -16,8 +16,16 @@ $git_status"""
 
 # lprompt
 [kubernetes]
-format ='(\([☸](blue)|[$context](red)[(:$namespace)](blue)\) )'
+format = '(\([☸](blue)|[$context](red)[(:$namespace)](blue)\) )'
 disabled = false
+
+[username]
+format = "[$user]($style)"
+
+[hostname]
+format = "[@$hostname]($style) "
+style = "bold purple"
+ssh_only = true
 
 [directory]
 style = "blue"
