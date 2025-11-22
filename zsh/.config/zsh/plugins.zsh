@@ -26,9 +26,9 @@ if ! zgenom saved; then
   fi
 
   # zsh plugins
+  zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load zsh-users/zsh-autosuggestions
   zgenom load zsh-users/zsh-history-substring-search
-  zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy
   zgenom load junegunn/fzf-git.sh
