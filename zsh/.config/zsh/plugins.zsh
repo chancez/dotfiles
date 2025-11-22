@@ -1,13 +1,17 @@
 #!/usr/bin/env zsh
 
+# install zgenom
+[[ ! -d $ZGEN_INSTALL_DIR ]] && git clone https://github.com/jandamm/zgenom $ZGEN_INSTALL_DIR
+
+# load zgenom only after fpath is set, as it runs compinit
+source "$XDG_DATA_HOME/zgenom/zgenom.zsh"
+
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
 
 if ! zgenom saved; then
   echo "Creating a zgenom save"
-
-  zgenom compdef
 
   # extensions
   zgenom load jandamm/zgenom-ext-eval

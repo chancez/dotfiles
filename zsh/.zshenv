@@ -4,6 +4,7 @@
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 export ZDOTDIR=${XDG_CONFIG_HOME}/zsh
+export ZGEN_INSTALL_DIR=${XDG_DATA_HOME}/zgenom
 
 # zgen options
 export ZGEN_RESET_ON_CHANGE=(${ZDOTDIR}/.zshrc ${ZDOTDIR}/plugins.zsh)
