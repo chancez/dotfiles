@@ -8,6 +8,7 @@ alias gc='git commit'
 alias gcv='git commit --verbose'
 alias ga='git add'
 alias rm='rm -i'
+alias grc='git rebase --continue'
 
 if (($+commands[nvim])); then
   alias vim='nvim'
