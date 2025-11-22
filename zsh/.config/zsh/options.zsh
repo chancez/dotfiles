@@ -52,3 +52,14 @@ fi
 
 autoload -Uz bracketed-paste-magic
 zle -N bracketed-paste bracketed-paste-magic
+
+# This needs to happen after we configure our path so it's in options.zsh
+if (( $+commands[nvim] )); then
+  export EDITOR='nvim'
+else
+  export EDITOR='vim'
+fi
+
+export VISUAL="$EDITOR"
+export GIT_EDITOR="$EDITOR"
+export SUDO_EDITOR="$EDITOR"

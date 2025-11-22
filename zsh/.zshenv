@@ -18,15 +18,6 @@ export SAVEHIST=500000
 # number of entries loaded from history file into memory
 export HISTSIZE=50000
 
-if (( $+commands[nvim] )); then
-  export EDITOR='nvim'
-else
-  export EDITOR='vim'
-fi
-
-export VISUAL="$EDITOR"
-export GIT_EDITOR="$EDITOR"
-export SUDO_EDITOR="$EDITOR"
 export PAGER='less'
 # Set the default Less options.
 # Mouse-wheel scrolling has been disabled by -X (disable screen clearing).
