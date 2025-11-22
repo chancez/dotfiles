@@ -45,9 +45,10 @@ bindkey -v
 
 
 # Ohmyzsh plugin settings
-zstyle :omz:plugins:ssh-agent identities id_ed25519 id_rsa
 zstyle :omz:plugins:ssh-agent lazy yes
-zstyle :omz:plugins:ssh-agent ssh-add-args --apple-load-keychain
+if [[ "$OSTYPE" == darwin* ]]; then
+  zstyle :omz:plugins:ssh-agent ssh-add-args --apple-load-keychain
+fi
 
 autoload -Uz bracketed-paste-magic
 zle -N bracketed-paste bracketed-paste-magic
