@@ -60,19 +60,43 @@ _extract_namespace_from_args() {
   echo $namespace
 }
 
+_helper_fzf_get_pods() {
+  local namespace=${1:?}
+  kubectl --namespace="${namespace}" get pods -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+}
+
+_helper_fzf_get_services() {
+  local namespace=${1:?}
+  kubectl --namespace="${namespace}" get services -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+}
+
 _helper_fzf_complete_pods() {
   local namespace=${1:?}
   shift
 
   # fuzzy complete pod names for logs command
-  _fzf_complete --prompt="pod> " -- "$@" < <(
-    kubectl --namespace="${namespace}" get pods -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
-  )
+  _fzf_complete --prompt="pod> " -- "$@" < <(_helper_fzf_get_pods "${namespace}")
 }
 
 _helper_fzf_complete_namespaces() {
   _fzf_complete --prompt="namespace> " -- "$@" < <(
     kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
+  )
+}
+
+_helper_fzf_complete_port_forward() {
+  local namespace=${1:?}
+  shift
+
+  local pods services
+
+  services=$(_helper_fzf_get_services "${namespace}" | awk '{print "service/" $0}')
+  pods=$(_helper_fzf_get_pods "${namespace}" | awk '{print "pod/" $0}')
+
+  # fuzzy complete pods and service name for port-forward command
+  _fzf_complete --prompt="service and pods> " -- "$@" < <(
+    echo "${services}"
+    echo "${pods}"
   )
 }
 
@@ -86,6 +110,8 @@ _helper_fzf_complete_kubectl() {
     _helper_fzf_complete_namespaces "$@"
   elif _args_contains logs "${args[@]}"; then # check if "logs" is one of the previous args
     _helper_fzf_complete_pods $namespace "$@"
+  elif _args_contains port-forward "${args[@]}"; then # check if "logs" is one of the previous args
+    _helper_fzf_complete_port_forward $namespace "$@"
   elif _args_contains pod "${args[@]}"; then # check if "pod" is one of the previous args
     if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then # check if "get/describe" is one of the previous args
       _helper_fzf_complete_pods $namespace "$@"
