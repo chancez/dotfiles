@@ -1,7 +1,6 @@
 #!/usr/bin/env zsh
 
 # General
-setopt EXTENDED_GLOB          # Use extended globbing syntax.
 setopt INTERACTIVE_COMMENTS   # Enable comments in interactive shell.
 unsetopt NOCLOBBER            # Disable warning when using > and >>
 
