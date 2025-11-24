@@ -43,15 +43,11 @@ unsetopt FLOW_CONTROL       # Disable start/stop characters in shell editor.
 # Use vi keybindings
 bindkey -v
 
-
 # Ohmyzsh plugin settings
 zstyle :omz:plugins:ssh-agent lazy yes
 if [[ "$OSTYPE" == darwin* ]]; then
   zstyle :omz:plugins:ssh-agent ssh-add-args --apple-load-keychain
 fi
-
-autoload -Uz bracketed-paste-magic
-zle -N bracketed-paste bracketed-paste-magic
 
 # This needs to happen after we configure our path so it's in options.zsh
 if (( $+commands[nvim] )); then

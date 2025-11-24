@@ -21,9 +21,9 @@ if ! zgenom saved; then
   # extensions
   zgenom load jandamm/zgenom-ext-eval
 
+  zgenom compdef
+
   # ohmyzsh plugins
-  zgenom ohmyzsh
-  zgenom ohmyzsh plugins/gcloud
   zgenom ohmyzsh plugins/ssh-agent
   if (($+commands[starship])) then
     zgenom eval --name starship < <(starship init zsh)
