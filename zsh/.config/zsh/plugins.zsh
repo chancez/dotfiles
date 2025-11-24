@@ -49,7 +49,9 @@ if ! zgenom saved; then
   (($+commands[kitty])) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   (($+commands[crc])) && zgenom eval --name crc < <(crc completion zsh)
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh)
-  # (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh)
+
+  # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
+  (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh)
 
   # generate the init script from plugins above
   zgenom save

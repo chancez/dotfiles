@@ -128,5 +128,3 @@ cd() {
 j() {
   cd "$(jump top | fzf --reverse)"
 }
-
-source <(fzf --zsh)

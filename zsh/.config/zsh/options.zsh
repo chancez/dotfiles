@@ -41,6 +41,7 @@ unsetopt MENU_COMPLETE      # Do not autoselect the first completion entry.
 unsetopt FLOW_CONTROL       # Disable start/stop characters in shell editor.
 
 # Use vi keybindings
+# NOTE: This must be set before fzf to ensure fzf completion works
 bindkey -v
 
 # Ohmyzsh plugin settings
