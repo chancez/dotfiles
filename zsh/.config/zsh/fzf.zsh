@@ -106,14 +106,18 @@ _helper_fzf_complete_kubectl() {
   last_arg="${args[-1]}"
   namespace=$(_extract_namespace_from_args ${args[@]})
 
-  if [[ "${last_arg}" == "--namespace" || "${last_arg}" == "-n" ]]; then # Check if the previous arg was --namespace or -n
+  if [[ "${last_arg}" == "--namespace" || "${last_arg}" == "-n" ]]; then
     _helper_fzf_complete_namespaces "$@"
-  elif _args_contains logs "${args[@]}"; then # check if "logs" is one of the previous args
+  elif [[ "${last_arg}" == "--context" ]]; then
+    _fzf_complete --prompt="context> " -- "$@" < <(
+      kubectl config get-contexts -o name
+    )
+  elif _args_contains logs "${args[@]}"; then
     _helper_fzf_complete_pods $namespace "$@"
-  elif _args_contains port-forward "${args[@]}"; then # check if "logs" is one of the previous args
+  elif _args_contains port-forward "${args[@]}"; then
     _helper_fzf_complete_port_forward $namespace "$@"
-  elif _args_contains pod "${args[@]}"; then # check if "pod" is one of the previous args
-    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then # check if "get/describe" is one of the previous args
+  elif _args_contains pod "${args[@]}"; then
+    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then
       _helper_fzf_complete_pods $namespace "$@"
     fi
   elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
