@@ -23,8 +23,8 @@ if ! zgenom saved; then
 
   zgenom compdef
 
-  # ohmyzsh plugins
-  zgenom ohmyzsh plugins/ssh-agent
+  zgenom load $ZDOTDIR/plugins/ssh.zsh
+
   if (($+commands[starship])) then
     zgenom eval --name starship < <(starship init zsh)
   else

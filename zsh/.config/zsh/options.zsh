@@ -43,12 +43,6 @@ unsetopt FLOW_CONTROL       # Disable start/stop characters in shell editor.
 # NOTE: This must be set before fzf to ensure fzf completion works
 bindkey -v
 
-# Ohmyzsh plugin settings
-zstyle :omz:plugins:ssh-agent lazy yes
-if [[ "$OSTYPE" == darwin* ]]; then
-  zstyle :omz:plugins:ssh-agent ssh-add-args --apple-load-keychain
-fi
-
 # This needs to happen after we configure our path so it's in options.zsh
 if (( $+commands[nvim] )); then
   export EDITOR='nvim'
