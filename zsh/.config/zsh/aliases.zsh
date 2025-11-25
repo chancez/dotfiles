@@ -17,6 +17,7 @@ fi
 alias k=kubectl
 if (($+commands[kubecolor])); then
   alias kubectl="kubecolor"
+  compdef kubecolor=kubectl
 fi
 alias kc='switch'
 alias kns='switch namespace'
