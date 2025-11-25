@@ -1,7 +1,5 @@
 [tools]
-go = [ "latest", "1.25", "1.24" ]
+go = ["latest", "1.25", "1.24"]
 java = "24"
 node = ['lts', '20', '19', '18', '17', '16']
 python = ['3', '2.7']
-nim = "latest"
-# ruby = "3.4"
