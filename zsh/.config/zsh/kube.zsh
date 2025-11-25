@@ -146,6 +146,35 @@ __extract_kubectl_namespace_from_args() {
   echo $namespace
 }
 
+__infer_kubectl_pod_from_args() {
+  local pod prev_arg
+  # Try to infer the pod name from args
+  # Skip the first argument since it's the command itself, and remember zsh
+  # indexes starting at 1
+  for ((i = 2; i <= $#; i++)); do
+    arg=${@[i]}
+    # Store the previous argument unless it's the first iteration
+    if [[ $i -gt 0 ]]; then
+      prev_arg="${@[i-1]}"
+    else
+      prev_arg=""
+    fi
+    # Find the first non flag, non-logs argument
+    if [[ "$arg" == -* || "$arg" == "logs"  ]]; then
+      continue
+    fi
+    # If the previous argument was -n/--namespace, skip this one, as it's the naemspace value
+    if [[ "$prev_arg" == "-n" || "$prev_arg" == "--namespace" ]]; then
+      continue
+    fi
+    # What remains is hopefully a pod name
+    pod="$arg"
+    echo $pod
+    return 0
+  done
+  return 1
+}
+
 __kubectl_get_pods() {
   local namespace=${1:?}
   kubectl --namespace="${namespace}" get pods -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n'
@@ -217,29 +246,8 @@ __helper_fzf_complete_kubectl() {
     )
   elif _args_contains logs "${args[@]}"; then
     if [[ "${last_arg}" == "-c" || "${last_arg}" == "--container" ]]; then
-      local pod prev_arg
-      # Try to infer the pod name from previous args
-      # Skip the first argument since it's the command itself, and remember zsh
-      # indexes starting at 1
-      for ((i = 2; i <= $#args; i++)); do
-        arg=${args[i]}
-        # Store the previous argument unless it's the first iteration
-        if [[ $i -gt 0 ]]; then
-          prev_arg="${args[i-1]}"
-        else
-          prev_arg=""
-        fi
-        # Find the first non flag, non-logs argument
-        if [[ "$arg" == -* || "$arg" == "logs"  ]]; then
-          continue
-        fi
-        # If the previous argument was -n/--namespace, skip this one, as it's the naemspace value
-        if [[ "$prev_arg" == "-n" || "$prev_arg" == "--namespace" ]]; then
-          continue
-        fi
-        # What remains is hopefully a pod name
-        pod="$arg"
-      done
+      local pod
+      pod=$(__infer_kubectl_pod_from_args "${args[@]}")
       if [[ -z "$pod" ]]; then
         echoerr "Unable to infer pod name for container completion"
         return 1
