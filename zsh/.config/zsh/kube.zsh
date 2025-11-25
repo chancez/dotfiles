@@ -110,6 +110,27 @@ kube-get-pod-resources-missing() {
       ' |
     column -t -s $'\t'
 }
+_args_index() {
+  local needle=$1
+  shift
+  local index=0
+  for arg in "$@"; do
+    (( index++ ))
+    if [[ "$arg" == "$needle"* ]]; then
+      echo $index
+      return 0
+    fi
+  done
+  return 1
+}
+
+_args_contains() {
+  local needle=$1
+  shift
+  # Ignore the index output
+  _args_index "$needle" "$@" >/dev/null
+}
+
 
 __extract_kubectl_namespace_from_args() {
   local namespace namespace_args_index

@@ -9,27 +9,6 @@ export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat 
 export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window down:3:hidden:wrap --bind '?:toggle-preview'"
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
-_args_index() {
-  local needle=$1
-  shift
-  local index=0
-  for arg in "$@"; do
-    (( index++ ))
-    if [[ "$arg" == "$needle"* ]]; then
-      echo $index
-      return 0
-    fi
-  done
-  return 1
-}
-
-_args_contains() {
-  local needle=$1
-  shift
-  # Ignore the index output
-  _args_index "$needle" "$@" >/dev/null
-}
-
 # Custom fuzzy completion for "git" command
 _fzf_complete_git() {
   local cmd=$1
