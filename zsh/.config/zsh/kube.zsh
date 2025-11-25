@@ -165,6 +165,12 @@ __helper_fzf_complete_kubectl_port_forward_target() {
   )
 }
 
+__helper_fzf_complete_kubectl_resource_types() {
+  _fzf_complete --prompt="resource type> " -- "$@" < <(
+    kubectl api-resources --no-headers -o name
+  )
+}
+
 __helper_fzf_complete_kubectl() {
   local args namespace last_arg
   args=(${(z)1})
@@ -183,10 +189,12 @@ __helper_fzf_complete_kubectl() {
     __helper_fzf_complete_kubectl_pods $namespace "$@"
   elif _args_contains port-forward "${args[@]}"; then
     __helper_fzf_complete_kubectl_port_forward_target $namespace "$@"
-  elif _args_contains pod "${args[@]}"; then
-    if _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then
+  elif _args_contains get "${args[@]}" || _args_contains describe "${args[@]}" || _args_contains delete "${args[@]}" ; then
+    if _args_contains pod "${args[@]}"; then
       __helper_fzf_complete_kubectl_pods $namespace "$@"
     fi
+    # TODO detect if no resource types are provided
+    __helper_fzf_complete_kubectl_resource_types "$@"
   elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
     _fzf_path_completion "$prefix" "$@"
   fi
