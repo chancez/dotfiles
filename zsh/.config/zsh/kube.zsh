@@ -179,6 +179,8 @@ __helper_fzf_complete_kubectl() {
     )
   elif _args_contains logs "${args[@]}"; then
     __helper_fzf_complete_kubectl_pods $namespace "$@"
+  elif _args_contains exec "${args[@]}"; then
+    __helper_fzf_complete_kubectl_pods $namespace "$@"
   elif _args_contains port-forward "${args[@]}"; then
     __helper_fzf_complete_kubectl_port_forward_target $namespace "$@"
   elif _args_contains pod "${args[@]}"; then
