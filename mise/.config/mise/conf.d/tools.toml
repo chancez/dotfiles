@@ -6,7 +6,7 @@ starship = "latest"
 kubectl = "latest"
 helm = "prefix:3"
 "aqua:danielfoehrKn/kubeswitch" = "latest"
-"aqua:neovim/neovim" = "0.11"
+"aqua:neovim/neovim" = "prefix:0.11"
 uv = "latest"
 terraform = "latest"
 
