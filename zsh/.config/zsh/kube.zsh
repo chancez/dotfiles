@@ -139,8 +139,19 @@ __helper_fzf_complete_kubectl_pods() {
   local namespace=${1:?}
   shift
 
-  # fuzzy complete pod names for logs command
+  # fuzzy complete pod names
   _fzf_complete --prompt="pod> " -- "$@" < <(__kubectl_get_pods "${namespace}")
+}
+
+__helper_fzf_complete_kubectl_pod_containers() {
+  local namespace=${1:?}
+  local pod=${2:?}
+  shift 2
+
+  # fuzzy complete container names for a given pod
+  _fzf_complete --prompt="container($pod)> " -- "$@" < <(
+    kubectl --namespace="${namespace}" get pod "${pod}" -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+  )
 }
 
 __helper_fzf_complete_kubectl_namespaces() {
@@ -184,6 +195,38 @@ __helper_fzf_complete_kubectl() {
       kubectl config get-contexts -o name
     )
   elif _args_contains logs "${args[@]}"; then
+    if [[ "${last_arg}" == "-c" || "${last_arg}" == "--container" ]]; then
+      local pod prev_arg
+      # Try to infer the pod name from previous args
+      # Skip the first argument since it's the command itself, and remember zsh
+      # indexes starting at 1
+      for ((i = 2; i <= $#args; i++)); do
+        arg=${args[i]}
+        # Store the previous argument unless it's the first iteration
+        if [[ $i -gt 0 ]]; then
+          prev_arg="${args[i-1]}"
+        else
+          prev_arg=""
+        fi
+        # Find the first non flag, non-logs argument
+        if [[ "$arg" == -* || "$arg" == "logs"  ]]; then
+          continue
+        fi
+        # If the previous argument was -n/--namespace, skip this one, as it's the naemspace value
+        if [[ "$prev_arg" == "-n" || "$prev_arg" == "--namespace" ]]; then
+          continue
+        fi
+        # What remains is hopefully a pod name
+        pod="$arg"
+      done
+      if [[ -z "$pod" ]]; then
+        echoerr "Unable to infer pod name for container completion"
+        return 1
+      fi
+
+      __helper_fzf_complete_kubectl_pod_containers "$namespace" "$pod" "$@"
+      return
+    fi
     __helper_fzf_complete_kubectl_pods $namespace "$@"
   elif _args_contains exec "${args[@]}"; then
     __helper_fzf_complete_kubectl_pods $namespace "$@"
