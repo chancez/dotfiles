@@ -131,6 +131,17 @@ _args_contains() {
   _args_index "$needle" "$@" >/dev/null
 }
 
+_args_match() {
+  local pattern=$1
+  shift
+
+  for arg in "$@"; do
+    if [[ "$arg" =~ $pattern ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 __extract_kubectl_namespace_from_args() {
   local namespace namespace_args_index
@@ -210,9 +221,48 @@ __helper_fzf_complete_kubectl_namespaces() {
   )
 }
 
+__helper_fzf_complete_kubectl_port_forward_ports() {
+  local namespace=${1:?}
+  shift
+
+  # Check if the service or pod is already specified in the args
+  # We check that the service name starts with a letter so we know it's non-empty
+  if _args_match 'service/([a-z][a-z0-9-]*)' "$@"; then
+    local service_name=$match
+    _fzf_complete --prompt="service($service_name) port> " -- "$@" < <(
+      kubectl --namespace="${namespace}" get service "${service_name}" -o jsonpath='{.spec.ports[*].port}' | tr ' ' '\n'
+    )
+  # TODO: Handle pod specified without pod/
+  elif _args_match 'pod/([a-z][a-z0-9-]*)' "$@"; then
+    local pod_name=$match
+    _fzf_complete --prompt="pod($pod_name) port> " -- "$@" < <(
+      kubectl --namespace="${namespace}" get pod "${pod_name}" -o jsonpath='{.spec.containers[*].ports[*].containerPort}' | tr ' ' '\n'
+    )
+  else
+    echoerr "Unable to infer service or pod name for port-forward port completion"
+    return 1
+  fi
+}
+
+# Called after __helper_fzf_complete_kubectl_port_forward_ports runs with the choice
+__helper_fzf_complete_kubectl_port_forward_ports_post() {
+  # post process $port coming via stdin into $port:$port
+  awk '{print $0 ":" $0}'
+}
+
 __helper_fzf_complete_kubectl_port_forward_target() {
   local namespace=${1:?}
   shift
+
+  # Prefix is empty, meaning they're not in the middle of a service/**
+  # service/foo** completion, so lets check the args to see if they
+  # have already specified a service or pod.
+  # TODO: Check if the localport is already set, and just complete the remote port
+  # eg: 1234:**
+  if [[ -z "$prefix" ]]; then
+    __helper_fzf_complete_kubectl_port_forward_ports "$namespace" "$@"
+    return
+  fi
 
   local pods services
 
