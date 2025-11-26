@@ -324,3 +324,17 @@ __helper_fzf_complete_kubectl() {
   done
 }
 
+_fzf_complete_stern() {
+  local args namespace last_arg
+  args=(${(z)1})
+  last_arg="${args[-1]}"
+  namespace=$(__extract_kubectl_namespace_from_args ${args[@]})
+
+  if [[ "${last_arg}" == "--namespace" || "${last_arg}" == "-n" ]]; then
+    __helper_fzf_complete_kubectl_namespaces "$@"
+  elif [[ "${last_arg}" == "--context" ]]; then
+    _fzf_complete --prompt="context> " -- "$@" < <(
+      kubectl config get-contexts -o name
+    )
+  fi
+}
