@@ -28,6 +28,9 @@ alias ~='cd ~'
 alias ..='cd ..'
 alias ../..='cd ../..'
 
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
 # time aliases
 alias zur='TZ=Europe/Zurich date'
 alias pst='TZ=Etc/GMT-8 date'
