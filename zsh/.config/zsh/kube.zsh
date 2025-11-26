@@ -232,6 +232,35 @@ __helper_fzf_complete_kubectl_resource_types() {
   )
 }
 
+__helper_fzf_complete_workload() {
+  local namespace=${1:-} # namespace is optional
+  local namespace_args=()
+  if [[ -n "$namespace" ]]; then
+    namespace_args=(--namespace="${namespace}")
+    shift
+  fi
+
+  _fzf_complete --prompt="workload> " -- "$@" < <(
+    kubectl "${namespace_args[@]}" get deployments,statefulsets,daemonsets,replicasets -o jsonpath='{range .items[*]}{.kind}/{.metadata.name}{"\n"}{end}'
+  )
+}
+
+__helper_fzf_complete_workload_by_type() {
+  local namespace=${1:?}
+  local workload_type=${2:?}
+  shift 2
+
+  _fzf_complete --prompt="workload(${workload_type})> " -- "$@"  < <(
+    kubectl --namespace="${namespace}" get "${workload_type}" -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | awk -v kind="$workload_type" '{print kind "/" $0}'
+  )
+}
+
+__kube_workload_type_long_names=(pod deployment statefulset daemonset replicaset)
+__kube_workload_type_plural_names=(pods deployments statefulsets daemonsets replicasets)
+__kube_workload_type_short_names=(po deploy sts ds rs)
+# Long names + short names + plurals
+__kube_workload_type_all_names=(${__kube_workload_type_long_names[@]} ${__kube_workload_type_plural_names[@]} ${__kube_workload_type_short_names[@]})
+
 __helper_fzf_complete_kubectl() {
   local args namespace last_arg
   args=(${(z)1})
@@ -256,6 +285,17 @@ __helper_fzf_complete_kubectl() {
       __helper_fzf_complete_kubectl_pod_containers "$namespace" "$pod" "$@"
       return
     fi
+    # Check for workload
+    for workload_type in "${__kube_workload_type_all_names[@]}"; do
+      # Since the argument we're checking for has not been completed yet, we need to
+      # check $prefix instead. We also append / the comparison because that's
+      # the separator when querying logs for a non-pod workload
+      if [[ "$prefix" == "${workload_type}/"* ]]; then
+        __helper_fzf_complete_workload_by_type "$namespace" "$workload_type" "$@"
+        return
+      fi
+    done
+
     __helper_fzf_complete_kubectl_pods $namespace "$@"
   elif _args_contains exec "${args[@]}"; then
     __helper_fzf_complete_kubectl_pods $namespace "$@"
