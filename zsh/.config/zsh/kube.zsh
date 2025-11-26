@@ -297,6 +297,17 @@ __helper_fzf_complete_kubectl() {
     done
 
     __helper_fzf_complete_kubectl_pods $namespace "$@"
+  elif _args_contains rollout "${args[@]}"; then
+    # Check for workload
+    for workload_type in "${__kube_workload_type_all_names[@]}"; do
+      # Since the argument we're checking for has not been completed yet, we need to
+      # check $prefix instead. We also append / the comparison because that's
+      # the separator when querying logs for a non-pod workload
+      if [[ "$prefix" == "${workload_type}/"* ]]; then
+        __helper_fzf_complete_workload_by_type "$namespace" "$workload_type" "$@"
+        return
+      fi
+    done
   elif _args_contains exec "${args[@]}"; then
     __helper_fzf_complete_kubectl_pods $namespace "$@"
   elif _args_contains port-forward "${args[@]}"; then
