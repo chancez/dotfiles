@@ -47,9 +47,9 @@ return {
       local recreate_picker = function(current_picker, opts)
         local picker = nil
         -- This is a hack but I cannot figure out how to get the current picker function and then re-run it with a different cwd
-        if current_picker.prompt_title == 'Live Grep' then
+        if current_picker.prompt_title:find('Live Grep') then
           picker = builtin.live_grep
-        elseif current_picker.prompt_title == 'Find Files' then
+        elseif current_picker.prompt_title:find('Find Files') then
           picker = builtin.find_files
         end
         if picker == nil then
@@ -177,8 +177,11 @@ return {
         actions.close(prompt_bufnr)
 
         -- Re-open with new options
-        builtin.find_files({
+        recreate_picker(current_picker, {
+          -- For find_files
           hidden = includeIgnoreHidden,
+          -- for live_grep
+          additional_args = { '--no-hidden' },
           prompt_title = title,
           default_text = line,
         })
@@ -200,8 +203,11 @@ return {
         actions.close(prompt_bufnr)
 
         -- Re-open with new options
-        builtin.find_files({
+        recreate_picker(current_picker, {
+          -- For find_files
           no_ignore = includeIgnore,
+          -- for live_grep
+          additional_args = { '--no-ignore' },
           prompt_title = title,
           default_text = line,
         })
@@ -294,6 +300,8 @@ return {
               for key, action in pairs(file_related_mappings) do
                 map('i', key, action)
               end
+              map('i', '<C-h>', toggleHiddenFileSearch)
+              map('i', '<C-z>', toggleIgnoreFileSearch)
               return true
             end,
           },
