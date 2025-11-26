@@ -13,11 +13,6 @@ export ZGEN_RESET_ON_CHANGE=(${ZDOTDIR}/.zshrc ${ZDOTDIR}/plugins.zsh)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
-# number of entries in history file
-export SAVEHIST=500000
-# number of entries loaded from history file into memory
-export HISTSIZE=50000
-
 export PAGER='less'
 # Set the default Less options.
 # Mouse-wheel scrolling has been disabled by -X (disable screen clearing).

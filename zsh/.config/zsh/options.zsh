@@ -5,6 +5,9 @@ setopt INTERACTIVE_COMMENTS   # Enable comments in interactive shell.
 unsetopt NOCLOBBER            # Disable warning when using > and >>
 
 # History
+
+export SAVEHIST=500000        # number of entries in history file
+export HISTSIZE=50000         # number of entries loaded from history file into memory
 setopt BANG_HIST              # Treat the '!' character specially during expansion.
 setopt EXTENDED_HISTORY       # Write the history file in the ':start:elapsed;command' format.
 setopt SHARE_HISTORY          # Share history between all sessions.
