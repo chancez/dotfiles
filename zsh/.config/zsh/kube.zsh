@@ -370,7 +370,7 @@ __helper_fzf_complete_kubectl() {
     __helper_fzf_complete_kubectl_resource_types "$@"
   elif _args_contains explain "${args[@]}"; then
     __helper_fzf_complete_kubectl_resource_types "$@"
-  elif [[ ${args[(ie)create]} -le ${#args} && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
+  elif [[ (__args_contains create "${args[@]}" || _args_contains apply "${args[@]}" || _args_contains delete "${args[@]}") && ("${last_arg}" == "-f" || "${last_arg}" == "--filename") ]]; then # if create and -f/--filename
     _fzf_path_completion "$prefix" "$@"
   fi
 }
