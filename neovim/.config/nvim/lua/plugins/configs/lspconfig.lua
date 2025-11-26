@@ -171,6 +171,10 @@ local function lspAttach(bufnr, client)
     function() require("telescope.builtin").lsp_incoming_calls() end, {})
   vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCalls',
     function() require("telescope.builtin").lsp_outgoing_calls() end, {})
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspIncomingCallsTree',
+    function() require('telescope').extensions.hierarchy.incoming_calls() end, {})
+  vim.api.nvim_buf_create_user_command(bufnr, 'LspOutgoingCallsTree',
+    function() require('telescope').extensions.hierarchy.outgoing_calls() end, {})
   vim.api.nvim_buf_create_user_command(bufnr, 'LspFixAll', function() LspFixAll() end, {})
 
   -- formatting
