@@ -63,3 +63,11 @@ end, { range = true })
 vim.api.nvim_create_user_command('ToggleDiagnostics', function()
   vim.diagnostic.enable(not vim.diagnostic.is_enabled(), { bufnr = 0 })
 end, {})
+
+-- Close all buffers and tabs
+vim.api.nvim_create_user_command('WipeSession', function()
+  -- Close all other tabs
+  vim.cmd(':tabonly')
+  -- Close all buffers
+  vim.cmd(':%bd')
+end, { desc = "Close all open tabs and buffers and delete the current session." })
