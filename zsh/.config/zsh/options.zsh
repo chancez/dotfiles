@@ -6,6 +6,7 @@ unsetopt NOCLOBBER            # Disable warning when using > and >>
 
 # History
 
+export HISTFILE=$ZDOTDIR/.zsh_history
 export SAVEHIST=500000        # number of entries in history file
 export HISTSIZE=50000         # number of entries loaded from history file into memory
 setopt BANG_HIST              # Treat the '!' character specially during expansion.
