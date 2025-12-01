@@ -51,7 +51,7 @@ if ! zgenom saved; then
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
-  (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh)
+  (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)
 
   # generate the init script from plugins above
   zgenom save
