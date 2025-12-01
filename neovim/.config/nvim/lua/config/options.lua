@@ -72,8 +72,6 @@ vim.opt.listchars:append("space:⋅")
 -- clipboard
 if vim.fn.has('unnamedplus') then
   vim.o.clipboard = 'unnamedplus'
-else
-  vim.o.clipboard = 'unnamed'
 end
 
 -- leader

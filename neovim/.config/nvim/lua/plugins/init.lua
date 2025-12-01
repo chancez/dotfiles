@@ -159,14 +159,6 @@ return {
       },
     },
   },
-  {
-    'ojroques/nvim-osc52',
-    keys = {
-      { '<leader>c', function() require('osc52').copy_operator() end, desc = 'Copy to clipboard with OSC52' },
-      { '<leader>c', function() require('osc52').copy_visual() end,   desc = 'Copy to clipboard with OSC52', mode = 'v' },
-    },
-    opts = {}
-  },
   { 'lambdalisue/vim-suda' },
 
   -- multicursor support like sublime text
