@@ -15,7 +15,7 @@ _fzf_complete_git() {
   case "${${(z)cmd}[2]}" in
     # Function usage from: https://github.com/junegunn/fzf-git.sh
     add|rm|reset|restore) LBUFFER="${cmd}$(_fzf_git_files | __fzf_git_join)";;
-    rebase|checkout|switch) LBUFFER="${cmd}$(_fzf_git_branches)";;
+    # rebase|checkout|switch) LBUFFER="${cmd}$(_fzf_git_branches)";;
     *) _fzf_path_completion "$prefix" "$@";;
   esac
 }
