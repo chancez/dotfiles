@@ -6,6 +6,7 @@ format = """
 $kubernetes\
 $username\
 $hostname\
+$env_var\
 $directory\
 $character"""
 
@@ -26,6 +27,12 @@ format = "[$user]($style)"
 format = "[@$hostname]($style) "
 style = "bold purple"
 ssh_only = true
+
+[env_var.DEVCONTAINER]
+variable = 'DEVCONTAINER'
+format = "[($env_value )]($style)"
+default = ''
+style = "white bold dimmed"
 
 [directory]
 style = "blue"
