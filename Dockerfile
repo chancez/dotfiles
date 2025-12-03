@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM ubuntu:22.04
 
 # ARG is only set at build time, ENV persists to runtime
@@ -49,12 +50,15 @@ RUN \
 # Trust github.com SSH host key
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-COPY --chown=chance:chance . /home/chance/.dotfiles
-
-# Configure dotfiles
+# Optimize the cache by copying mise configurations first, and installing mise
+# tools before the rest so that non-mise changes don't trigger a reinstall of
+# the mise install step
+RUN mkdir -p /home/chance/.dotfiles
+COPY --chown=chance:chance ./mise /home/chance/.dotfiles/mise
+COPY --chown=chance:chance ./setup.sh /home/chance/.dotfiles/setup.sh
 RUN cd ~/.dotfiles && ./setup.sh
 
-# Install tools
+# Install tools using mise
 RUN \
   # SSH auth for cloning from github
   --mount=type=ssh,required=true,uid=999,gid=999 \
@@ -64,6 +68,10 @@ RUN \
   PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH" \
   # Install all other tools
   ~/.local/bin/mise install
+
+# Configure remaining dotfiles
+COPY --chown=chance:chance . /home/chance/.dotfiles
+RUN cd ~/.dotfiles && ./setup.sh
 
 # Start an interactive zsh login shell to bootstrap the zsh environment (which causes zgenom to install plugins/etc)
 RUN --mount=type=ssh,required=true,uid=999 \
