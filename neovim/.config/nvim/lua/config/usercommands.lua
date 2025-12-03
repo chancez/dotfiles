@@ -71,3 +71,31 @@ vim.api.nvim_create_user_command('WipeSession', function()
   -- Close all buffers
   vim.cmd(':%bd')
 end, { desc = "Close all open tabs and buffers and delete the current session." })
+
+-- Add a helper to run MasonInstall for all the lsps configured
+vim.api.nvim_create_user_command('MasonInstallAll', function()
+  local servers = require("plugins.configs.lspconfig").auto_install_servers
+  local registry = require "mason-registry"
+  local server_mapping = require("mason-lspconfig.mappings").get_mason_map()
+  local mason_api = require "mason.api.command"
+
+  local packages_to_install = {}
+  for _, server in ipairs(servers) do
+    -- Convert lspconfig name to mason package name
+    local package_name = server_mapping.lspconfig_to_package[server]
+    local pkg = registry.get_package(package_name)
+    -- Check if the package is already installed or being installed
+    if not pkg:is_installed() and not pkg:is_installing() then
+      table.insert(packages_to_install, package_name)
+    end
+  end
+
+  if #packages_to_install == 0 then
+    print("All LSP servers are already installed.")
+    return
+  end
+
+  print("Installing missing LSP servers: " .. table.concat(packages_to_install, ", "))
+  mason_api.MasonInstall(packages_to_install)
+  print("Finished installing LSP servers.")
+end, { desc = "" })
