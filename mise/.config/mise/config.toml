@@ -3,3 +3,7 @@
 [settings]
 experimental = true
 idiomatic_version_file_enable_tools = ["go", "node"]
+
+[settings.aqua]
+# kubeswitch on ARM64 Linux was just added to the aqua registry, so it's not in the registry based into mise.
+baked_registry = false
