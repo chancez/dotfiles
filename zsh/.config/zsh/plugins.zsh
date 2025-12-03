@@ -27,11 +27,6 @@ if ! zgenom saved; then
 
   if (($+commands[starship])) then
     zgenom eval --name starship < <(starship init zsh)
-  else
-    # Fallback to sorin theme if starship is not installed
-    zgenom ohmyzsh themes/sorin
-    zgenom load jonmosco/kube-ps1
-    PROMPT='$(kube_ps1) '$PROMPT
   fi
 
   # zsh plugins
