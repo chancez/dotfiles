@@ -48,6 +48,9 @@ export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
 export GOTOOLCHAIN=local
 
+# Force Node.js use system CA certificates
+export NODE_OPTIONS="--use-system-ca"
+
 if [ -f "$HOME/.zshenv.local" ]; then
   source "$HOME/.zshenv.local"
 fi
