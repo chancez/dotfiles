@@ -205,7 +205,60 @@ return {
   -- git
   { 'tpope/vim-fugitive' },
   { 'tpope/vim-rhubarb' },
-  --
+
+  -- obsidian
+  {
+    "obsidian-nvim/obsidian.nvim",
+    version = "*",
+    lazy = true,
+    event = {
+      "BufReadPre " .. vim.fn.expand("~") .. "/Documents/obsidian/work/*.md",
+    },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    ---@module 'obsidian'
+    ---@type obsidian.config
+    opts = {
+      legacy_commands = false,
+      workspaces = {
+        {
+          name = "work",
+          path = "~/Documents/obsidian/work",
+        },
+      },
+      completion = {
+        blink = true,
+        min_chars = 0,
+      },
+    },
+  },
+
+  -- Render mermaid diagrams in markdown files
+  {
+    "3rd/diagram.nvim",
+    dependencies = {
+      { "3rd/image.nvim", opts = {} },
+    },
+    opts = {
+      renderer_options = {
+        mermaid = {
+          background = "transparent", -- nil | "transparent" | "white" | "#hex"
+          theme = "dark",             -- nil | "default" | "dark" | "forest" | "neutral"
+        },
+      },
+    },
+    ft = { "markdown" },
+    config = function(_, opts)
+      local md = require("diagram.integrations.markdown")
+      md.renderers = {
+        require("diagram.renderers.mermaid"),
+      }
+      opts.integrations = { md }
+      require("diagram").setup(opts)
+    end,
+  },
+
   -- language/syntax integrations
   { 'jjo/vim-cue' },
   { 'google/vim-jsonnet' },
