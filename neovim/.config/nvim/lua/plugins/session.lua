@@ -94,9 +94,7 @@ return {
             if input == 'n' then
               return
             end
-            local lib = require("auto-session.lib")
-            lib.logger.debug("no_restore: clearing all buffers")
-            lib.conditional_buffer_wipeout(false)
+            vim.cmd('WipeSession')
           end)
         end
       },
