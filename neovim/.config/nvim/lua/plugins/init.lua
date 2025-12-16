@@ -11,7 +11,6 @@ return {
       require('onedark').load()
     end
   },
-  { 'norcalli/nvim-colorizer.lua',  event = 'VeryLazy', config = true },
   { 'kyazdani42/nvim-web-devicons', lazy = true },
 
   {
