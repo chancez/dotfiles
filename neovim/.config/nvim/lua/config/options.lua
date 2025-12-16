@@ -67,7 +67,10 @@ vim.cmd [[ packadd cfilter ]]
 
 -- indent-blankline
 vim.opt.list = true
-vim.opt.listchars:append("space:⋅")
+vim.opt.listchars:append({
+  space = "⋅",
+  tab = "│─",
+})
 
 -- clipboard
 if vim.fn.has('unnamedplus') then
