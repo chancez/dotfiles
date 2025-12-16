@@ -1,28 +1,50 @@
+local get_qf_filelist = function(cwd)
+  local Path = require "plenary.path"
+  if cwd == nil then
+    cwd = vim.fn.getcwd()
+  end
+  local qflist = vim.fn.getqflist()
+
+  local filelist = {}
+  local unique_files = {}
+  for _, item in ipairs(qflist) do
+    local file = vim.api.nvim_buf_get_name(item.bufnr)
+    if file and vim.fn.filereadable(file) == 1 then
+      local relpath = Path:new(file):make_relative(cwd)
+      if not unique_files[relpath] then
+        unique_files[relpath] = true
+        table.insert(filelist, relpath)
+      end
+    end
+  end
+  return filelist
+end
+
 return {
   {
     'nvim-telescope/telescope.nvim',
     lazy = false,
     keys = {
-      { '<c-p>',      function() require('telescope.builtin').find_files() end,                                 desc = 'Telescope find_files' },
-      { '<m-o>',      function() require('telescope.builtin').buffers() end,                                    desc = 'Telescope buffers' },
-      { '<c-b>',      function() require('telescope.builtin').current_buffer_fuzzy_find() end,                  desc = 'Telescope current_buffer_fuzzy_find' },
-      { '<c-g>',      function() require('telescope.builtin').grep_string() end,                                desc = 'Telescope grep_string' },
-      { '<m-;>',      function() require('telescope.builtin').command_history() end,                            desc = 'Telescope command_history' },
-      { '<m-c>',      function() require('telescope.builtin').commands() end,                                   desc = 'Telescope commands' },
-
-      { '<leader>ff', function() require('telescope.builtin').find_files() end,                                 desc = 'Telescope find_files' },
-      { '<leader>fg', function() require('telescope.builtin').live_grep() end,                                  desc = 'Telescope live_grep' },
-      { '<leader>fG', function() require('telescope.builtin').live_grep({ cwd = vim.g.project_directory }) end, desc = 'Telescope live_grep project directory' },
-      { '<leader>fB', function() require('telescope.builtin').buffers() end,                                    desc = 'Telescope buffers' },
-      { '<leader>fh', function() require('telescope.builtin').help_tags() end,                                  desc = 'Telescope help_tags' },
-      { '<leader>fr', function() require('telescope.builtin').registers() end,                                  desc = 'Telescope registers' },
-      { '<leader>fm', function() require('telescope.builtin').marks() end,                                      desc = 'Telescope marks' },
-      { '<leader>fp', function() require('telescope.builtin').pickers() end,                                    desc = 'Telescope previous pickers' },
-      { '<leader>fd', function() require('telescope.builtin').diagnostics() end,                                desc = 'Telescope Diagnostics' },
-      { '<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end,               desc = 'Telescope file_browser' },
-      { '<leader>u',  function() require('telescope').extensions.undo.undo() end,                               desc = 'Telescope undo' },
-      { '<leader>fi', function() require('telescope').extensions.hierarchy.incoming_calls() end,                desc = 'Telescope incoming call tree' },
-      { '<leader>fo', function() require('telescope').extensions.hierarchy.outgoing_calls() end,                desc = 'Telescope outgoing call tree' },
+      { '<c-p>',      function() require('telescope.builtin').find_files() end,                                   desc = 'Telescope find_files' },
+      { '<m-o>',      function() require('telescope.builtin').buffers() end,                                      desc = 'Telescope buffers' },
+      { '<c-b>',      function() require('telescope.builtin').current_buffer_fuzzy_find() end,                    desc = 'Telescope current_buffer_fuzzy_find' },
+      { '<c-g>',      function() require('telescope.builtin').grep_string() end,                                  desc = 'Telescope grep_string' },
+      { '<m-;>',      function() require('telescope.builtin').command_history() end,                              desc = 'Telescope command_history' },
+      { '<m-c>',      function() require('telescope.builtin').commands() end,                                     desc = 'Telescope commands' },
+      { '<leader>ff', function() require('telescope.builtin').find_files() end,                                   desc = 'Telescope find_files' },
+      { '<leader>fg', function() require('telescope.builtin').live_grep() end,                                    desc = 'Telescope live_grep' },
+      { '<leader>fq', function() require('telescope.builtin').live_grep({ search_dirs = get_qf_filelist() }) end, desc = 'Telescope live_grep quickfix' },
+      { '<leader>fG', function() require('telescope.builtin').live_grep({ cwd = vim.g.project_directory }) end,   desc = 'Telescope live_grep project directory' },
+      { '<leader>fB', function() require('telescope.builtin').buffers() end,                                      desc = 'Telescope buffers' },
+      { '<leader>fh', function() require('telescope.builtin').help_tags() end,                                    desc = 'Telescope help_tags' },
+      { '<leader>fr', function() require('telescope.builtin').registers() end,                                    desc = 'Telescope registers' },
+      { '<leader>fm', function() require('telescope.builtin').marks() end,                                        desc = 'Telescope marks' },
+      { '<leader>fp', function() require('telescope.builtin').pickers() end,                                      desc = 'Telescope previous pickers' },
+      { '<leader>fd', function() require('telescope.builtin').diagnostics() end,                                  desc = 'Telescope Diagnostics' },
+      { '<leader>fb', function() require('telescope').extensions.file_browser.file_browser() end,                 desc = 'Telescope file_browser' },
+      { '<leader>u',  function() require('telescope').extensions.undo.undo() end,                                 desc = 'Telescope undo' },
+      { '<leader>fi', function() require('telescope').extensions.hierarchy.incoming_calls() end,                  desc = 'Telescope incoming call tree' },
+      { '<leader>fo', function() require('telescope').extensions.hierarchy.outgoing_calls() end,                  desc = 'Telescope outgoing call tree' },
     },
     dependencies = {
       'nvim-lua/popup.nvim',
@@ -213,6 +235,31 @@ return {
         })
       end
 
+      -- Refine current find_files results via live_grep
+      local function find_files_to_live_grep(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        if not current_picker.prompt_title:find('Find Files') then
+          print("Can only refine find_files to live_grep")
+          return
+        end
+
+        -- Grab the current search results
+        local results = {}
+        for entry in current_picker.manager:iter() do
+          table.insert(results, entry.path)
+        end
+
+        -- Close the current picker
+        actions.close(prompt_bufnr)
+
+        -- Open live_grep with the current results as the new source
+        builtin.live_grep({
+          prompt_title = current_picker.prompt_title .. ' (refine live_grep)',
+          -- search_dirs also takes file names, it's a misnomer.
+          search_dirs = results,
+        })
+      end
+
       telescope.setup {
         extensions = {
           fzf = {
@@ -291,6 +338,7 @@ return {
               end
               map('i', '<C-h>', toggleHiddenFileSearch)
               map('i', '<C-z>', toggleIgnoreFileSearch)
+              map('i', '<C-f>', find_files_to_live_grep)
               return true
             end,
           },
