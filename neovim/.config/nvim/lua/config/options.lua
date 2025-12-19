@@ -47,12 +47,12 @@ vim.opt.tags = 'tags;'
 
 -- folds
 --Specifies for which type of commands folds will be opened, if the
-vim.opt.foldopen = 'block,insert,jump,mark,percent,quickfix,search,tag,undo'
+vim.opt.foldopen = 'block,insert,jump,mark,percent,quickfix,tag,undo'
 vim.opt.foldenable = true
 vim.opt.foldlevelstart = 10 -- open most folds by default
 vim.opt.foldnestmax = 10    -- 10 nested fold max
 vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldexpr = "v:lua.vim.lsp.foldexpr()"
 
 -- Splits
 vim.opt.splitright = true
