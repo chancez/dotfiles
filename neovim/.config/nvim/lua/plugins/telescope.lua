@@ -63,6 +63,7 @@ return {
       local actions = require("telescope.actions")
       local telescope = require('telescope')
       local action_state = require("telescope.actions.state")
+      local utils = require "telescope.utils"
       local fb_actions = require "telescope".extensions.file_browser.actions
       local hierarchy_actions = require("telescope-hierarchy.actions")
 
@@ -385,15 +386,36 @@ return {
         pattern = "*",
         callback = function()
           vim.schedule(function()
+            local buf = vim.api.nvim_get_current_buf()
+            local name = vim.api.nvim_buf_get_name(buf)
+
             -- Early return if netrw or not a directory
-            if vim.bo[0].filetype == "netrw" or vim.fn.isdirectory(vim.fn.expand("%:p")) == 0 then
+            if vim.bo[buf].filetype == "netrw" or vim.fn.isdirectory(name) == 0 then
               return
             end
+
+            -- If we've already tried Telescope once for this directory buffer,
+            -- then user must have closed it without selecting anything.
+            -- Replace this buffer with a new empty buffer and wipe the dir buffer.
+            if vim.b[buf].find_files_tried then
+              -- Create a new empty buffer in this window
+              vim.cmd("enew")
+
+              -- Wipe the old directory buffer
+              if vim.api.nvim_buf_is_valid(buf) then
+                vim.api.nvim_buf_delete(buf, { force = true })
+              end
+
+              return
+            end
+
+            -- Mark that we've run Telescope for this buffer already
+            vim.b[buf].find_files_tried = true
 
             vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = 0 })
 
             require("telescope.builtin").find_files({
-              cwd = vim.fn.expand("%:p:h"),
+              cwd = vim.fn.fnamemodify(name, ":p:h"),
             })
           end)
         end,
