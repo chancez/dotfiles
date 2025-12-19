@@ -99,3 +99,10 @@ vim.api.nvim_create_user_command('MasonInstallAll', function()
   mason_api.MasonInstall(packages_to_install)
   print("Finished installing LSP servers.")
 end, { desc = "" })
+
+-- Yank current file path to clipboard
+vim.api.nvim_create_user_command('YankFilePath', function()
+  local file_path = vim.fn.expand('%')
+  vim.fn.setreg('+', file_path)
+  print('Yanked file path: ' .. file_path)
+end, { desc = "Yank the current file's absolute path to the clipboard." })
