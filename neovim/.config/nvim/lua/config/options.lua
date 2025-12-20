@@ -53,6 +53,9 @@ vim.opt.foldlevelstart = 10 -- open most folds by default
 vim.opt.foldnestmax = 10    -- 10 nested fold max
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.lsp.foldexpr()"
+vim.opt.foldtext = ''
+vim.opt.fillchars = 'fold:·'
+
 
 -- Splits
 vim.opt.splitright = true
