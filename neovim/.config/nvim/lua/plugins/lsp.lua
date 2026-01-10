@@ -53,4 +53,8 @@ return {
       myLspConfigs.setup()
     end
   },
+  {
+    "chancez/codeactions-on-save.nvim",
+    branch = "pr/chancez/export_handle_write_pre"
+  }
 }

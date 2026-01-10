@@ -81,23 +81,13 @@ local install_only_servers = {
 }
 
 local function LspOrgImports()
-  vim.lsp.buf.code_action({
-    ---@diagnostic disable-next-line: missing-fields
-    context = {
-      only = { 'source.organizeImports' },
-    },
-    apply = true,
-  })
+  local cos = require("codeactions-on-save")
+  cos.handle_write_pre({ "source.organizeImports" }, 0, 1000)
 end
 
 local function LspFixAll()
-  vim.lsp.buf.code_action({
-    ---@diagnostic disable-next-line: missing-fields
-    context = {
-      only = { 'source.fixAll' },
-    },
-    apply = true,
-  })
+  local cos = require("codeactions-on-save")
+  cos.handle_write_pre({ "source.fixAll" }, 0, 1000)
 end
 
 -- Add a toggle for autoformatting
@@ -194,11 +184,8 @@ local function lspAttach(bufnr, client)
         if not IsLspAutoFormatEnabled() then
           return
         end
-        vim.lsp.buf.format()
-        -- TODO: Make this synchronous so we can run it before buf.format(). It
-        -- has to go after, otherwise sometimes there's weird corruption issues
-        -- when both write to a file at once.
         LspOrgImports()
+        vim.lsp.buf.format()
       end,
     })
   end
