@@ -75,3 +75,29 @@ nvim() {
 if (( $+commands[switcher] )); then
   alias s=switch
 fi
+
+
+printcolor() {
+  if [ $# -eq 0 ]; then
+    for i in {0..255}; do
+      printf "\x1b[38;5;%sm%s\x1b[0m " "$i" "$(printf "%03d" "$i")"
+      if (( (i + 1) % 16 == 0 )); then
+        echo
+      fi
+    done
+    return
+  fi
+
+  # Define ANSI color escape sequences
+  ESC="\e"
+  RESET="${ESC}[0m"
+  FG_COLOR="${ESC}[38;5;" # Prefix for foreground 256 colors
+  BG_COLOR="${ESC}[48;5;" # Prefix for background 256 colors
+  M="m"                   # Suffix for escape codes
+
+  TEXT_COLOR=$1
+  BACKGROUND_COLOR=$2
+  TEXT=${3:-"Example Text"}
+
+  printf "${BG_COLOR}${BACKGROUND_COLOR}${M}${FG_COLOR}${TEXT_COLOR}${M}${TEXT}${RESET}\n"
+}

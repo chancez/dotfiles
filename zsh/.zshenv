@@ -51,6 +51,10 @@ export GOTOOLCHAIN=local
 # Force Node.js use system CA certificates
 export NODE_OPTIONS="--use-system-ca"
 
+if [ -f "$HOME/.dircolors" ]; then
+  eval "$(dircolors -b "$HOME/.dircolors")"
+fi
+
 if [ -f "$HOME/.zshenv.local" ]; then
   source "$HOME/.zshenv.local"
 fi
