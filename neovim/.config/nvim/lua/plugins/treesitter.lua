@@ -7,28 +7,43 @@ return {
     opts = {},
     config = function(_, opts)
       local ts = require('nvim-treesitter')
-      local parsers = require("nvim-treesitter.parsers")
-      ts.setup(opts)
 
-      -- Custom parsers
-      ---@diagnostic disable-next-line: missing-fields
-      parsers.cel = {
-        ---@diagnostic disable-next-line: missing-fields
-        install_info = {
-          url = "https://github.com/bufbuild/tree-sitter-cel.git",
-          files = { "src/parser.c" },
-          branch = "main",
-          generate_requires_npm = false,
-          requires_generate_from_grammar = false,
-        },
-      }
+      -- https://github.com/nvim-treesitter/nvim-treesitter#adding-custom-languages
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'TSUpdate',
+        callback = function()
+          -- Custom parsers
+          ---@diagnostic disable-next-line: missing-fields
+          require('nvim-treesitter.parsers').cel = {
+            ---@diagnostic disable-next-line: missing-fields
+            install_info = {
+              url = "https://github.com/bufbuild/tree-sitter-cel.git",
+              files = { "src/parser.c" },
+              branch = "main",
+              generate_requires_npm = false,
+              requires_generate_from_grammar = false,
+            },
+          }
+
+          ---@diagnostic disable-next-line: missing-fields
+          require('nvim-treesitter.parsers').godoc = {
+            ---@diagnostic disable-next-line: missing-fields
+            install_info = {
+              url = "https://github.com/fredrikaverpil/tree-sitter-godoc",
+              files = { "src/parser.c" },
+              version = "*",
+            },
+            filetype = "godoc",
+          }
+        end
+      })
 
       vim.filetype.add({
         extension = {
           cel = 'cel',
         },
       })
-
+      vim.treesitter.language.register('godoc', 'godoc')
       vim.treesitter.language.register('bash', { 'zsh' })
 
       local filetypes = {
@@ -58,9 +73,12 @@ return {
         "typescript",
         "vim",
         "yaml",
+        -- Custom parsers
         "cel",
+        "godoc",
       }
 
+      ts.setup(opts)
       ts.install(filetypes)
 
       vim.api.nvim_create_autocmd('FileType', {

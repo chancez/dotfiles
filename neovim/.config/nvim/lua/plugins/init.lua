@@ -297,4 +297,35 @@ return {
       ft = { "yaml", "yaml.helm-values" }
     },
   },
+  {
+    "fredrikaverpil/godoc.nvim",
+    version = "*",
+    dependencies = {
+      { "nvim-telescope/telescope.nvim" },
+    },
+    cmd = { "GoDoc" },
+    ft = "godoc",
+    opts = {
+      adapters = {
+        {
+          name = "go",
+          opts = {
+            get_syntax_info = function()
+              return {
+                filetype = "godoc",
+                language = "godoc", -- Enable tree-sitter godoc parser
+              }
+            end,
+          },
+        },
+      },
+      window = {
+        type = "vsplit",
+      },
+      picker = {
+        type = "telescope", -- native (vim.ui.select) | telescope | snacks | mini | fzf_lua
+        telescope = {},
+      },
+    },
+  }
 }
