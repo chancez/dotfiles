@@ -44,6 +44,7 @@ if ! zgenom saved; then
   (($+commands[kitty])) && zgenom eval --name kitty < <(kitty + complete setup zsh)
   (($+commands[crc])) && zgenom eval --name crc < <(crc completion zsh)
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
+  (($+commands[mise])) && zgenom eval --name mise < <(mise completion zsh)
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
   (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)
