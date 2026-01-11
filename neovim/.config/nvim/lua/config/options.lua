@@ -76,6 +76,10 @@ vim.opt.listchars:append({
 })
 
 -- clipboard
+if vim.env.SSH_TTY then
+  vim.g.clipboard = 'osc52'
+end
+
 if vim.fn.has('unnamedplus') then
   vim.o.clipboard = 'unnamedplus'
 end
