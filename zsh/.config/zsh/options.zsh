@@ -137,10 +137,12 @@ bindkey -v
 # This needs to happen after we configure our path so it's in options.zsh
 if (( $+commands[nvim] )); then
   export EDITOR='nvim'
+  # Sudo doesn't use our $PATH, so get the absolute path to the shim.
+  export SUDO_EDITOR="${commands[nvim]}"
 else
   export EDITOR='vim'
 fi
 
 export VISUAL="$EDITOR"
 export GIT_EDITOR="$EDITOR"
-export SUDO_EDITOR="$EDITOR"
+
