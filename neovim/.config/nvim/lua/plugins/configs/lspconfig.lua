@@ -184,7 +184,9 @@ local function lspAttach(bufnr, client)
         if not IsLspAutoFormatEnabled() then
           return
         end
-        LspOrgImports()
+        if client.server_capabilities.codeActionProvider then
+          LspOrgImports()
+        end
         vim.lsp.buf.format()
       end,
     })
