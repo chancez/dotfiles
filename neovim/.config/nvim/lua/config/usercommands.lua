@@ -67,9 +67,9 @@ end, {})
 -- Close all buffers and tabs
 vim.api.nvim_create_user_command('WipeSession', function()
   -- Close all other tabs
-  vim.cmd(':tabonly')
+  vim.cmd(':silent tabonly')
   -- Close all buffers
-  vim.cmd(':%bd')
+  vim.cmd(':silent %bd')
 end, { desc = "Close all open tabs and buffers and delete the current session." })
 
 -- Add a helper to run MasonInstall for all the lsps configured
