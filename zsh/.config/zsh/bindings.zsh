@@ -4,6 +4,8 @@
 zmodload zsh/terminfo
 
 # open the currently entered command in a text editor using 'v' in normal mode
+autoload edit-command-line
+zle -N edit-command-line
 bindkey -M vicmd v edit-command-line
 
 # Copy the current command line to clipboard with Ctrl-Y (without the trailing newline)
