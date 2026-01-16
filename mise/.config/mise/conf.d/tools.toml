@@ -25,10 +25,13 @@ golangci-lint = "latest"
 # AI Tools
 "npm:@github/copilot" = "latest"
 "npm:mcp-hub" = "latest"
-"pipx:oraios/serena" = "v0.1.4"            # MCP using LSPs
+"pipx:oraios/serena" = "v0.1.4"                  # MCP using LSPs
 "npm:opencode-ai" = "latest"
 "aqua:openai/codex" = "latest"
 "npm:@zed-industries/codex-acp" = "latest"
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@zed-industries/claude-code-acp" = "latest"
+"npm:@google/gemini-cli" = "latest"
 
 # General purpose CLI tools
 ripgrep = "latest"
