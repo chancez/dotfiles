@@ -63,66 +63,96 @@ return {
         { desc = "Messages half page down" })
     end,
   },
-
   {
-    "yetone/avante.nvim",
-    build = vim.fn.has("win32") ~= 0
-        and "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
-        or "make",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    ---@module 'avante'
-    ---@type avante.Config
+    "carlos-algms/agentic.nvim",
     opts = {
-      -- this file can contain specific instructions for your project
-      instructions_file = "AGENTS.md",
-      provider = "codex",
-      -- provider = "copilot",
-      providers = {
-        copilot = {
-          endpoint = "https://api.githubcopilot.com",
-          -- model = "claude-sonnet-4.5",
-          -- model = "gpt-4o-2024-11-20",
-          timeout = 30000,
-          context_window = 64000,
-          extra_request_body = {
-            temperature = 0.75,
-            max_tokens = 20480,
+      -- provider = "codex-acp",
+      provider = "claude-acp",
+      acp_providers = {
+        ["claude-acp"] = {
+          default_mode = "acceptEdits",
+          env = {
+            AWS_PROFILE = "bedrock",
+            CLAUDE_CODE_USE_BEDROCK = "true",
+            -- ANTHROPIC_MODEL = "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+            ANTHROPIC_MODEL = "us.anthropic.claude-opus-4-5-20251101-v1:0",
           },
         },
       },
-      acp_providers = {
-        codex = {},
-      },
-      behaviour = {
-        auto_suggestions = false,
-        auto_approve_tool_permissions = false,
-      },
-      input = {
-        -- provider = "snacks",
-        provider_opts = {
-          title = "Avante Input",
-          icon = " ",
-        },
-      },
+
       windows = {
-        input = {
-          prefix = "> ",
-          height = 20, -- Height of the input window in vertical layout
-        },
-        ask = {
-          start_insert = false,
-        },
+        width = "33%",
       },
     },
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      -- "folke/snacks.nvim",
-      --- The below dependencies are optional,
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "nvim-tree/nvim-web-devicons",   -- or echasnovski/mini.icons
-      "zbirenbaum/copilot.lua",        -- for providers='copilot'
+    keys = {
+      {
+        "<leader>ac",
+        function() require("agentic").toggle() end,
+        mode = { "n", "v", "i" },
+        desc = "Toggle Agentic Chat"
+      },
+      {
+        "<leader>af",
+        function() require("agentic").add_selection_or_file_to_context({ focus_prompt = false }) end,
+        mode = { "n", "v" },
+        desc = "Add file or selection to Agentic to Context"
+      },
+      {
+        "<leader>aF",
+        function()
+          local SessionRegistry = require("agentic.session_registry")
+          SessionRegistry.get_session_for_tab_page(nil, function(session)
+            -- Get the currently visible buffers based on the windows in the current tab
+            for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+              local buf = vim.api.nvim_win_get_buf(win)
+              -- Check the buffer is valid and loaded and not an agentic buffer
+              local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
+              if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) and not ft:match("^Agentic") then
+                session:add_file_to_session(buf)
+              end
+            end
+          end)
+        end,
+        mode = { "n", "v" },
+        desc = "Add visible buffers to Agentic Context"
+      },
+      {
+        "<leader>aq",
+        function()
+          local SessionRegistry = require("agentic.session_registry")
+          SessionRegistry.get_session_for_tab_page(nil, function(session)
+            -- Get the quickfix list items
+            local qflist = vim.fn.getqflist()
+            -- Track unique buffer numbers to avoid duplicates
+            local seen_bufs = {}
+            for _, item in ipairs(qflist) do
+              if item.bufnr and item.bufnr > 0 and not seen_bufs[item.bufnr] then
+                seen_bufs[item.bufnr] = true
+                -- Check the buffer is valid and loaded
+                local ft = vim.api.nvim_get_option_value("filetype", { buf = item.bufnr })
+                if vim.api.nvim_buf_is_valid(item.bufnr) then
+                  session:add_file_to_session(item.bufnr)
+                end
+              end
+            end
+          end)
+        end,
+        mode = { "n", "v" },
+        desc = "Add files from quickfix list to Agentic Context"
+      },
+      {
+        "<leader>an",
+        function() require("agentic").new_session() end,
+        mode = { "n", "v", "i" },
+        desc = "New Agentic Session"
+      },
+      {
+        "<leader>as",
+        function() require("agentic").stop_generation() end,
+        mode = { "n", "v", "i" },
+        desc = "Stop current generation"
+      },
     },
-  },
+  }
 }
+
