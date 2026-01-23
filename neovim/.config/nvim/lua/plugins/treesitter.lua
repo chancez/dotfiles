@@ -55,6 +55,7 @@ return {
         "gomod",
         "gowork",
         "hcl",
+        "helm",
         "html",
         "java",
         "javascript",
