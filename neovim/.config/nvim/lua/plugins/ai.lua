@@ -48,6 +48,18 @@ return {
         width = "33%",
       },
     },
+    config = function(_, opts)
+      require("agentic").setup(opts)
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
+        pattern = 'AgenticInput',
+        callback = function(ev)
+          -- Defer the setting to ensure it runs after the plugin's setup
+          vim.schedule(function()
+            vim.b[ev.buf].completion = true
+          end)
+        end,
+      })
+    end,
     keys = {
       {
         "<leader>ac",
@@ -119,3 +131,4 @@ return {
     },
   }
 }
+

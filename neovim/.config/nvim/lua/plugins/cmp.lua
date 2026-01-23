@@ -46,6 +46,14 @@ return {
           auto_insert = false,
         },
       },
+      trigger = {
+        show_on_blocked_trigger_characters = function(ctx)
+          if vim.bo.filetype == 'AgenticInput' then
+            return { ' ', '\n', '\t', '@', '/' }
+          end
+          return { ' ', '\n', '\t' }
+        end,
+      },
       menu = {
         auto_show = true,
       },
