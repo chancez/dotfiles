@@ -45,6 +45,7 @@ local auto_enable_servers = {
         },
         staticcheck = true,
         usePlaceholders = true,
+        templateExtensions = { ".tpl" },
       },
     },
   },
