@@ -8,7 +8,7 @@ return {
     keys = {
       { "<leader>ta", function() require("neotest").run.attach() end,                                     desc = "[t]est [a]ttach" },
       { "<leader>tf", function() require("neotest").run.run(vim.fn.expand("%")) end,                      desc = "[t]est run [f]ile" },
-      { "<leader>tA", function() require("neotest").run.run(vim.uv.cwd()) end,                            desc = "[t]est [A]ll files" },
+      { "<leader>tA", function() require("neotest").run.run(vim.fn.getcwd()) end,                         desc = "[t]est [A]ll files" },
       { "<leader>tS", function() require("neotest").run.run({ suite = true }) end,                        desc = "[t]est [S]uite" },
       { "<leader>tn", function() require("neotest").run.run() end,                                        desc = "[t]est [n]earest" },
       { "<leader>tl", function() require("neotest").run.run_last() end,                                   desc = "[t]est [l]ast" },
@@ -83,6 +83,25 @@ return {
           end,
         },
       })
+
+      -- Add some commands for running the suite/file/etc
+      vim.api.nvim_create_user_command('NeotestFile', function()
+        neotest.run.run(vim.fn.expand("%"))
+      end, { desc = "Run all tests in the current file using neotest." })
+
+
+      -- Run tests against current file's directory
+      vim.api.nvim_create_user_command('NeotestDir', function()
+        neotest.run.run(vim.fn.expand("%:p:h"))
+      end, { desc = "Run all tests in the directory of the current file using neotest." })
+
+      vim.api.nvim_create_user_command('NeotestNearest', function()
+        neotest.run.run()
+      end, { desc = "Run the nearest test using neotest." })
+
+      vim.api.nvim_create_user_command('NeotestLast', function()
+        neotest.run.run_last()
+      end, { desc = "Run the last test using neotest." })
 
       -- Add filetype buffer mappings for neotest-output floating window
       vim.api.nvim_create_autocmd("FileType", {
