@@ -59,6 +59,8 @@ return {
     opts = {
       suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/', '/tmp', '/private/tmp' },
       close_filetypes_on_save = { "neotest-output", "neotest-output-panel", "neotest-summary" },
+      -- Don't close quickfix
+      close_unsupported_windows = false,
       session_lens = {
         load_on_setup = false,
         picker = "telescope",
@@ -192,7 +194,16 @@ return {
 
           local setqflist = "call setqflist(" .. vim.fn.string(qflist) .. ")"
           local setqfinfo = 'call setqflist([], "a", ' .. vim.fn.string(qfinfo) .. ")"
-          return { setqflist, setqfinfo, "copen" }
+
+          local cmds = { setqflist, setqfinfo }
+          -- Check if the quickfix is open in the current tab, and add a command to open it if it was
+          local qf_open = vim.iter(vim.api.nvim_tabpage_list_wins(vim.api.nvim_get_current_tabpage())):any(function(w)
+            return vim.fn.win_gettype(w) == "quickfix"
+          end)
+          if qf_open then
+            table.insert(cmds, "bot copen")
+          end
+          return cmds
         end,
       },
     },
