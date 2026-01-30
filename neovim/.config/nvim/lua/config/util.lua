@@ -58,7 +58,7 @@ end
 -- Map a command to a keybinding. The command must already be defined.
 function M.map_user_command(cmd, lhs, bufnr)
   local rhs = '<cmd>' .. cmd .. '<CR>'
-  local mode = 'n'
+  local mode = { 'n', 'v' }
   vim.keymap.set(mode, lhs, rhs, { desc = cmd, silent = true, buffer = bufnr or 0 })
 end
 
