@@ -64,6 +64,12 @@ vim.api.nvim_create_user_command('ToggleDiagnostics', function()
   vim.diagnostic.enable(not vim.diagnostic.is_enabled(), { bufnr = 0 })
 end, {})
 
+-- Send diagnostics to quickfix list
+vim.api.nvim_create_user_command('DiagnosticsQF', function()
+  vim.diagnostic.setqflist()
+  vim.cmd('copen')
+end, {})
+
 -- Close all buffers and tabs
 vim.api.nvim_create_user_command('WipeSession', function()
   -- Close all other tabs
