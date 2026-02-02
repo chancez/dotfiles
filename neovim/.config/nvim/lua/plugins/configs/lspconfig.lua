@@ -173,7 +173,8 @@ local function lspAttach(bufnr, client)
     vim.api.nvim_buf_create_user_command(bufnr, 'LspFormat', function() vim.lsp.buf.format() end, {})
     vim.api.nvim_buf_create_user_command(bufnr, 'LspOrgImports', function() LspOrgImports() end, {})
     vim.api.nvim_buf_create_user_command(bufnr, 'LspToggleAutoFormat', function() LspToggleAutoFormat() end, {})
-    vim.api.nvim_buf_create_user_command(bufnr, 'LspToggleAutoFormatBuffer', function() LspToggleAutoFormat() end, {})
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspToggleAutoFormatBuffer', function() LspToggleAutoFormatBuffer() end,
+      {})
 
     vim.api.nvim_create_augroup('CodeFormat', { clear = false })
     vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
