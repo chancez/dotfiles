@@ -69,4 +69,45 @@ function M.map_and_define_user_command(name, lhs, command, bufnr)
   M.map_user_command(name, lhs, bufnr)
 end
 
+function M.get_qf_filelist(cwd)
+  local Path = require "plenary.path"
+  if cwd == nil then
+    cwd = vim.fn.getcwd()
+  end
+  local qflist = vim.fn.getqflist()
+
+  local filelist = {}
+  local unique_files = {}
+  for _, item in ipairs(qflist) do
+    local file = vim.api.nvim_buf_get_name(item.bufnr)
+    if file and vim.fn.filereadable(file) == 1 then
+      local relpath = Path:new(file):make_relative(cwd)
+      if not unique_files[relpath] then
+        unique_files[relpath] = true
+        table.insert(filelist, relpath)
+      end
+    end
+  end
+  return filelist
+end
+
+function M.get_buf_filelist(cwd)
+  local Path = require "plenary.path"
+  local buflist = vim.fn.getbufinfo({ buflisted = 1 })
+
+  local filelist = {}
+  local unique_files = {}
+  for _, buf in ipairs(buflist) do
+    local file = vim.api.nvim_buf_get_name(buf.bufnr)
+    if file and vim.fn.filereadable(file) == 1 then
+      local relpath = Path:new(file):make_relative(cwd)
+      if not unique_files[relpath] then
+        unique_files[relpath] = true
+        table.insert(filelist, relpath)
+      end
+    end
+  end
+  return filelist
+end
+
 return M
