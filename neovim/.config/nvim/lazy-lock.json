@@ -1,6 +1,6 @@
 {
   "FixCursorHold.nvim": { "branch": "master", "commit": "1900f89dc17c603eec29960f57c00bd9ae696495" },
-  "agentic.nvim": { "branch": "main", "commit": "f88f81d8e2d6bf4f7456d3737c82bb578c9bb537" },
+  "agentic.nvim": { "branch": "main", "commit": "9386a402dbc42088e4ec51b2793e6561ba0b4020" },
   "auto-session": { "branch": "main", "commit": "292492ab7af4bd8b9e37e28508bc8ce995722fd5" },
   "blink-copilot": { "branch": "main", "commit": "7ad8209b2f880a2840c94cdcd80ab4dc511d4f39" },
   "blink.cmp": { "branch": "main", "commit": "b19413d214068f316c78978b08264ed1c41830ec" },
