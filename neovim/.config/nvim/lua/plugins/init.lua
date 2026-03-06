@@ -71,7 +71,7 @@ return {
     }
   },
 
-  { 'lewis6991/gitsigns.nvim', event = "VeryLazy", dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
+  { 'lewis6991/gitsigns.nvim',      event = "VeryLazy", dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
   {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",
@@ -79,7 +79,7 @@ return {
     ---@type ibl.config
     opts = {},
   },
-  { 'chentoast/marks.nvim',    event = "VeryLazy", opts = { default_mappings = false } },
+  { 'chentoast/marks.nvim', event = "VeryLazy", opts = { default_mappings = false } },
 
   -- utilities that leverage vim verbs
   { 'tpope/vim-surround' },
@@ -112,6 +112,11 @@ return {
       }
     },
     dependencies = { 'kyazdani42/nvim-web-devicons', opt = true }
+  },
+  -- Edit registers in a buffer
+  {
+    'jmattaa/regedit.vim',
+    cmd = 'Regedit',
   },
 
   {
