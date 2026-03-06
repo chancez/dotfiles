@@ -26,7 +26,9 @@ if ! zgenom saved; then
   zgenom load $ZDOTDIR/plugins/ssh.zsh
 
   if (($+commands[starship])) then
-    zgenom eval --name starship < <(starship init zsh)
+    # Use sed to replace the hardcoded versioned path with the 'starship' command
+    # This prevents breakage when upgrading starship via mise
+    zgenom eval --name starship < <(starship init zsh | sed "s|$HOME/.local/share/mise/installs/starship/[^/]*/starship|starship|g")
   fi
 
   # zsh plugins
