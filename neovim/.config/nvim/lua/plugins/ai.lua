@@ -35,12 +35,6 @@ return {
       acp_providers = {
         ["claude-acp"] = {
           default_mode = "acceptEdits",
-          env = {
-            AWS_PROFILE = "bedrock",
-            CLAUDE_CODE_USE_BEDROCK = "true",
-            -- ANTHROPIC_MODEL = "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-            ANTHROPIC_MODEL = "us.anthropic.claude-opus-4-5-20251101-v1:0",
-          },
         },
       },
 
@@ -131,4 +125,3 @@ return {
     },
   }
 }
-
