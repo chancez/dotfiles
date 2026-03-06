@@ -29,7 +29,7 @@ golangci-lint = "latest"
 "npm:opencode-ai" = "latest"
 "aqua:openai/codex" = "latest"
 "npm:@zed-industries/codex-acp" = "latest"
-"npm:@anthropic-ai/claude-code" = "latest"
+"aqua:anthropics/claude-code" = "2.1.68"
 "npm:@zed-industries/claude-code-acp" = "latest"
 "npm:@google/gemini-cli" = "latest"
 
