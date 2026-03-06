@@ -50,7 +50,7 @@ local auto_enable_servers = {
     },
   },
   yamlls                 = {
-    filetypes = { 'yaml', 'yaml.docker-compose' },
+    filetypes = { 'yaml', 'yaml.docker-compose', 'yaml.helm-values' },
     settings = {
       yaml = {
         validate = false,
