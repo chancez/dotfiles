@@ -118,6 +118,18 @@ return {
         desc = "Add files from quickfix list to Agentic Context"
       },
       {
+        "<leader>aD",
+        function() require("agentic").add_buffer_diagnostics() end,
+        mode = { "n", "v" },
+        desc = "Add buffer diagnostics to Agentic to Context"
+      },
+      {
+        "<leader>ad",
+        function() require("agentic").add_current_line_diagnostics() end,
+        mode = { "n", "v" },
+        desc = "Add diagnostics to Agentic to Context"
+      },
+      {
         "<leader>an",
         function() require("agentic").new_session() end,
         mode = { "n", "v", "i" },
@@ -128,6 +140,12 @@ return {
         function() require("agentic").stop_generation() end,
         mode = { "n", "v", "i" },
         desc = "Stop current generation"
+      },
+      {
+        "<leader>ar",
+        function() require("agentic").restore_session() end,
+        mode = { "n", "v" },
+        desc = "Show session picker to restore a previous session and continue"
       },
     },
   }
