@@ -53,6 +53,13 @@ return {
           end)
         end,
       })
+      -- Set the AgenticChat buffer syntax to markdown for better formatting
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
+        pattern = 'AgenticChat',
+        callback = function(ev)
+          vim.bo[ev.buf].syntax = "markdown"
+        end,
+      })
     end,
     keys = {
       {
