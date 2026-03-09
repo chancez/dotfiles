@@ -11,7 +11,7 @@ return {
         yaml = true,
         gitcommit = true,
       },
-      copilot_node_command = { "mise", "exec", "node@lts", "--", "node" },
+      copilot_node_command = { "mise", "exec", "node@lts", "--", "node", "--use-system-ca" },
       server = {
         type = 'nodejs',
         custom_server_filepath = vim.fn.stdpath("data") .. "/mason/bin/copilot-language-server",

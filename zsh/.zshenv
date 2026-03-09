@@ -48,9 +48,6 @@ export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
 export GOTOOLCHAIN=local
 
-# Force Node.js use system CA certificates
-export NODE_OPTIONS="--use-system-ca"
-
 if [ -f "$HOME/.dircolors" ]; then
   eval "$(dircolors -b "$HOME/.dircolors")"
 fi
