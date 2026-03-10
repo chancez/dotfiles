@@ -101,7 +101,14 @@ local function LspToggleAutoFormat()
 end
 
 local function LspToggleAutoFormatBuffer()
-  vim.b.autoFormat = not vim.b.autoFormat
+  -- If buffer-specific setting is nil then it's the default value, so set to
+  -- false as the default, normally is true.
+  if vim.b.autoFormat == nil then
+    vim.b.autoFormat = false
+  else
+    -- Subsequent toggles: just invert the buffer setting
+    vim.b.autoFormat = not vim.b.autoFormat
+  end
   local status = vim.b.autoFormat and "enabled" or "disabled"
   print("Auto-formatting on save for this buffer " .. status)
 end
