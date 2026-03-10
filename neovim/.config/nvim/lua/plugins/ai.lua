@@ -31,9 +31,9 @@ return {
     "carlos-algms/agentic.nvim",
     opts = {
       -- provider = "codex-acp",
-      provider = "claude-acp",
+      provider = "claude-agent-acp",
       acp_providers = {
-        ["claude-acp"] = {
+        ["claude-agent-acp"] = {
           default_mode = "acceptEdits",
         },
       },

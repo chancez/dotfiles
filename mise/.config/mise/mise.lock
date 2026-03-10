@@ -133,28 +133,6 @@ url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.4.pkg"
 [tools.aws-cli."platforms.macos-x64"]
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.34.4.pkg"
 
-[[tools.aws-cli]]
-version = "latest"
-backend = "aqua:aws/aws-cli"
-
-[tools.aws-cli."platforms.linux-arm64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-latest.zip"
-
-[tools.aws-cli."platforms.linux-arm64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-latest.zip"
-
-[tools.aws-cli."platforms.linux-x64"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-latest.zip"
-
-[tools.aws-cli."platforms.linux-x64-musl"]
-url = "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-latest.zip"
-
-[tools.aws-cli."platforms.macos-arm64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-latest.pkg"
-
-[tools.aws-cli."platforms.macos-x64"]
-url = "https://awscli.amazonaws.com/AWSCLIV2-latest.pkg"
-
 [[tools.fd]]
 version = "10.4.1"
 backend = "aqua:sharkdp/fd"
@@ -760,6 +738,10 @@ backend = "npm:@google/gemini-cli"
 [[tools."npm:@mermaid-js/mermaid-cli"]]
 version = "11.12.0"
 backend = "npm:@mermaid-js/mermaid-cli"
+
+[[tools."npm:@zed-industries/claude-agent-acp"]]
+version = "0.21.0"
+backend = "npm:@zed-industries/claude-agent-acp"
 
 [[tools."npm:@zed-industries/claude-code-acp"]]
 version = "0.16.2"

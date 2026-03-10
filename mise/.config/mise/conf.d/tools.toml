@@ -30,7 +30,7 @@ golangci-lint = "latest"
 "aqua:openai/codex" = "latest"
 "npm:@zed-industries/codex-acp" = "latest"
 "aqua:anthropics/claude-code" = "2.1.68"
-"npm:@zed-industries/claude-code-acp" = "latest"
+"npm:@zed-industries/claude-agent-acp" = "latest"
 "npm:@google/gemini-cli" = "latest"
 
 # General purpose CLI tools
