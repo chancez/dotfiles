@@ -38,6 +38,8 @@ if ! zgenom saved; then
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy
   zgenom load junegunn/fzf-git.sh
+  zgenom ohmyzsh plugins/timer
+
 
   # custom extensions
   (($+commands[direnv])) && zgenom eval --name direnv < <(direnv hook zsh)
