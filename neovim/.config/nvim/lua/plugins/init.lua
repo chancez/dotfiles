@@ -111,7 +111,7 @@ return {
     ---@type ibl.config
     opts = {},
   },
-  { 'chentoast/marks.nvim', event = "VeryLazy", opts = { default_mappings = false } },
+  { 'chentoast/marks.nvim',         event = "VeryLazy", opts = { default_mappings = false } },
 
   -- utilities that leverage vim verbs
   { 'tpope/vim-surround' },
