@@ -117,12 +117,6 @@ return {
   { 'tpope/vim-surround' },
 
   -- utilities
-  {
-    'tpope/vim-commentary',
-    keys = {
-      { '<M-/>', ':Commentary<CR>', mode = { 'n', 'v' }, { silent = true } },
-    }
-  },
   { 'tpope/vim-eunuch' },
   {
     'junegunn/vim-easy-align',

@@ -110,3 +110,6 @@ map('n', '<leader>tq', function() vim.diagnostic.setqflist() end, { desc = 'Send
 
 map('n', '<leader>td', ':ToggleDiagnostics<CR>', { desc = 'Toggle diagnostics', silent = true })
 map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
+
+map('n', '<M-/>', 'gcc', { desc = 'Toggle comment', remap = true })
+map('v', '<M-/>', 'gc', { desc = 'Toggle comment', remap = true })
