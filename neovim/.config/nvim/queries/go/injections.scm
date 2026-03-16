@@ -1,4 +1,4 @@
-; extensions
+;; extends
 
 ; Injects JSON into Go string literals that are detected to contain JSON content.
 (raw_string_literal
