@@ -70,6 +70,7 @@ return {
         "python",
         "regex",
         "rust",
+        "sql",
         "toml",
         "typescript",
         "vim",
