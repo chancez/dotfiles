@@ -7,6 +7,13 @@
   (#set! injection.language "json")
 )
 
+; Injects YAML into Go raw string literals that start with YAML content.
+(raw_string_literal
+  (raw_string_literal_content) @injection.content
+  (#match? @injection.content "^[ \t\n]*(---|[a-zA-Z_][a-zA-Z0-9_]*:[ \t\n])")
+  (#set! injection.language "yaml")
+)
+
 ; Injects SQL into Go raw string literals that start with SQL keywords.
 (raw_string_literal
   (raw_string_literal_content) @injection.content
