@@ -98,6 +98,9 @@ return {
       { '<leader>w', ':WhichKey<CR>', desc = 'Open WhichKey', mode = 'n', { silent = true } },
     },
     opts = {
+      delay = function(ctx)
+        return ctx.plugin and 0 or 1000
+      end,
       win = {
         zindex = 2000 -- set higher than cmp so that which key is on top
       }
