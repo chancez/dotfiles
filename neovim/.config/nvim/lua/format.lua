@@ -11,8 +11,8 @@
 -- formatexpr, internal formatter) is preserved.
 
 local function get_comments_at_pos(bufnr, row, col)
-  local ts_parser = vim.treesitter.get_parser(bufnr, '')
-  if not ts_parser then
+  local ok, ts_parser = pcall(vim.treesitter.get_parser, bufnr, '')
+  if not ok or not ts_parser then
     return vim.bo[bufnr].comments
   end
 
