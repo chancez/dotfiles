@@ -91,18 +91,18 @@ return {
       {
         "<leader>aF",
         function()
-          local SessionRegistry = require("agentic.session_registry")
-          SessionRegistry.get_session_for_tab_page(nil, function(session)
-            -- Get the currently visible buffers based on the windows in the current tab
-            for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-              local buf = vim.api.nvim_win_get_buf(win)
-              -- Check the buffer is valid and loaded and not an agentic buffer
-              local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
-              if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) and not ft:match("^Agentic") then
-                session:add_file_to_session(buf)
-              end
+          local agentic = require("agentic")
+          -- Get the currently visible buffers based on the windows in the current tab
+          local bufs = {}
+          for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            -- Check the buffer is valid and loaded and not an agentic buffer
+            local ft = vim.api.nvim_get_option_value("filetype", { buf = buf })
+            if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) and not ft:match("^Agentic") then
+              table.insert(bufs, buf)
             end
-          end)
+          end
+          agentic.add_files_to_context({ files = bufs, focus_prompt = false })
         end,
         mode = { "n", "v" },
         desc = "Add visible buffers to Agentic Context"
@@ -110,23 +110,22 @@ return {
       {
         "<leader>aq",
         function()
-          local SessionRegistry = require("agentic.session_registry")
-          SessionRegistry.get_session_for_tab_page(nil, function(session)
-            -- Get the quickfix list items
-            local qflist = vim.fn.getqflist()
-            -- Track unique buffer numbers to avoid duplicates
-            local seen_bufs = {}
-            for _, item in ipairs(qflist) do
-              if item.bufnr and item.bufnr > 0 and not seen_bufs[item.bufnr] then
-                seen_bufs[item.bufnr] = true
-                -- Check the buffer is valid and loaded
-                local ft = vim.api.nvim_get_option_value("filetype", { buf = item.bufnr })
-                if vim.api.nvim_buf_is_valid(item.bufnr) then
-                  session:add_file_to_session(item.bufnr)
-                end
+          local agentic = require("agentic")
+          -- Get the quickfix list items
+          local qflist = vim.fn.getqflist()
+          -- Track unique buffer numbers to avoid duplicates
+          local seen_bufs = {}
+          local bufs = {}
+          for _, item in ipairs(qflist) do
+            if item.bufnr and item.bufnr > 0 and not seen_bufs[item.bufnr] then
+              seen_bufs[item.bufnr] = true
+              -- Check the buffer is valid and loaded
+              if vim.api.nvim_buf_is_valid(item.bufnr) then
+                table.insert(bufs, item.bufnr)
               end
             end
-          end)
+          end
+          agentic.add_files_to_context({ files = bufs, focus_prompt = false })
         end,
         mode = { "n", "v" },
         desc = "Add files from quickfix list to Agentic Context"
