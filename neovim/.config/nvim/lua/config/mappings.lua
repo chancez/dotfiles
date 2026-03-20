@@ -113,3 +113,10 @@ map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open
 
 map('n', '<M-/>', 'gcc', { desc = 'Toggle comment', remap = true })
 map('v', '<M-/>', 'gc', { desc = 'Toggle comment', remap = true })
+
+local fmt = require('format')
+
+map('n', 'gq', fmt.gq, { expr = true, desc = 'Format (TS-aware)' })
+map('n', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
+map('x', 'gq', fmt.gq, { expr = true, desc = 'Format (TS-aware)' })
+map('x', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
