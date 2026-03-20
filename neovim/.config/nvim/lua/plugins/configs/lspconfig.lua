@@ -135,9 +135,6 @@ local function lspAttach(bufnr, client)
   vim.bo[bufnr].formatexpr = nil
   vim.bo[bufnr].formatprg = nil
 
-
-  vim.api.nvim_set_option_value('omnifunc', 'v:lua.vim.lsp.omnifunc', { buf = bufnr })
-
   util.map_and_define_user_command('LspRename', '<leader>rn', function() vim.lsp.buf.rename() end, bufnr)
   util.map_and_define_user_command('LspDeclaration', 'gD', function() vim.lsp.buf.declaration() end, bufnr)
   util.map_and_define_user_command('LspDefinition', 'gd',
