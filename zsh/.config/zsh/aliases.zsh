@@ -10,10 +10,6 @@ alias ga='git add'
 alias rm='rm -i'
 alias grc='git rebase --continue'
 
-if (($+commands[nvim])); then
-  alias vim='nvim'
-fi
-
 alias k=kubectl
 if (($+commands[kubecolor])); then
   alias kubectl="kubecolor"

@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+if (($+commands[nvim])); then
+  exec nvim "$@"
+else
+  exec vim "$@"
+fi
