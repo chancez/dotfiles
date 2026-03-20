@@ -12,6 +12,7 @@ terraform = "latest"
 
 golangci-lint = "latest"
 "go:gotest.tools/gotestsum" = "latest"
+stylua = "2.3.1"
 
 # Decode and validate JWTs locally
 "npm:jwt-cli" = "latest"
