@@ -9,8 +9,8 @@ correct_git_commands() {
       final_command+=("$arg")
       continue
     fi
-    # Use parameter substitution to replace 'head' with 'HEAD' in the argument
-    corrected_arg="${arg//head/HEAD}"
+    # Replace 'head' with 'HEAD' only when it's a standalone ref, not inside words like 'ahead'
+    corrected_arg=$(printf '%s' "$arg" | sed -E 's/(^|[^a-zA-Z0-9_])head($|[^a-zA-Z0-9_])/\1HEAD\2/g')
     final_command+=("$corrected_arg")
     if [[ "$corrected_arg" != "$arg" ]]; then
       changes_made=true
