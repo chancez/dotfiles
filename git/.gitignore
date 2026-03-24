@@ -131,4 +131,4 @@ config.local.json
 ci-state.json
 .nvim.lua
 *.cast
-.claude
+.claude/settings.local.json
