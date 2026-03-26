@@ -164,7 +164,8 @@ return {
             ['il'] = '@loop.inner',
             ['aa'] = '@parameter.outer',
             ['ia'] = '@parameter.inner',
-            ['is'] = '@statement.outer',
+            ['is'] = '@statement.inner',
+            ['as'] = '@statement.outer',
           },
         },
         {
