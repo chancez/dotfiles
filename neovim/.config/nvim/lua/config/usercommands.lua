@@ -112,3 +112,29 @@ vim.api.nvim_create_user_command('YankFilePath', function()
   vim.fn.setreg('+', file_path)
   print('Yanked file path: ' .. file_path)
 end, { desc = "Yank the current file's absolute path to the clipboard." })
+
+-- Yank YAML value at cursor with its full key path
+vim.api.nvim_create_user_command('YankYAMLText', function()
+  require('config.yaml').yank_yaml_text('+')
+end, { desc = "Yank the YAML value at cursor with its full key path" })
+
+-- Yank dot-separated YAML key path at cursor (e.g. foo.bar.baz)
+vim.api.nvim_create_user_command('YankYAMLKeyPath', function()
+  require('config.yaml').yank_key_path('+')
+end, { desc = "Yank the dot-separated YAML key path at cursor" })
+
+-- Print YAML value at cursor with its full key path
+vim.api.nvim_create_user_command('PrintYAMLText', function()
+  local text = require('config.yaml').get_yaml_text()
+  if text then
+    print(text)
+  end
+end, { desc = "Print the YAML value at cursor with its full key path" })
+
+-- Print dot-separated YAML key path at cursor
+vim.api.nvim_create_user_command('PrintYAMLKeyPath', function()
+  local path = require('config.yaml').get_key_path()
+  if path then
+    print(path)
+  end
+end, { desc = "Print the dot-separated YAML key path at cursor" })
