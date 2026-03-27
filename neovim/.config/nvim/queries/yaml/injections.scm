@@ -18,16 +18,6 @@
   (#set! injection.language "json")
   (#offset! @injection.content 0 1 0 -1))
 
-; Inject YAML into block scalar strings that appear to contain YAML mappings
-((block_scalar) @injection.content
-  (#lua-match? @injection.content "^[|>].-\n%s*%w[%w_%-%.]*:%s")
-  (#not-lua-match? @injection.content "^[|>].-\n%s*[%{%[]")
-  (#set! injection.language "yaml")
-  (#offset! @injection.content 1 0 0 0))
-
-; Inject YAML into block scalar strings that appear to contain YAML sequences
-((block_scalar) @injection.content
-  (#lua-match? @injection.content "^[|>].-\n%s*%- ")
-  (#not-lua-match? @injection.content "^[|>].-\n%s*[%{%[]")
-  (#set! injection.language "yaml")
-  (#offset! @injection.content 1 0 0 0))
+; No yaml in yaml injections because values are indented and would require more
+; complex parsing to determine the correct indentation level for the injected
+; content.
