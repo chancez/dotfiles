@@ -43,7 +43,7 @@
   submit = codereview submit
   sync = codereview sync
   check-unstaged = !git diff-files --quiet || (echo Unstaged changes, please commit or stash with --keep-index && exit 1)
-  fixup = "!f() { git check-unstaged && COMMIT=$(git rev-parse $1) && git commit --fixup=$COMMIT && git rebase -i --autosquash $COMMIT~1'; }; f"
+  fixup = "!f() { git check-unstaged && COMMIT=$(git rev-parse $1) && git commit --fixup=$COMMIT && git rebase -i --autosquash $COMMIT~1; }; f"
   reword = "!f() { git check-unstaged && COMMIT=$(git rev-parse --short $1) && GIT_SEQUENCE_EDITOR=\"sed -i.bak -e 's/^pick $COMMIT/reword $COMMIT/'\" git rebase -i $COMMIT~1 || git rebase --abort; }; f"
   edit = "!f() { git check-unstaged && COMMIT=$(git rev-parse --short $1) && GIT_SEQUENCE_EDITOR=\"sed -i.bak -e 's/^pick $COMMIT/edit $COMMIT/'\" git rebase -i $COMMIT~1 || git rebase --abort; }; f"
 [push]
