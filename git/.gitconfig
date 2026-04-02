@@ -46,6 +46,12 @@
   fixup = "!f() { git check-unstaged && COMMIT=$(git rev-parse $1) && git commit --fixup=$COMMIT && git rebase -i --autosquash $COMMIT~1; }; f"
   reword = "!f() { git check-unstaged && COMMIT=$(git rev-parse --short $1) && GIT_SEQUENCE_EDITOR=\"sed -i.bak -e 's/^pick $COMMIT/reword $COMMIT/'\" git rebase -i $COMMIT~1 || git rebase --abort; }; f"
   edit = "!f() { git check-unstaged && COMMIT=$(git rev-parse --short $1) && GIT_SEQUENCE_EDITOR=\"sed -i.bak -e 's/^pick $COMMIT/edit $COMMIT/'\" git rebase -i $COMMIT~1 || git rebase --abort; }; f"
+  # Walk back through the commit history to find the most recent branch that isn't the current one, ie: the "base" branch of our current branch.
+  base = !git log --pretty=format:\"%D\" --decorate-refs=refs/heads/ | sed \"s/, /\\\\n/g\" | grep -v \"^$\" | grep -v \"^$(git branch --show-current)$\" | head -1 || echo main
+  # Rebase interactively from the merge base of the current branch and its base branch, which is usually the most recent branch that isn't the current one.
+  ri = !git rebase -i $(git merge-base HEAD \"$(git base)\")
+  # Rebase onto the base branch.
+  onto = "!base=\"${1:-$(git base)}\"; git rebase --onto \"$base\" \"$(git merge-base HEAD \"$base\")\" #"
 [push]
   default = current
   autoSetupRemote = true
