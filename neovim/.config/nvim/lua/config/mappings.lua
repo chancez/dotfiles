@@ -120,3 +120,7 @@ map('n', 'gq', fmt.gq, { expr = true, desc = 'Format (TS-aware)' })
 map('n', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
 map('x', 'gq', fmt.gq, { expr = true, desc = 'Format (TS-aware)' })
 map('x', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
+
+-- incremental selection treesitter/lsp
+map('x', '<C-o>', 'an', { desc = 'Select [o]uter node', remap = true })
+map('x', '<C-i>', 'in', { desc = 'Select [i]nner node', remap = true })
