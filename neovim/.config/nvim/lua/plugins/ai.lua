@@ -1,3 +1,20 @@
+-- Lookup the "nice" name for the model from config options.
+-- Eg: "us.anthropic.claude-opus-4-6-v1" -> "Opus"
+local function update_model_from_config(tab_page_id, config_options)
+  for _, opt in ipairs(config_options) do
+    if opt.category == "model" then
+      local model_name = opt.currentValue
+      for _, option in ipairs(opt.options or {}) do
+        if option.value == opt.currentValue then
+          model_name = option.name
+          break
+        end
+      end
+      vim.t[tab_page_id].agentic_model = model_name
+    end
+  end
+end
+
 return {
   {
     'zbirenbaum/copilot.lua',
@@ -55,7 +72,63 @@ return {
       windows = {
         width = "33%",
       },
+
+      hooks = {
+        on_session_update = function(data)
+          local needs_refresh = false
+          if data.update.sessionUpdate == "usage_update" then
+            vim.t[data.tab_page_id].agentic_usage = data.update
+            needs_refresh = true
+          end
+          if data.update.sessionUpdate == "config_option_update" then
+            update_model_from_config(data.tab_page_id, data.update.configOptions)
+            needs_refresh = true
+          end
+
+          if not needs_refresh then
+            return
+          end
+
+          local SessionRegistry = require("agentic.session_registry")
+          SessionRegistry.get_session_for_tab_page(data.tab_page_id, function(session)
+            session:schedule_header_refresh()
+          end)
+        end,
+      },
+
+      headers = {
+        chat = function(parts)
+          local pieces = { parts.title }
+          if parts.context ~= nil then
+            table.insert(pieces, parts.context)
+          end
+          if parts.suffix ~= nil then
+            table.insert(pieces, parts.suffix)
+          end
+
+          local model = vim.t.agentic_model
+          if model ~= nil then
+            table.insert(pieces, "Model: " .. model)
+          end
+
+          local usage = vim.t.agentic_usage
+          if usage ~= nil then
+            local used = tonumber(usage.used) or 0
+            local size = tonumber(usage.size) or 0
+            if size > 0 then
+              local pct = (used / size) * 100
+              table.insert(pieces, ("Context: %.1f%%%% (%d/%d)"):format(pct, used, size))
+              if usage.cost ~= nil then
+                table.insert(pieces, ("%.2f %s"):format(usage.cost.amount, usage.cost.currency))
+              end
+            end
+          end
+
+          return table.concat(pieces, " | ")
+        end,
+      },
     },
+
     config = function(_, opts)
       require("agentic").setup(opts)
       vim.api.nvim_create_autocmd({ 'FileType' }, {
