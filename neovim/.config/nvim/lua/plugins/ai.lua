@@ -78,7 +78,7 @@ return {
     keys = {
       {
         "<leader>ac",
-        function() require("agentic").toggle() end,
+        function() require("agentic").toggle({ auto_add_to_context = false }) end,
         mode = { "n", "v", "i" },
         desc = "Toggle Agentic Chat"
       },
@@ -144,7 +144,7 @@ return {
       },
       {
         "<leader>an",
-        function() require("agentic").new_session() end,
+        function() require("agentic").new_session({ auto_add_to_context = false }) end,
         mode = { "n", "v", "i" },
         desc = "New Agentic Session"
       },
