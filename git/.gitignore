@@ -132,3 +132,4 @@ ci-state.json
 .nvim.lua
 *.cast
 .claude/settings.local.json
+.worktrees
