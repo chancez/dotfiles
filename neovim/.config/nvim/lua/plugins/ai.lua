@@ -15,6 +15,58 @@ local function update_model_from_config(tab_page_id, config_options)
   end
 end
 
+local function jump_to_prompt(amount)
+  -- Define the prefix to match lines that indicate user prompts in the AgenticChat buffer.
+  local prefix = '##.* User'
+  local cursor_row = vim.api.nvim_win_get_cursor(0)[1]
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  -- Collect all matching line numbers
+  local matches = {}
+  for i, line in ipairs(lines) do
+    if vim.fn.match(line, prefix) >= 0 then
+      table.insert(matches, i)
+    end
+  end
+
+  if #matches == 0 then
+    return
+  end
+
+  -- Find the target based on direction and count
+  -- Compare against landing position (match + 2) to avoid re-matching current prompt
+  local offset = 2
+  local target
+  if amount > 0 then
+    local idx = 0
+    for i, row in ipairs(matches) do
+      if row + offset > cursor_row then
+        idx = i
+        break
+      end
+    end
+    if idx > 0 then
+      target = matches[math.min(idx + amount - 1, #matches)]
+    end
+  else
+    local idx = 0
+    for i, row in ipairs(matches) do
+      if row + offset < cursor_row then
+        idx = i
+      end
+    end
+    if idx > 0 then
+      target = matches[math.max(idx + amount + 1, 1)]
+    end
+  end
+
+  if target then
+    -- Set a mark before jumping to support jumping back to previous location.
+    vim.cmd("normal! m'")
+    vim.api.nvim_win_set_cursor(0, { target + 2, 0 })
+  end
+end
+
 return {
   {
     'zbirenbaum/copilot.lua',
@@ -232,6 +284,20 @@ return {
         function() require("agentic").restore_session() end,
         mode = { "n", "v" },
         desc = "Show session picker to restore a previous session and continue"
+      },
+      {
+        "]p",
+        function() jump_to_prompt(vim.v.count1) end,
+        mode = { "n", "v" },
+        desc = "Jump to next prompt",
+        ft = 'AgenticChat',
+      },
+      {
+        "[p",
+        function() jump_to_prompt(-vim.v.count1) end,
+        mode = { "n", "v" },
+        desc = "Jump to previous prompt",
+        ft = 'AgenticChat',
       },
     },
   }
