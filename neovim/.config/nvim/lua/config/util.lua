@@ -48,6 +48,39 @@ function M.ReplaceBufferWithCommandOutput(binary, args, input)
   end)
 end
 
+-- Runs a command with given input and replaces lines line1..line2 with the command's output.
+-- @param binary (string) The command to run.
+-- @param args (table|string) Additional arguments to pass to the command.
+-- @param input (table) The input lines to pass to the command's stdin.
+-- @param line1 (number) Start line (1-indexed).
+-- @param line2 (number) End line (1-indexed, inclusive).
+function M.ReplaceRangeWithCommandOutput(binary, args, input, line1, line2)
+  if type(args) == 'string' then
+    args = { args }
+  end
+  if args == nil then
+    args = {}
+  end
+  local cmd = { binary }
+  vim.list_extend(cmd, args)
+
+  vim.system(cmd, { stdin = input, text = true }, function(result)
+    vim.schedule(function()
+      if result.code == 0 then
+        local lines = vim.split(result.stdout, '\n')
+        if lines[#lines] == '' then
+          table.remove(lines, #lines)
+        end
+        vim.api.nvim_buf_set_lines(0, line1 - 1, line2, false, lines)
+      else
+        local cmd_str = table.concat(cmd, ' ')
+        vim.api.nvim_echo({ { string.format("Error running %q: %s", cmd_str, result.stderr) } }, false,
+          { err = true })
+      end
+    end)
+  end)
+end
+
 function M.table_concat(t1, t2)
   local result = {}
   vim.list_extend(result, t1)

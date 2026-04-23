@@ -14,25 +14,35 @@ end, {
   bang = true,
 })
 
--- JQ formats JSON in the current buffer
+-- JQ formats JSON in the current buffer or visual selection
 vim.api.nvim_create_user_command('JQ', function(cmd)
-  local input = util.GetBufferLines()
   local args = cmd.fargs or {}
   if #args == 0 then
     args = { '.' }
   end
-  util.ReplaceBufferWithCommandOutput('jq', args, input)
-end, { nargs = '*', bang = true })
+  if cmd.range == 2 then
+    local input = vim.api.nvim_buf_get_lines(0, cmd.line1 - 1, cmd.line2, false)
+    util.ReplaceRangeWithCommandOutput('jq', args, input, cmd.line1, cmd.line2)
+  else
+    local input = util.GetBufferLines()
+    util.ReplaceBufferWithCommandOutput('jq', args, input)
+  end
+end, { nargs = '*', bang = true, range = true })
 
--- YQ formats YAML in the current buffer
+-- YQ formats YAML in the current buffer or visual selection
 vim.api.nvim_create_user_command('YQ', function(cmd)
-  local input = util.GetBufferLines()
   local args = cmd.fargs or {}
   if #args == 0 then
     args = { '.' }
   end
-  util.ReplaceBufferWithCommandOutput('yq', args, input)
-end, { nargs = '*', bang = true })
+  if cmd.range == 2 then
+    local input = vim.api.nvim_buf_get_lines(0, cmd.line1 - 1, cmd.line2, false)
+    util.ReplaceRangeWithCommandOutput('yq', args, input, cmd.line1, cmd.line2)
+  else
+    local input = util.GetBufferLines()
+    util.ReplaceBufferWithCommandOutput('yq', args, input)
+  end
+end, { nargs = '*', bang = true, range = true })
 
 -- Replace the current buffer with the output of a shell command
 vim.api.nvim_create_user_command('Cmd', function(cmd)
