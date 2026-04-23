@@ -81,6 +81,43 @@ function M.ReplaceRangeWithCommandOutput(binary, args, input, line1, line2)
   end)
 end
 
+-- Runs a command on the exact visual selection (characterwise) and replaces it.
+-- @param binary (string) The command to run.
+-- @param args (table|string) Additional arguments to pass to the command.
+-- @param start_row (number) 0-indexed start row.
+-- @param start_col (number) 0-indexed start column.
+-- @param end_row (number) 0-indexed end row.
+-- @param end_col (number) 0-indexed exclusive end column.
+function M.ReplaceTextWithCommandOutput(binary, args, start_row, start_col, end_row, end_col)
+  if type(args) == 'string' then
+    args = { args }
+  end
+  if args == nil then
+    args = {}
+  end
+  local cmd = { binary }
+  vim.list_extend(cmd, args)
+
+  local text = vim.api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
+  local input = table.concat(text, '\n')
+
+  vim.system(cmd, { stdin = input, text = true }, function(result)
+    vim.schedule(function()
+      if result.code == 0 then
+        local lines = vim.split(result.stdout, '\n')
+        if lines[#lines] == '' then
+          table.remove(lines, #lines)
+        end
+        vim.api.nvim_buf_set_text(0, start_row, start_col, end_row, end_col, lines)
+      else
+        local cmd_str = table.concat(cmd, ' ')
+        vim.api.nvim_echo({ { string.format("Error running %q: %s", cmd_str, result.stderr) } }, false,
+          { err = true })
+      end
+    end)
+  end)
+end
+
 function M.table_concat(t1, t2)
   local result = {}
   vim.list_extend(result, t1)
