@@ -286,6 +286,12 @@ return {
         desc = "Show session picker to restore a previous session and continue"
       },
       {
+        "<leader>aR",
+        function() require("plugins.helpers.claude").telescope_search_claude_sessions() end,
+        mode = { "n", "v" },
+        desc = "Search and restore a Claude session by content"
+      },
+      {
         "]p",
         function() jump_to_prompt(vim.v.count1) end,
         mode = { "n", "v" },
