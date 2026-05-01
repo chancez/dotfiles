@@ -126,6 +126,23 @@ return {
       },
 
       hooks = {
+        on_create_session_response = function(data)
+          -- Clear the existing usage data when a new session gets created.
+          vim.t[data.tab_page_id].agentic_usage = nil
+
+          if data.response and data.response.configOptions then
+            update_model_from_config(data.tab_page_id, data.response.configOptions)
+          end
+
+          local SessionRegistry = require("agentic.session_registry")
+          SessionRegistry.get_session_for_tab_page(data.tab_page_id, function(session)
+            session:schedule_header_refresh()
+          end)
+        end,
+
+        -- TODO: need hooks for session/set_config_option and session/set_model
+        -- so we can reset the model when it's changed mid session.
+
         on_session_update = function(data)
           local needs_refresh = false
           if data.update.sessionUpdate == "usage_update" then
