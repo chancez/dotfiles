@@ -1,3 +1,79 @@
+--- Find the closest ancestor (or self) matching node_type.
+local function find_ancestor(node, node_type)
+  while node do
+    if node:type() == node_type then
+      return node
+    end
+    node = node:parent()
+  end
+end
+
+--- Find a treesitter node for a text object selection.
+--- Walks up from the cursor node looking for outer_type, then finds inner_type as a child.
+local function find_ts_textobj_node(inner_type, outer_type, inner)
+  local node = vim.treesitter.get_node()
+  if not node then return nil end
+  local target_type = inner and inner_type or outer_type
+  local target = find_ancestor(node, target_type)
+  if not target and inner then
+    local outer = find_ancestor(node, outer_type)
+    if outer then
+      for child in outer:iter_children() do
+        if child:type() == inner_type then
+          return child
+        end
+      end
+    end
+  end
+  return target
+end
+
+--- Visually select a treesitter node's range. Works in both x and o modes.
+local function select_ts_node(node)
+  local sr, sc, er, ec = node:range()
+  -- Exit visual mode if we're in it (x-mode), so we can start a fresh selection.
+  -- In operator-pending mode (o-mode), we skip this so the operator isn't cancelled.
+  local mode = vim.fn.mode()
+  if mode == 'v' or mode == 'V' or mode == '\22' then
+    vim.cmd([[execute "normal! \<Esc>"]])
+  end
+  vim.api.nvim_win_set_cursor(0, { sr + 1, sc })
+  vim.cmd('normal! v')
+  vim.api.nvim_win_set_cursor(0, { er + 1, math.max(ec - 1, 0) })
+end
+
+--- Set up buffer-local text object keymaps that select treesitter nodes.
+--- Overrides a built-in text object key (e.g. "`") for a specific filetype.
+---@param buf number Buffer handle
+---@param key string The character to override (e.g. "`")
+---@param inner_type string Treesitter node type for inner selection
+---@param outer_type string Treesitter node type for outer selection
+local function setup_ts_textobj(buf, key, inner_type, outer_type)
+  for _, mode in ipairs({ 'x', 'o' }) do
+    for _, prefix in ipairs({ 'i', 'a' }) do
+      local inner = prefix == 'i'
+      local lhs = prefix .. key
+      vim.keymap.set(mode, lhs, function()
+        local node = find_ts_textobj_node(inner_type, outer_type, inner)
+        if node then
+          select_ts_node(node)
+        else
+          local keys = vim.api.nvim_replace_termcodes(lhs, true, false, true)
+          vim.api.nvim_feedkeys(keys, 'xn', false)
+        end
+      end, { buffer = buf, desc = prefix .. key .. " (treesitter)" })
+    end
+  end
+end
+
+-- Treesitter node text object overrides per filetype.
+-- Each entry maps a key character to { inner = node_type, outer = node_type }.
+local ts_textobj_overrides = {
+  go = {
+    ['`'] = { inner = 'raw_string_literal_content', outer = 'raw_string_literal' },
+  },
+}
+
 return {
   {
     'nvim-treesitter/nvim-treesitter',
@@ -87,6 +163,18 @@ return {
         pattern = filetypes,
         callback = function() vim.treesitter.start() end,
       })
+
+      -- Set up treesitter-based text object overrides per filetype
+      for ft, overrides in pairs(ts_textobj_overrides) do
+        vim.api.nvim_create_autocmd('FileType', {
+          pattern = ft,
+          callback = function(ev)
+            for key, types in pairs(overrides) do
+              setup_ts_textobj(ev.buf, key, types.inner, types.outer)
+            end
+          end,
+        })
+      end
     end,
   },
   {
