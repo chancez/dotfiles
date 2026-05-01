@@ -1,6 +1,7 @@
 [user]
   name = Chance Zibolski
   email = chance.zibolski@gmail.com
+  signingkey = ~/.ssh/id_ed25519
 [github]
   user = chancez
 [color]
@@ -94,3 +95,5 @@
   submoduleSummary = true
 [submodule]
   recurse = true
+[gpg]
+	format = ssh
