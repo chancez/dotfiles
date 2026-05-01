@@ -4,9 +4,9 @@ idiomatic_version_file_enable_tools = ["go", "node"]
 lockfile = true
 # prefer_offline = true
 
-[settings.aqua]
+#[settings.aqua]
 # kubeswitch on ARM64 Linux was just added to the aqua registry, so it's not in the registry based into mise.
-baked_registry = false
+# baked_registry = false
 
 [tools]
 go = ["latest", "1.25", "1.24"]
