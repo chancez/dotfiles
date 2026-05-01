@@ -133,3 +133,4 @@ ci-state.json
 *.cast
 .claude/settings.local.json
 .worktrees
+.worktree
