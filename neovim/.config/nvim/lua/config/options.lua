@@ -56,6 +56,7 @@ vim.opt.foldexpr = "v:lua.vim.lsp.foldexpr()"
 vim.opt.foldtext = ''
 vim.opt.fillchars = 'fold:·'
 
+vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 
 -- Splits
 vim.opt.splitright = true
