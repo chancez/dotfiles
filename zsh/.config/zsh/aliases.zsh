@@ -97,3 +97,19 @@ printcolor() {
 
   printf "${BG_COLOR}${BACKGROUND_COLOR}${M}${FG_COLOR}${TEXT_COLOR}${M}${TEXT}${RESET}\n"
 }
+
+confirm() {
+    read "response?${1:-Are you sure?} [y/N] "
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            true
+            ;;
+        *)
+            false
+            ;;
+    esac
+}
+
+# Fix run-help for zsh
+unalias run-help
+autoload run-help
