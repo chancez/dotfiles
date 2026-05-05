@@ -15,6 +15,7 @@ require("lazy").setup("plugins", {
     patterns = {
       "chancez",
       "telescope-hierarchy",
+      "agentic.nvim",
     },
     fallback = true, -- Fallback to git when local plugin doesn't exist
   },
