@@ -79,6 +79,7 @@ return {
       filetypes = {
         yaml = true,
         gitcommit = true,
+        markdown = true,
       },
       copilot_node_command = { "mise", "exec", "node@lts", "--", "node", "--use-system-ca" },
       server = {
