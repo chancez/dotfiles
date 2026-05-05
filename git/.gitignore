@@ -134,3 +134,4 @@ ci-state.json
 .claude/settings.local.json
 .worktrees
 .worktree
+.scratch

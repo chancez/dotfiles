@@ -53,6 +53,8 @@
   ri = !git rebase -i $(git merge-base HEAD \"$(git base)\")
   # Rebase onto the base branch.
   onto = "!base=\"${1:-$(git base)}\"; git rebase --onto \"$base\" \"$(git merge-base HEAD \"$base\")\" #"
+  log1 = log -1 --oneline --
+  squash-file = "!f() { [ $# -ne 1 ] && echo 'May only specify 1 file argument' && exit 1 || COMMIT=$(git log1 $1 | tee /dev/tty | awk '{ print $1 }') && zsh -ic \"confirm 'Squash $1 into $COMMIT?'\" && (set -x; git add $1 && git commit --fixup $COMMIT) || echo \"Skipped\"; }; f"
 [push]
   default = current
   autoSetupRemote = true
