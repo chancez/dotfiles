@@ -22,9 +22,11 @@ correct_git_commands() {
   command git "${final_command[@]}"
 }
 
-git() {
+__wrap_git() {
   correct_git_commands "$@"
 }
+
+alias git='noglob __wrap_git'
 
 git-prune-branches-list() {
   git fetch --prune && (

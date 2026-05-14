@@ -9,6 +9,8 @@ alias gcv='git commit --verbose'
 alias ga='git add'
 alias rm='rm -i'
 alias grc='git rebase --continue'
+alias gcp='git cherry-pick'
+alias gcpc='git cherry-pick --continue'
 
 alias k=kubectl
 if (($+commands[kubecolor])); then
