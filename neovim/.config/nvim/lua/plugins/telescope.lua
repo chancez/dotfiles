@@ -11,6 +11,7 @@ return {
       { '<m-c>',      function() require('telescope.builtin').commands() end,                  desc = 'Telescope commands' },
       { '<leader>ff', function() require('telescope.builtin').find_files() end,                desc = 'Telescope find_files' },
       { '<leader>fg', function() require('telescope.builtin').live_grep() end,                 desc = 'Telescope live_grep' },
+      { '<leader>gs', function() require('telescope.builtin').git_status() end,                desc = 'Telescope git_status' },
       {
         '<leader>fb',
         function() require('telescope.builtin').live_grep({ search_dirs = require('config.util').get_buf_filelist() }) end,
