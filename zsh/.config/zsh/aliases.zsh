@@ -115,3 +115,6 @@ confirm() {
 # Fix run-help for zsh
 unalias run-help
 autoload run-help
+
+# Expand the next word when running commands via watch (eg: watch k == watch kubectl)
+alias watch='watch '
