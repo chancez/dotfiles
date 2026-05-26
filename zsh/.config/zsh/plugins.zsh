@@ -24,6 +24,7 @@ if ! zgenom saved; then
   zgenom compdef
 
   zgenom load $ZDOTDIR/plugins/ssh.zsh
+  zgenom load $ZDOTDIR/plugins/notifyme.zsh
 
   if (($+commands[starship])) then
     # Use sed to replace the hardcoded versioned path with the 'starship' command
