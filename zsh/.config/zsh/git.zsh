@@ -27,6 +27,7 @@ __wrap_git() {
 }
 
 alias git='noglob __wrap_git'
+compdef __wrap_git=git
 
 git-prune-branches-list() {
   git fetch --prune && (
