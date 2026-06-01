@@ -78,6 +78,7 @@ return {
       panel = { enabled = false },
       filetypes = {
         yaml = true,
+        ["yaml.helm-values"] = true,
         gitcommit = true,
         markdown = true,
       },
