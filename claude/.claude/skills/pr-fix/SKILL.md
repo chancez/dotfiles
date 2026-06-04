@@ -1,14 +1,14 @@
 ---
 name: pr-fix
 description: Address issues raised in pull request comments and code reviews. Use when the user wants to fix or resolve feedback from PR reviewers, including inline code review comments and general PR comments.
-allowed-tools: Bash(gh pr *), Bash(gh api *), Bash(git *), Read, Edit, Write, Grep, Glob, Agent
+allowed-tools: Bash(gh pr *), Bash(gh api *), Bash(git *), Bash(xargs -I NUM gh api *), Read, Edit, Write, Grep, Glob, Agent
 ---
 
 ## Pull request context
 
 - PR metadata: !`gh pr view --json number,title,body,headRefName,baseRefName`
 - PR review comments: !`gh pr view --json number -q .number | xargs -I NUM gh api "repos/{owner}/{repo}/pulls/NUM/comments" --paginate --template '{{range .}}---{{"\n"}}File: {{.path}}:{{if .line}}{{.line}}{{else}}{{.original_line}}{{end}}{{"\n"}}Author: {{.user.login}}{{"\n"}}Status: {{if .subject_type}}{{.subject_type}}{{else}}comment{{end}}{{"\n"}}Comment: {{.body}}{{"\n"}}{{end}}'`
-- Unresolved review threads: !`gh pr view --json number -q .number | xargs -I NUM gh api graphql -f query='{ repository(owner: "{owner}", name: "{repo}") { pullRequest(number: NUM) { reviewThreads(first: 100) { nodes { isResolved isOutdated path line comments(first: 20) { nodes { author { login } body createdAt } } } } } } }' --template '{{range .data.repository.pullRequest.reviewThreads.nodes}}{{if not .isResolved}}---{{"\n"}}File: {{.path}}:{{.line}}{{"\n"}}Outdated: {{.isOutdated}}{{"\n"}}Comments:{{"\n"}}{{range .comments.nodes}}  {{.author.login}}: {{.body}}{{"\n"}}{{end}}{{end}}{{end}}'`
+- Unresolved review threads: !`gh pr view --json number -q .number | xargs -I NUM gh api graphql -F owner='{owner}' -F repo='{repo}' -F num=NUM -f query='query($owner:String!,$repo:String!,$num:Int!){ repository(owner:$owner,name:$repo){ pullRequest(number:$num){ reviewThreads(first:100){ nodes{ isResolved isOutdated path line comments(first:20){ nodes{ author{login} body createdAt } } } } } } }' --template '{{range .data.repository.pullRequest.reviewThreads.nodes}}{{if not .isResolved}}---{{"\n"}}File: {{.path}}:{{.line}}{{"\n"}}Outdated: {{.isOutdated}}{{"\n"}}Comments:{{"\n"}}{{range .comments.nodes}}  {{.author.login}}: {{.body}}{{"\n"}}{{end}}{{end}}{{end}}'`
 - PR issue comments: !`gh pr view --comments --json comments --template '{{range .comments}}---{{"\n"}}Author: {{.author.login}}{{"\n"}}Body: {{.body}}{{"\n"}}{{end}}'`
 - PR reviews: !`gh pr view --json number -q .number | xargs -I NUM gh api "repos/{owner}/{repo}/pulls/NUM/reviews" --paginate --template '{{range .}}{{if .body}}---{{"\n"}}Author: {{.user.login}}{{"\n"}}State: {{.state}}{{"\n"}}Body: {{.body}}{{"\n"}}{{end}}{{end}}'`
 - Changed files: !`gh pr diff --name-only`
