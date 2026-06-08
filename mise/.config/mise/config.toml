@@ -2,6 +2,7 @@
 experimental = true
 idiomatic_version_file_enable_tools = ["go", "node"]
 lockfile = true
+minimum_release_age = "7d"
 # prefer_offline = true
 
 #[settings.aqua]
