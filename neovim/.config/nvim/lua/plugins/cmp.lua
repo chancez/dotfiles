@@ -46,16 +46,15 @@ return {
           auto_insert = false,
         },
       },
-      trigger = {
-        show_on_blocked_trigger_characters = function(ctx)
-          if vim.bo.filetype == 'AgenticInput' then
-            return { ' ', '\n', '\t', '@', '/' }
-          end
-          return { ' ', '\n', '\t' }
-        end,
-      },
       menu = {
         auto_show = true,
+        draw = {
+          components = {
+            label_description = {
+              width = { max = 100 },
+            },
+          },
+        },
       },
       ghost_text = {
         enabled = true,
@@ -92,7 +91,55 @@ return {
       default = {
         'copilot', 'lsp', 'path', 'snippets', 'buffer',
       },
+      per_filetype = {
+        AgenticInput = { 'agentic_slash', 'agentic_at', 'copilot', 'buffer' },
+      },
       providers = {
+        agentic_slash = {
+          module = 'blink.cmp.sources.complete_func',
+          name = 'AgenticSlash',
+          enabled = function()
+            local cursor = vim.api.nvim_win_get_cursor(0)
+            if cursor[1] ~= 1 then return false end
+            local before = vim.api.nvim_get_current_line():sub(1, cursor[2])
+            return before:match('^/[^%s]*$') ~= nil
+          end,
+          opts = { complete_func = function() return "v:lua.require'agentic.acp.slash_commands'.complete_func" end },
+          transform_items = function(_, items)
+            -- labelDetails.detail is usually "/", and results in completion
+            -- entries looking like "command/ Description" and we just want
+            -- "command Description", so we remove the detail field from
+            -- labelDetails if it exists
+            for _, item in ipairs(items) do
+              if item.labelDetails then
+                item.labelDetails.detail = nil
+              end
+            end
+            return items
+          end,
+        },
+        agentic_at = {
+          module = 'blink.cmp.sources.complete_func',
+          name = 'AgenticAt',
+          enabled = function()
+            local col = vim.api.nvim_win_get_cursor(0)[2]
+            local before = vim.api.nvim_get_current_line():sub(1, col)
+            return (before:match('^@[^%s]*$') or before:match('[%s]@[^%s]*$')) ~= nil
+          end,
+          opts = { complete_func = function() return "v:lua.require'agentic.ui.file_picker'.complete_func" end },
+          transform_items = function(_, items)
+            -- labelDetails.detail is usually "@", and results in completion
+            -- entries looking like "command@ Description" and we just want
+            -- "command Description", so we remove the detail field from
+            -- labelDetails if it exists
+            for _, item in ipairs(items) do
+              if item.labelDetails then
+                item.labelDetails.detail = nil
+              end
+            end
+            return items
+          end,
+        },
         cmdline = {
           min_keyword_length = function(ctx)
             -- when typing a command, only show when the keyword is 3 characters or longer

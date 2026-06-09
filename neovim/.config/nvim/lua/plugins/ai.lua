@@ -117,6 +117,15 @@ return {
     opts = {
       -- provider = "codex-acp",
       provider = "claude-agent-acp",
+
+      slash_commands = {
+        auto_trigger = false,
+      },
+
+      file_picker = {
+        auto_trigger = false,
+      },
+
       acp_providers = {
         ["claude-agent-acp"] = {
           default_mode = "acceptEdits",
