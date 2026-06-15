@@ -399,6 +399,43 @@ local function goto_write_site(site)
   end
 end
 
+-- Definition sites under the cursor, via a synchronous LSP request so the jump
+-- happens before we report completion (the quickfix trail depends on this; the
+-- built-in vim.lsp.buf.definition is async and would let us record a stale
+-- position). A symbol can resolve to several definitions (interfaces, etc).
+local function definition_sites(bufnr)
+  local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/definition' })
+  if #clients == 0 then return {} end
+  local client = clients[1]
+  local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+  local res = client:request_sync('textDocument/definition', params, 2000, bufnr)
+  if not res or res.err or not res.result then return {} end
+
+  local result = res.result
+  -- Result may be a single Location/LocationLink or a list of them.
+  if result.uri or result.targetUri then result = { result } end
+
+  local sites, seen = {}, {}
+  for _, loc in ipairs(result) do
+    local uri = loc.uri or loc.targetUri
+    local range = loc.range or loc.targetSelectionRange or loc.targetRange
+    if uri and range then
+      local key = string.format('%s:%d:%d', uri, range.start.line, range.start.character)
+      if not seen[key] then
+        seen[key] = true
+        table.insert(sites, { uri = uri, range = range, client = client })
+      end
+    end
+  end
+  return sites
+end
+
+-- Open a location and land at its start (used for the definition fallback).
+local function goto_location(site)
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
+end
+
 -- A short, single-line description of a call site for the picker.
 local function describe_site(site)
   local path = vim.uri_to_fname(site.uri)
@@ -479,21 +516,75 @@ function M.trace_up(on_done)
     end
   end
 
-  -- Fallback: not a parameter, field, or func name -> plain go-to-definition.
-  vim.lsp.buf.definition()
-  on_done(true)
+  -- Fallback: not a parameter, field, or func name -> go-to-definition.
+  local sites = definition_sites(bufnr)
+  return resolve_sites(sites, {
+    prompt = 'Trace up to definition:',
+    empty_msg = 'trace: no definition found',
+  }, goto_location, on_done)
 end
 
--- Repeat trace_up `count` times, but stop early at any branch point or origin.
-function M.trace_up_n(count)
+-- Build a quickfix entry describing the current cursor position.
+local function qf_entry_for_cursor()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  return {
+    bufnr = vim.api.nvim_get_current_buf(),
+    lnum = pos[1],
+    col = pos[2] + 1,
+    text = vim.trim(vim.api.nvim_get_current_line()),
+  }
+end
+
+-- A comparable snapshot of the cursor location, to detect a hop that lands where
+-- it started (e.g. go-to-definition on an identifier that is already its own
+-- definition). Such a fixpoint is an origin, so the loop must stop there.
+local function cursor_location()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  return { buf = vim.api.nvim_get_current_buf(), row = pos[1], col = pos[2] }
+end
+
+local function same_location(a, b)
+  return a and b and a.buf == b.buf and a.row == b.row and a.col == b.col
+end
+
+-- Repeat trace_up up to `count` times, stopping early at any branch point or
+-- origin. opts:
+--   quickfix (boolean)  when true, record the start position and every hop into
+--                       a new quickfix list titled "Trace", opening it at the end.
+function M.trace_up_n(count, opts)
+  opts = opts or {}
   count = math.max(count or 1, 1)
+  local record = opts.quickfix == true
+
+  -- The trail: start position first, then each landing as we hop upward.
+  local entries = {}
+  if record then
+    table.insert(entries, qf_entry_for_cursor())
+  end
+
+  local function flush()
+    if not record then return end
+    vim.fn.setqflist({}, ' ', { title = 'Trace', items = entries })
+    if #entries > 1 then
+      vim.cmd('copen')
+    end
+  end
+
   local function step(remaining)
-    if remaining <= 0 then return end
+    if remaining <= 0 then return flush() end
+    local before = cursor_location()
     M.trace_up(function(moved)
-      if moved then
-        -- defer so LSP/treesitter state for the new buffer is settled
-        vim.schedule(function() step(remaining - 1) end)
+      -- A hop that reports movement but left the cursor put has reached a
+      -- fixpoint (its own definition): treat it as an origin and stop, without
+      -- recording the duplicate.
+      if not moved or same_location(before, cursor_location()) then
+        return flush()
       end
+      if record then
+        table.insert(entries, qf_entry_for_cursor())
+      end
+      -- defer so LSP/treesitter state for the new buffer is settled
+      vim.schedule(function() step(remaining - 1) end)
     end)
   end
   step(count)

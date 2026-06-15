@@ -130,3 +130,10 @@ map('x', '<C-i>', 'in', { desc = 'Select [i]nner node', remap = true })
 vim.keymap.set('n', 'gu', function()
   require('config.trace').trace_up_n(vim.v.count1)
 end, { desc = "Trace value up toward origin" })
+
+-- Trace all the way to the origin: auto-hop until an origin or a branch point,
+-- recording the path into a "Trace" quickfix list. A count caps the hops.
+vim.keymap.set('n', 'gU', function()
+  local count = vim.v.count > 0 and vim.v.count or 1000
+  require('config.trace').trace_up_n(count, { quickfix = true })
+end, { desc = "Trace value to origin (quickfix trail)" })

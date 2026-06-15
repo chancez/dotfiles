@@ -72,6 +72,12 @@ vim.api.nvim_create_user_command('TraceUp', function(cmd)
   require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1)
 end, { count = true, desc = "Trace a value one hop up toward its origin (accepts a count)" })
 
+-- Trace a value all the way to its origin, recording the path into a "Trace"
+-- quickfix list. Auto-hops until an origin or a branch point; a count caps hops.
+vim.api.nvim_create_user_command('TraceOrigin', function(cmd)
+  require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1000, { quickfix = true })
+end, { count = true, desc = "Trace a value to its origin, recording the path into a quickfix list" })
+
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()
   local start_line = vim.fn.line("'<")
