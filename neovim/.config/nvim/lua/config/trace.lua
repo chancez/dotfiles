@@ -1,17 +1,20 @@
 -- Trace a value back toward its origin, one hop "up" the call stack at a time.
 --
--- Two cases, handled by a single repeatable motion:
---   1. Cursor on a local variable use -> jump to its definition (plain LSP gtd).
---   2. Cursor on a function parameter  -> find the function's call sites and jump
---      to the matching argument expression at the chosen call site.
+-- A single repeatable motion that dispatches on what is under the cursor:
+--   * function/method declaration name -> its call sites (jump to caller; does
+--     not chain, since there is no single value to keep following)
+--   * function parameter -> the matching argument expression at each call site
+--   * struct field -> the places the field is written, landing on the source value
+--   * anything else -> plain LSP go-to-definition
 --
--- The interesting part is case 2. We:
---   * find the enclosing function declaration and the parameter index under cursor
---   * ask the LSP for incoming calls to that function (call hierarchy)
---   * for the chosen call site, use treesitter to find the Nth argument and land there
+-- The design is a hybrid: LSP answers the semantic questions (definition, who
+-- calls this, where is this referenced) and treesitter handles the syntactic
+-- landings LSP cannot express (parameter index, the Nth argument at a call site,
+-- classifying a reference as a write). See the langs table for the per-language
+-- node names; adding a language is mostly filling in another entry there.
 --
--- v1 targets Go; node names are language specific and live in `langs` below.
--- Adding a language is mostly filling in another entry there.
+-- Throughout, a hop with one destination jumps silently so it can be chained
+-- (trace_up_n), while multiple destinations prompt and stop at that branch.
 
 local M = {}
 
@@ -23,6 +26,8 @@ local langs = {
     param_decl = { parameter_declaration = true, variadic_parameter_declaration = true },
     variadic_decl = { variadic_parameter_declaration = true },
     call_expr = 'call_expression',
+    call_func_field = 'function',
+    selector_expr = 'selector_expression',
     arg_list = 'argument_list',
 
     -- Field-write tracing. We use LSP references to find every use of a field,
@@ -140,6 +145,23 @@ local function param_under_cursor(cfg)
   return nil
 end
 
+-- If the cursor is on the *name* of a function/method declaration, return that
+-- name node's start position (for call hierarchy). Returns nil otherwise.
+local function func_name_decl_under_cursor(cfg)
+  local node = vim.treesitter.get_node()
+  if not node then return nil end
+  local decl = find_ancestor(node, cfg.func_decl)
+  if not decl then return nil end
+  local name = decl:field('name')[1]
+  if not name then return nil end
+  -- Cursor must actually be on the name, not elsewhere in the signature/body.
+  if not (nodes_equal(name, node) or vim.treesitter.is_ancestor(name, node)) then
+    return nil
+  end
+  local row, col = name:start()
+  return { line = row, character = col }
+end
+
 -- Start position of the enclosing function's *name*, for call hierarchy.
 local function enclosing_func_name_pos(cfg)
   local node = find_ancestor(vim.treesitter.get_node(), cfg.func_decl)
@@ -208,7 +230,8 @@ local function jump_to_argument(cfg, index, variadic)
   return true
 end
 
--- Open a call site in the current window and land on the right argument.
+-- Open a call site in the current window. With an argument index, land on that
+-- argument; with index nil, just land on the call itself (function-name case).
 local function goto_call_site(site, index, variadic)
   local offset_encoding = site.client and site.client.offset_encoding or 'utf-16'
   vim.lsp.util.show_document(
@@ -216,6 +239,9 @@ local function goto_call_site(site, index, variadic)
     offset_encoding,
     { focus = true }
   )
+  if index == nil then
+    return
+  end
   -- show_document put us on the call; treesitter is now available on this buffer.
   local cfg = cfg_for_buf(vim.api.nvim_get_current_buf())
   if cfg then
@@ -234,18 +260,35 @@ end
 
 -- If the cursor is on a field name (a use `s.field` or the field declaration),
 -- return that treesitter node. Returns nil otherwise. Method/function names
--- reuse the field_identifier node type, so we exclude those.
+-- reuse the field_identifier node type, so we exclude those: declaration names
+-- (handled by the func-name case) and method calls like `s.method()` (which
+-- should go to the method definition, like a plain function usage).
 local function field_under_cursor(cfg)
   local node = vim.treesitter.get_node()
   if not node then return nil end
-  if cfg.field_ref[node:type()] then
-    local parent = node:parent()
-    if parent and cfg.field_ref_exclude_parent[parent:type()] then
-      return nil
-    end
-    return node
+  if not cfg.field_ref[node:type()] then return nil end
+
+  local parent = node:parent()
+  if not parent then return node end
+
+  -- A declaration name (e.g. the method name in `func (s S) method()`).
+  if cfg.field_ref_exclude_parent[parent:type()] then
+    return nil
   end
-  return nil
+
+  -- A method call `s.method()`: the field sits in a selector_expression that is
+  -- the function being called. Let it fall through to go-to-definition.
+  if parent:type() == cfg.selector_expr then
+    local call = parent:parent()
+    if call and call:type() == cfg.call_expr then
+      local fn = call:field(cfg.call_func_field)[1]
+      if fn and nodes_equal(fn, parent) then
+        return nil
+      end
+    end
+  end
+
+  return node
 end
 
 -- Convert an LSP (utf-16 by default) character offset to a byte column.
@@ -367,6 +410,26 @@ local function describe_site(site)
   return string.format('%s:%d: %s', rel, line + 1, text)
 end
 
+-- Shared "land on a site" UX: zero sites stops with a message, one site jumps
+-- silently (so chaining continues), many sites prompt (a branch point, so we
+-- stop). `go(site)` performs the jump; `empty_msg` is shown when no sites exist.
+local function resolve_sites(sites, opts, go, on_done)
+  if #sites == 0 then
+    vim.notify(opts.empty_msg, vim.log.levels.INFO)
+    return on_done(false)
+  end
+  if #sites == 1 then
+    go(sites[1])
+    return on_done(opts.chains ~= false)
+  end
+  vim.ui.select(sites, { prompt = opts.prompt, format_item = describe_site }, function(choice)
+    if choice then
+      go(choice)
+    end
+    on_done(false)
+  end)
+end
+
 -- One hop "up". Returns true if the cursor moved (so a caller can keep going),
 -- false if we stopped (origin reached, ambiguous and prompting, or error).
 -- `on_done(moved)` is called when the (possibly async) hop settles.
@@ -375,8 +438,21 @@ function M.trace_up(on_done)
   local bufnr = vim.api.nvim_get_current_buf()
   local cfg = cfg_for_buf(bufnr)
 
-  -- Case 2: cursor on a parameter -> jump to a call site argument.
   if cfg then
+    -- Cursor on a function/method declaration name -> its call sites. This is a
+    -- "jump to caller", not value tracing: we land on the call itself and there
+    -- is nothing to chain from, so it does not auto-continue.
+    local fpos = func_name_decl_under_cursor(cfg)
+    if fpos then
+      local sites = incoming_call_sites(bufnr, fpos)
+      return resolve_sites(sites, {
+        prompt = 'Trace up to call site:',
+        empty_msg = 'trace: no call sites found (origin?)',
+        chains = false,
+      }, function(site) goto_call_site(site, nil) end, on_done)
+    end
+
+    -- Cursor on a parameter -> jump to the matching call site argument.
     local index, variadic = param_under_cursor(cfg)
     if index ~= nil then
       local pos = enclosing_func_name_pos(cfg)
@@ -385,48 +461,25 @@ function M.trace_up(on_done)
         return on_done(false)
       end
       local sites = incoming_call_sites(bufnr, pos)
-      if #sites == 0 then
-        vim.notify('trace: no call sites found (origin?)', vim.log.levels.INFO)
-        return on_done(false)
-      end
-      if #sites == 1 then
-        goto_call_site(sites[1], index, variadic)
-        return on_done(true)
-      end
-      -- Ambiguous: let the human pick. This is a branch point, so we stop here.
-      vim.ui.select(sites, { prompt = 'Trace up to call site:', format_item = describe_site }, function(choice)
-        if choice then
-          goto_call_site(choice, index, variadic)
-        end
-        on_done(false)
-      end)
-      return
+      return resolve_sites(sites, {
+        prompt = 'Trace up to call site:',
+        empty_msg = 'trace: no call sites found (origin?)',
+      }, function(site) goto_call_site(site, index, variadic) end, on_done)
     end
 
-    -- Case 2b: cursor on a struct field -> jump to where it is written.
+    -- Cursor on a struct field -> jump to where it is written.
     local field = field_under_cursor(cfg)
     if field then
       local row, col = field:start()
       local sites = field_write_sites(bufnr, { line = row, character = col })
-      if #sites == 0 then
-        vim.notify('trace: no writes to this field found', vim.log.levels.INFO)
-        return on_done(false)
-      end
-      if #sites == 1 then
-        goto_write_site(sites[1])
-        return on_done(true)
-      end
-      vim.ui.select(sites, { prompt = 'Trace up to field write:', format_item = describe_site }, function(choice)
-        if choice then
-          goto_write_site(choice)
-        end
-        on_done(false)
-      end)
-      return
+      return resolve_sites(sites, {
+        prompt = 'Trace up to field write:',
+        empty_msg = 'trace: no writes to this field found',
+      }, goto_write_site, on_done)
     end
   end
 
-  -- Case 1: not a parameter or field -> plain go-to-definition.
+  -- Fallback: not a parameter, field, or func name -> plain go-to-definition.
   vim.lsp.buf.definition()
   on_done(true)
 end
