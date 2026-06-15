@@ -78,6 +78,14 @@ vim.api.nvim_create_user_command('TraceOrigin', function(cmd)
   require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1000, { quickfix = true })
 end, { count = true, desc = "Trace a value to its origin, recording the path into a quickfix list" })
 
+-- Build the full provenance tree (all sources, all branches, bounded) from the
+-- cursor and render it into a "Trace Tree" quickfix list. A count caps depth.
+vim.api.nvim_create_user_command('TraceTree', function(cmd)
+  local opts = {}
+  if cmd.count > 0 then opts.max_depth = cmd.count end
+  require('config.trace').trace_tree(opts)
+end, { count = true, desc = "Build the full provenance tree into a quickfix list" })
+
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()
   local start_line = vim.fn.line("'<")

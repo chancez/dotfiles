@@ -137,3 +137,12 @@ vim.keymap.set('n', 'gU', function()
   local count = vim.v.count > 0 and vim.v.count or 1000
   require('config.trace').trace_up_n(count, { quickfix = true })
 end, { desc = "Trace value to origin (quickfix trail)" })
+
+-- Build the full provenance tree (all sources, all branches) into a "Trace
+-- Tree" quickfix list. A count caps the depth. (gt/gT are taken by tabs; gz is
+-- free and keeps the trace family on the g-prefix.)
+vim.keymap.set('n', 'gz', function()
+  local opts = {}
+  if vim.v.count > 0 then opts.max_depth = vim.v.count end
+  require('config.trace').trace_tree(opts)
+end, { desc = "Trace value provenance tree (quickfix)" })

@@ -136,11 +136,18 @@ local function child_index_containing(parent, node)
   return nil
 end
 
+-- Convert an LSP (utf-16 by default) character offset to a byte column.
+local function byte_col(bufnr, row, character, encoding)
+  local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+  if not line then return character end
+  local ok, col = pcall(vim.str_byteindex, line, encoding or 'utf-16', character, false)
+  return ok and col or character
+end
+
 -- If the cursor sits on a parameter in a function signature, return its flat
 -- index (0-based, counting individual names) and whether it is variadic.
 -- Returns nil if the cursor is not on a parameter.
-local function param_under_cursor(cfg)
-  local node = vim.treesitter.get_node()
+local function param_under_cursor(cfg, node)
   if not node then return nil end
 
   local pdecl = find_ancestor(node, cfg.param_decl)
@@ -184,8 +191,7 @@ end
 
 -- If the cursor is on the *name* of a function/method declaration, return that
 -- name node's start position (for call hierarchy). Returns nil otherwise.
-local function func_name_decl_under_cursor(cfg)
-  local node = vim.treesitter.get_node()
+local function func_name_decl_under_cursor(cfg, node)
   if not node then return nil end
   local decl = find_ancestor(node, cfg.func_decl)
   if not decl then return nil end
@@ -200,8 +206,8 @@ local function func_name_decl_under_cursor(cfg)
 end
 
 -- Start position of the enclosing function's *name*, for call hierarchy.
-local function enclosing_func_name_pos(cfg)
-  local node = find_ancestor(vim.treesitter.get_node(), cfg.func_decl)
+local function enclosing_func_name_pos(cfg, node)
+  node = find_ancestor(node, cfg.func_decl)
   if not node then return nil end
   local name = node:field('name')[1]
   if not name then return nil end -- anonymous func literal: no call hierarchy
@@ -239,12 +245,25 @@ end
 -- Given a freshly-focused buffer and an LSP range for a call, move the cursor
 -- onto the `index`-th argument (0-based). Variadic params land on the first
 -- variadic argument. Returns true on success.
-local function jump_to_argument(cfg, index, variadic)
-  local node = vim.treesitter.get_node()
-  local call = find_ancestor(node, { [cfg.call_expr] = true })
-  if not call then return false end
+-- Compute the 0-based { row, col } landing for argument `index` of the call at
+-- `site` (an LSP location). Returns nil to mean "land on the call itself"
+-- (function-name case, or no matching argument). Loads the buffer but does not
+-- move the cursor, so it can be used while merely building data.
+local function argument_land(site, index, variadic)
+  if index == nil then return nil end
+  local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
+  vim.fn.bufload(b)
+  local cfg = cfg_for_buf(b)
+  if not cfg then return nil end
+
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  local row = site.range.start.line
+  local col = byte_col(b, row, site.range.start.character, enc)
+  local node = vim.treesitter.get_node({ bufnr = b, pos = { row, col } })
+  local call = node and find_ancestor(node, { [cfg.call_expr] = true })
+  if not call then return nil end
   local args = call:field('arguments')[1]
-  if not args or args:type() ~= cfg.arg_list then return false end
+  if not args or args:type() ~= cfg.arg_list then return nil end
 
   local named = {}
   for child in args:iter_children() do
@@ -257,32 +276,19 @@ local function jump_to_argument(cfg, index, variadic)
   if not target and variadic and #named > 0 then
     target = named[#named]
   end
-  if not target then
-    -- No matching arg (e.g. variadic with zero args); leave cursor on the call.
-    return true
-  end
+  if not target then return nil end
 
-  local row, col = target:start()
-  vim.api.nvim_win_set_cursor(0, { row + 1, col })
-  return true
+  local r, c = target:start()
+  return { row = r, col = c }
 end
 
--- Open a call site in the current window. With an argument index, land on that
--- argument; with index nil, just land on the call itself (function-name case).
-local function goto_call_site(site, index, variadic)
-  local offset_encoding = site.client and site.client.offset_encoding or 'utf-16'
-  vim.lsp.util.show_document(
-    { uri = site.uri, range = site.range },
-    offset_encoding,
-    { focus = true }
-  )
-  if index == nil then
-    return
-  end
-  -- show_document put us on the call; treesitter is now available on this buffer.
-  local cfg = cfg_for_buf(vim.api.nvim_get_current_buf())
-  if cfg then
-    jump_to_argument(cfg, index, variadic)
+-- Open a site in the current window and land on `site.land` (0-based) if set,
+-- else at the site's range start. The single jump primitive for all cases.
+local function goto_site(site)
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
+  if site.land then
+    vim.api.nvim_win_set_cursor(0, { site.land.row + 1, site.land.col })
   end
 end
 
@@ -300,8 +306,7 @@ end
 -- reuse the field_identifier node type, so we exclude those: declaration names
 -- (handled by the func-name case) and method calls like `s.method()` (which
 -- should go to the method definition, like a plain function usage).
-local function field_under_cursor(cfg)
-  local node = vim.treesitter.get_node()
+local function field_under_cursor(cfg, node)
   if not node then return nil end
   if not cfg.field_ref[node:type()] then return nil end
 
@@ -326,14 +331,6 @@ local function field_under_cursor(cfg)
   end
 
   return node
-end
-
--- Convert an LSP (utf-16 by default) character offset to a byte column.
-local function byte_col(bufnr, row, character, encoding)
-  local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-  if not line then return character end
-  local ok, col = pcall(vim.str_byteindex, line, encoding or 'utf-16', character, false)
-  return ok and col or character
 end
 
 -- Given the treesitter node at a field reference, decide whether it is a write.
@@ -427,16 +424,6 @@ local function field_write_sites(bufnr, pos)
   return sites
 end
 
--- Open a site and land on its `land` position (the source value): used for
--- field writes and for values followed through a declaration.
-local function goto_landing_site(site)
-  local enc = site.client and site.client.offset_encoding or 'utf-16'
-  vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
-  if site.land then
-    vim.api.nvim_win_set_cursor(0, { site.land.row + 1, site.land.col })
-  end
-end
-
 -- Definition sites for the symbol at (row, col) (0-based, col in bytes) in
 -- `bufnr`, via a synchronous LSP request so the jump happens before we report
 -- completion (the quickfix trail depends on this; the built-in async
@@ -480,12 +467,6 @@ end
 local function definition_sites(bufnr)
   local pos = vim.api.nvim_win_get_cursor(0)
   return lsp_definition_at(bufnr, pos[1] - 1, pos[2])
-end
-
--- Open a location and land at its start (used for the definition fallback).
-local function goto_location(site)
-  local enc = site.client and site.client.offset_encoding or 'utf-16'
-  vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
 end
 
 -- ----------------------------------------------------------------------------
@@ -576,8 +557,7 @@ end
 -- If the cursor is on the name being declared in a `:=` or `var` declaration,
 -- return { value, result_index } describing where that name's value comes from.
 -- Returns nil otherwise.
-local function var_decl_value_under_cursor(cfg)
-  local node = vim.treesitter.get_node()
+local function var_decl_value_under_cursor(cfg, node)
   return bound_value_for(cfg, node)
 end
 
@@ -739,32 +719,99 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   return sites
 end
 
--- A short, single-line description of a call site for the picker.
+-- A short, single-line description of a site for a picker.
 local function describe_site(site)
   local path = vim.uri_to_fname(site.uri)
   local rel = vim.fn.fnamemodify(path, ':~:.')
-  local line = site.range.start.line
+  local line = (site.land and site.land.row) or site.range.start.line
   local bufnr = vim.fn.bufadd(path)
   vim.fn.bufload(bufnr)
   local text = (vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ''):gsub('^%s+', '')
   return string.format('%s:%d: %s', rel, line + 1, text)
 end
 
+-- ----------------------------------------------------------------------------
+-- sources_at: the non-jumping core.
+--
+-- Given a location, return the list of "up" sources WITHOUT moving the cursor.
+-- Each source is a normalized site: { uri, range, client, land, kind, chains }
+-- where `land` (0-based {row,col}) is the precise spot to land on. This is the
+-- shared engine for both the interactive single hop (trace_up) and the tree
+-- builder. Returns { sites = <list>, empty_msg = <string for 0 results> }.
+-- ----------------------------------------------------------------------------
+local function sources_at(bufnr, row, col)
+  local cfg = cfg_for_buf(bufnr)
+  local node = cfg and vim.treesitter.get_node({ bufnr = bufnr, pos = { row, col } })
+
+  if cfg and node then
+    -- Function/method declaration name -> its call sites. A "jump to caller",
+    -- not value tracing: lands on the call, nothing to chain from.
+    local fpos = func_name_decl_under_cursor(cfg, node)
+    if fpos then
+      local sites = incoming_call_sites(bufnr, fpos)
+      for _, s in ipairs(sites) do
+        s.kind = 'call-site'
+        s.chains = false
+      end
+      return { sites = sites, empty_msg = 'trace: no call sites found (origin?)' }
+    end
+
+    -- Parameter -> the matching argument at each call site.
+    local index, variadic = param_under_cursor(cfg, node)
+    if index ~= nil then
+      local pos = enclosing_func_name_pos(cfg, node)
+      if not pos then
+        return { sites = {}, empty_msg = 'trace: cannot resolve enclosing function' }
+      end
+      local sites = incoming_call_sites(bufnr, pos)
+      for _, s in ipairs(sites) do
+        s.kind = 'argument'
+        s.land = argument_land(s, index, variadic)
+      end
+      return { sites = sites, empty_msg = 'trace: no call sites found (origin?)' }
+    end
+
+    -- Struct field -> where it is written.
+    local field = field_under_cursor(cfg, node)
+    if field then
+      local frow, fcol = field:start()
+      local sites = field_write_sites(bufnr, { line = frow, character = fcol })
+      for _, s in ipairs(sites) do s.kind = 'field-write' end
+      return { sites = sites, empty_msg = 'trace: no writes to this field found' }
+    end
+
+    -- Name declared by `:=`/`var` -> follow its value into the callee's return.
+    local decl = var_decl_value_under_cursor(cfg, node)
+    if decl and decl.value then
+      local sites = value_sites(cfg, bufnr, decl.value, decl.result_index)
+      for _, s in ipairs(sites) do s.kind = 'value' end
+      return { sites = sites, empty_msg = 'trace: no value source found' }
+    end
+  end
+
+  -- Fallback: go-to-definition.
+  local sites = lsp_definition_at(bufnr, row, col)
+  for _, s in ipairs(sites) do s.kind = 'definition' end
+  return { sites = sites, empty_msg = 'trace: no definition found' }
+end
+
 -- Shared "land on a site" UX: zero sites stops with a message, one site jumps
 -- silently (so chaining continues), many sites prompt (a branch point, so we
--- stop). `go(site)` performs the jump; `empty_msg` is shown when no sites exist.
-local function resolve_sites(sites, opts, go, on_done)
+-- stop). `opts.select` overrides the picker (defaults to vim.ui.select).
+local function resolve_sites(result, opts, on_done)
+  local sites = result.sites
   if #sites == 0 then
-    vim.notify(opts.empty_msg, vim.log.levels.INFO)
+    vim.notify(result.empty_msg, vim.log.levels.INFO)
     return on_done(false)
   end
   if #sites == 1 then
-    go(sites[1])
-    return on_done(opts.chains ~= false)
+    goto_site(sites[1])
+    return on_done(sites[1].chains ~= false)
   end
-  vim.ui.select(sites, { prompt = opts.prompt, format_item = describe_site }, function(choice)
+  local select = opts.select or vim.ui.select
+  select(sites, { prompt = 'Trace up:', format_item = describe_site }, function(choice)
     if choice then
-      go(choice)
+      goto_site(choice)
     end
     on_done(false)
   end)
@@ -772,71 +819,14 @@ end
 
 -- One hop "up". Returns true if the cursor moved (so a caller can keep going),
 -- false if we stopped (origin reached, ambiguous and prompting, or error).
--- `on_done(moved)` is called when the (possibly async) hop settles.
-function M.trace_up(on_done)
+-- `on_done(moved)` is called when the hop settles. opts.select overrides picker.
+function M.trace_up(on_done, opts)
   on_done = on_done or function() end
+  opts = opts or {}
   local bufnr = vim.api.nvim_get_current_buf()
-  local cfg = cfg_for_buf(bufnr)
-
-  if cfg then
-    -- Cursor on a function/method declaration name -> its call sites. This is a
-    -- "jump to caller", not value tracing: we land on the call itself and there
-    -- is nothing to chain from, so it does not auto-continue.
-    local fpos = func_name_decl_under_cursor(cfg)
-    if fpos then
-      local sites = incoming_call_sites(bufnr, fpos)
-      return resolve_sites(sites, {
-        prompt = 'Trace up to call site:',
-        empty_msg = 'trace: no call sites found (origin?)',
-        chains = false,
-      }, function(site) goto_call_site(site, nil) end, on_done)
-    end
-
-    -- Cursor on a parameter -> jump to the matching call site argument.
-    local index, variadic = param_under_cursor(cfg)
-    if index ~= nil then
-      local pos = enclosing_func_name_pos(cfg)
-      if not pos then
-        vim.notify('trace: cannot resolve enclosing function', vim.log.levels.WARN)
-        return on_done(false)
-      end
-      local sites = incoming_call_sites(bufnr, pos)
-      return resolve_sites(sites, {
-        prompt = 'Trace up to call site:',
-        empty_msg = 'trace: no call sites found (origin?)',
-      }, function(site) goto_call_site(site, index, variadic) end, on_done)
-    end
-
-    -- Cursor on a struct field -> jump to where it is written.
-    local field = field_under_cursor(cfg)
-    if field then
-      local row, col = field:start()
-      local sites = field_write_sites(bufnr, { line = row, character = col })
-      return resolve_sites(sites, {
-        prompt = 'Trace up to field write:',
-        empty_msg = 'trace: no writes to this field found',
-      }, goto_landing_site, on_done)
-    end
-
-    -- Cursor on a name declared by `:=` or `var` -> follow its value. A call
-    -- value descends into the callee's return (args emerge from the param case);
-    -- any other value is landed on directly to continue the trace.
-    local decl = var_decl_value_under_cursor(cfg)
-    if decl and decl.value then
-      local sites = value_sites(cfg, bufnr, decl.value, decl.result_index)
-      return resolve_sites(sites, {
-        prompt = 'Trace up to value source:',
-        empty_msg = 'trace: no value source found',
-      }, goto_landing_site, on_done)
-    end
-  end
-
-  -- Fallback: not a parameter, field, or func name -> go-to-definition.
-  local sites = definition_sites(bufnr)
-  return resolve_sites(sites, {
-    prompt = 'Trace up to definition:',
-    empty_msg = 'trace: no definition found',
-  }, goto_location, on_done)
+  local pos = vim.api.nvim_win_get_cursor(0)
+  local result = sources_at(bufnr, pos[1] - 1, pos[2])
+  return resolve_sites(result, opts, on_done)
 end
 
 -- Build a quickfix entry describing the current cursor position.
@@ -903,6 +893,127 @@ function M.trace_up_n(count, opts)
     end)
   end
   step(count)
+end
+
+-- ----------------------------------------------------------------------------
+-- Provenance tree: all-auto, bounded expansion of sources_at.
+--
+-- Unlike trace_up_n (one chosen path), this explores EVERY source at each step,
+-- producing a tree of provenance. Because field tracing is flow-insensitive and
+-- can fan out widely, expansion is bounded (depth, total nodes) and cycles are
+-- broken by a visited-set keyed on location. Truncation is recorded on the node
+-- (truncated = 'depth' | 'nodes' | 'cycle') and surfaced in the render, never
+-- silent. All LSP calls in sources_at are synchronous, so this runs to
+-- completion in one go.
+-- ----------------------------------------------------------------------------
+
+-- The land location of a site (0-based row/col), defaulting to its range start.
+local function site_land(site)
+  if site.land then return site.land.row, site.land.col end
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
+  vim.fn.bufload(b)
+  return site.range.start.line, byte_col(b, site.range.start.line, site.range.start.character, enc)
+end
+
+-- A one-line label for a tree node: "file:line: <trimmed source>".
+local function node_label(uri, row)
+  local b = vim.fn.bufadd(vim.uri_to_fname(uri))
+  vim.fn.bufload(b)
+  local rel = vim.fn.fnamemodify(vim.uri_to_fname(uri), ':~:.')
+  local text = (vim.api.nvim_buf_get_lines(b, row, row + 1, false)[1] or ''):gsub('^%s+', '')
+  return string.format('%s:%d: %s', rel, row + 1, text), b
+end
+
+-- Build a provenance tree rooted at (bufnr, row, col). opts:
+--   max_depth (default 15), max_nodes (default 200).
+-- Returns the root node: { uri, row, col, kind, label, children = {...},
+-- truncated = nil|'depth'|'nodes'|'cycle' }.
+function M.build_tree(bufnr, row, col, opts)
+  opts = opts or {}
+  local max_depth = opts.max_depth or 15
+  local max_nodes = opts.max_nodes or 200
+  local visited = {}
+  local count = 0
+
+  local function loc_key(uri, r, c) return string.format('%s:%d:%d', uri, r, c) end
+
+  local function make_node(uri, b, r, c, kind)
+    local label = node_label(uri, r)
+    return { uri = uri, bufnr = b, row = r, col = c, kind = kind, label = label, children = {} }
+  end
+
+  local function expand(node, depth)
+    if depth >= max_depth then node.truncated = 'depth'; return end
+    local key = loc_key(node.uri, node.row, node.col)
+    if visited[key] then node.truncated = 'cycle'; return end
+    visited[key] = true
+
+    local result = sources_at(node.bufnr, node.row, node.col)
+    for _, site in ipairs(result.sites) do
+      if count >= max_nodes then node.truncated = 'nodes'; break end
+      local r, c = site_land(site)
+      local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
+      vim.fn.bufload(b)
+      -- A site landing on its own location is a fixpoint origin: include it as a
+      -- leaf but do not expand (mirrors the linear loop's no-progress guard).
+      local child = make_node(site.uri, b, r, c, site.kind)
+      count = count + 1
+      table.insert(node.children, child)
+      if not (b == node.bufnr and r == node.row and c == node.col) then
+        expand(child, depth + 1)
+      end
+    end
+  end
+
+  local root_b = bufnr
+  local root = make_node(vim.uri_from_bufnr(bufnr), root_b, row, col, 'root')
+  expand(root, 0)
+  return root
+end
+
+-- Flatten a tree (pre-order DFS) into quickfix entries with indentation +
+-- box-drawing prefixes. quickfix is structurally flat, so the tree is rendered
+-- as static text; each entry still jumps to real code via bufnr/lnum/col.
+local function flatten_tree(node, prefix, is_last, is_root, out)
+  local branch, child_prefix
+  if is_root then
+    branch, child_prefix = '', ''
+  else
+    branch = prefix .. (is_last and '└─ ' or '├─ ')
+    child_prefix = prefix .. (is_last and '   ' or '│  ')
+  end
+
+  local suffix = ''
+  if node.truncated == 'depth' then suffix = '  [max depth]'
+  elseif node.truncated == 'nodes' then suffix = '  [max nodes]'
+  elseif node.truncated == 'cycle' then suffix = '  [cycle]'
+  end
+
+  table.insert(out, {
+    bufnr = node.bufnr,
+    lnum = node.row + 1,
+    col = node.col + 1,
+    text = branch .. node.label .. suffix,
+  })
+
+  for i, child in ipairs(node.children) do
+    flatten_tree(child, child_prefix, i == #node.children, false, out)
+  end
+end
+
+-- Build the provenance tree from the cursor and render it into a "Trace Tree"
+-- quickfix list. opts is passed to build_tree (max_depth, max_nodes).
+function M.trace_tree(opts)
+  opts = opts or {}
+  local bufnr = vim.api.nvim_get_current_buf()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  local root = M.build_tree(bufnr, pos[1] - 1, pos[2], opts)
+
+  local entries = {}
+  flatten_tree(root, '', true, true, entries)
+  vim.fn.setqflist({}, ' ', { title = 'Trace Tree', items = entries })
+  vim.cmd('copen')
 end
 
 return M
