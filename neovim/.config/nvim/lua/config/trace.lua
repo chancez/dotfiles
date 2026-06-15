@@ -540,11 +540,10 @@ local function tuple_value(n_targets, value_list, idx)
   return { value = vals[idx] or vals[1], result_index = 1 }
 end
 
--- If the cursor is on the name being declared in a `:=` or `var` declaration,
--- return { value, result_index } describing where that name's value comes from.
+-- If `node` is a name declared by a `:=` or `var` declaration, return
+-- { value, result_index } describing where that name's value comes from.
 -- Returns nil otherwise.
-local function var_decl_value_under_cursor(cfg)
-  local node = vim.treesitter.get_node()
+local function bound_value_for(cfg, node)
   if not node or node:type() ~= 'identifier' then return nil end
 
   local svd = find_ancestor(node, { [cfg.short_var_decl] = true })
@@ -572,6 +571,14 @@ local function var_decl_value_under_cursor(cfg)
     end
   end
   return nil
+end
+
+-- If the cursor is on the name being declared in a `:=` or `var` declaration,
+-- return { value, result_index } describing where that name's value comes from.
+-- Returns nil otherwise.
+local function var_decl_value_under_cursor(cfg)
+  local node = vim.treesitter.get_node()
+  return bound_value_for(cfg, node)
 end
 
 -- Return expressions for tuple position `result_index` across all return
@@ -681,9 +688,26 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
       local drow = def.range.start.line
       local dcol = byte_col(b, drow, def.range.start.character, enc)
       local dnode = vim.treesitter.get_node({ bufnr = b, pos = { drow, dcol } })
-      local decl = dnode and find_ancestor(dnode, dcfg.func_decl)
-      if decl then
-        for _, ret in ipairs(return_expressions(dcfg, decl, result_index)) do
+      -- The callee is either a named func/method declaration, or a variable
+      -- bound to a function literal (a closure). Both have a body to descend.
+      -- The definition points at the name being defined, so require that the
+      -- name *is* the func decl's name (not merely nested inside some function,
+      -- which would wrongly match the enclosing func of a closure assignment).
+      local func
+      if dnode then
+        local decl = find_ancestor(dnode, dcfg.func_decl)
+        local decl_name = decl and decl:field('name')[1]
+        if decl_name and (nodes_equal(decl_name, dnode) or vim.treesitter.is_ancestor(decl_name, dnode)) then
+          func = decl
+        else
+          local bound = bound_value_for(dcfg, dnode)
+          if bound and bound.value and bound.value:type() == dcfg.func_literal then
+            func = bound.value
+          end
+        end
+      end
+      if func then
+        for _, ret in ipairs(return_expressions(dcfg, func, result_index)) do
           local sr, sc = ret.node:start()
           local key = string.format('%d:%d:%d', b, sr, sc)
           if not visited[key] then
