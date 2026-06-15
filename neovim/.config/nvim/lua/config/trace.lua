@@ -28,7 +28,20 @@ local langs = {
     call_expr = 'call_expression',
     call_func_field = 'function',
     selector_expr = 'selector_expression',
+    selector_field = 'field',
     arg_list = 'argument_list',
+
+    -- Following a value back through a local declaration into the callee's
+    -- return (the "trace into the function, args emerge from the param logic"
+    -- step). A declared name's value comes from the matching value expression;
+    -- when that value is a call, we descend into the callee's return.
+    short_var_decl = 'short_var_declaration',  -- a, b := x, y    (left/right)
+    var_spec = 'var_spec',                     -- var a, b = x, y (name.../value)
+    var_spec_name = 'name',
+    var_spec_value = 'value',
+    return_stmt = 'return_statement',
+    func_literal = 'func_literal',             -- pruned when scanning returns
+    func_body = 'body',
 
     -- Field-write tracing. We use LSP references to find every use of a field,
     -- then treesitter (these node names) to keep only the writes.
@@ -92,6 +105,20 @@ local function index_in_named(node, target)
     if child:named() then
       i = i + 1
       if nodes_equal(child, target) then
+        return i
+      end
+    end
+  end
+  return nil
+end
+
+-- 1-based index of the named child of `parent` that is, or contains, `node`.
+local function child_index_containing(parent, node)
+  local i = 0
+  for child in parent:iter_children() do
+    if child:named() then
+      i = i + 1
+      if nodes_equal(child, node) or vim.treesitter.is_ancestor(child, node) then
         return i
       end
     end
@@ -390,8 +417,9 @@ local function field_write_sites(bufnr, pos)
   return sites
 end
 
--- Open a write site and land on the source value (or the field for `x++`).
-local function goto_write_site(site)
+-- Open a site and land on its `land` position (the source value): used for
+-- field writes and for values followed through a declaration.
+local function goto_landing_site(site)
   local enc = site.client and site.client.offset_encoding or 'utf-16'
   vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
   if site.land then
@@ -399,15 +427,24 @@ local function goto_write_site(site)
   end
 end
 
--- Definition sites under the cursor, via a synchronous LSP request so the jump
--- happens before we report completion (the quickfix trail depends on this; the
--- built-in vim.lsp.buf.definition is async and would let us record a stale
--- position). A symbol can resolve to several definitions (interfaces, etc).
-local function definition_sites(bufnr)
+-- Definition sites for the symbol at (row, col) (0-based, col in bytes) in
+-- `bufnr`, via a synchronous LSP request so the jump happens before we report
+-- completion (the quickfix trail depends on this; the built-in async
+-- vim.lsp.buf.definition would let us record a stale position). A symbol can
+-- resolve to several definitions (interfaces, etc). Used both for the cursor
+-- fallback and for descending into a callee while following a value.
+local function lsp_definition_at(bufnr, row, col)
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/definition' })
   if #clients == 0 then return {} end
   local client = clients[1]
-  local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+  local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ''
+  local character = col
+  local ok, ch = pcall(vim.str_utfindex, line, client.offset_encoding, col)
+  if ok then character = ch end
+  local params = {
+    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    position = { line = row, character = character },
+  }
   local res = client:request_sync('textDocument/definition', params, 2000, bufnr)
   if not res or res.err or not res.result then return {} end
 
@@ -430,10 +467,213 @@ local function definition_sites(bufnr)
   return sites
 end
 
+local function definition_sites(bufnr)
+  local pos = vim.api.nvim_win_get_cursor(0)
+  return lsp_definition_at(bufnr, pos[1] - 1, pos[2])
+end
+
 -- Open a location and land at its start (used for the definition fallback).
 local function goto_location(site)
   local enc = site.client and site.client.offset_encoding or 'utf-16'
   vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
+end
+
+-- ----------------------------------------------------------------------------
+-- Following a value back through a local declaration.
+--
+-- For `v := origin(a, b)` the source of v is not the arguments but the return
+-- of origin: we trace *into* the callee and land on its return expression. When
+-- that return expression is itself a parameter, the existing parameter case
+-- takes over and walks back out to this very call site's matching argument. So
+-- "which argument?" is never guessed; it falls out of the callee's dataflow.
+--
+-- Forks (multiple returns, multiple call sites, multiple definitions) all route
+-- through the same picker-and-stop UX as everything else.
+-- ----------------------------------------------------------------------------
+
+-- An LSP range (in `encoding`) for a treesitter node in `bufnr`.
+local function node_lsp_range(bufnr, node, encoding)
+  local sr, sc, er, ec = node:range()
+  local function pos(row, col)
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ''
+    local ch = col
+    local ok, c = pcall(vim.str_utfindex, line, encoding or 'utf-16', col)
+    if ok then ch = c end
+    return { line = row, character = ch }
+  end
+  return { start = pos(sr, sc), ['end'] = pos(er, ec) }
+end
+
+-- Build a landing site (same shape as field-write sites) for a node in bufnr.
+local function landing_site(bufnr, node, client)
+  local row, col = node:start()
+  local enc = client and client.offset_encoding or 'utf-16'
+  return {
+    uri = vim.uri_from_bufnr(bufnr),
+    range = node_lsp_range(bufnr, node, enc),
+    client = client,
+    land = { row = row, col = col },
+  }
+end
+
+-- Given `n_targets` assignment targets and the value expression list, return the
+-- value feeding target `idx` (1-based): { value = node, result_index = N }.
+-- Handles the multi-return case `v, err := f()` where one call feeds many names.
+local function tuple_value(n_targets, value_list, idx)
+  local vals = named_children(value_list)
+  if #vals == n_targets then
+    return { value = vals[idx], result_index = 1 }
+  elseif #vals == 1 then
+    -- One value (a call) spread across several names: keep the tuple position.
+    return { value = vals[1], result_index = idx }
+  end
+  return { value = vals[idx] or vals[1], result_index = 1 }
+end
+
+-- If the cursor is on the name being declared in a `:=` or `var` declaration,
+-- return { value, result_index } describing where that name's value comes from.
+-- Returns nil otherwise.
+local function var_decl_value_under_cursor(cfg)
+  local node = vim.treesitter.get_node()
+  if not node or node:type() ~= 'identifier' then return nil end
+
+  local svd = find_ancestor(node, { [cfg.short_var_decl] = true })
+  if svd then
+    local left = svd:field(cfg.assign_left)[1]
+    local right = svd:field(cfg.assign_right)[1]
+    if left and right then
+      local idx = child_index_containing(left, node)
+      if idx then
+        return tuple_value(#named_children(left), right, idx)
+      end
+    end
+  end
+
+  local vs = find_ancestor(node, { [cfg.var_spec] = true })
+  if vs then
+    local names = vs:field(cfg.var_spec_name)
+    local value = vs:field(cfg.var_spec_value)[1]
+    if value then
+      for i, nm in ipairs(names) do
+        if nodes_equal(nm, node) then
+          return tuple_value(#names, value, i)
+        end
+      end
+    end
+  end
+  return nil
+end
+
+-- Return expressions for tuple position `result_index` across all return
+-- statements directly in `func_node`'s body (nested function literals pruned,
+-- since their returns belong to a different scope). Each result is
+-- { node, result_index }: the expression and, if it is itself a call, the tuple
+-- position to follow within it (preserved across `return f()` passthroughs).
+local function return_expressions(cfg, func_node, result_index)
+  local body = func_node:field(cfg.func_body)[1]
+  if not body then return {} end
+  local out = {}
+  local function visit(node)
+    local t = node:type()
+    if t == cfg.func_literal then return end
+    if t == cfg.return_stmt then
+      local list
+      for child in node:iter_children() do
+        if child:named() and child:type() == cfg.expr_list then
+          list = child
+          break
+        end
+      end
+      if list then
+        local kids = named_children(list)
+        if kids[result_index] then
+          -- Distinct return expressions per result: pick this one, follow its
+          -- first result if it is a call.
+          table.insert(out, { node = kids[result_index], result_index = 1 })
+        elseif #kids == 1 then
+          -- `return f()` passing a (possibly multi-value) call straight through:
+          -- keep looking for the same tuple position inside it.
+          table.insert(out, { node = kids[1], result_index = result_index })
+        end
+      end
+      return
+    end
+    for child in node:iter_children() do
+      if child:named() then visit(child) end
+    end
+  end
+  visit(body)
+  return out
+end
+
+-- The function name node of a call (handles `pkg.Fn` / `recv.Method`).
+local function call_name_node(cfg, call)
+  local fn = call:field(cfg.call_func_field)[1]
+  if not fn then return nil end
+  if fn:type() == cfg.selector_expr then
+    return fn:field(cfg.selector_field)[1] or fn
+  end
+  return fn
+end
+
+-- Produce landing sites for following `value` (the source of a declared name).
+-- A call descends into the callee's return; if that return is itself a call we
+-- keep descending (so `v := passthrough(...)` resolves through to the real
+-- source, not the intermediate call). Anything else (identifier, literal, field
+-- access) is landed on directly so the next hop continues the trace. The
+-- visited set and depth cap guard against recursive/mutually-recursive calls.
+--
+-- A call we cannot descend into (interface method, stdlib or other body-less
+-- definition, or one with no return at this position) falls back to landing on
+-- the call expression itself. We never silently drop a branch: better to arrive
+-- at the call and let the trace continue manually than to lose it.
+local function value_sites(cfg, bufnr, value, result_index, visited, depth)
+  visited = visited or {}
+  depth = depth or 0
+
+  local client = vim.lsp.get_clients({ bufnr = bufnr })[1]
+
+  if value:type() ~= cfg.call_expr then
+    return { landing_site(bufnr, value, client) }
+  end
+  if depth > 25 then return { landing_site(bufnr, value, client) } end
+
+  local name_node = call_name_node(cfg, value)
+  if not name_node then return { landing_site(bufnr, value, client) } end
+  local fr, fc = name_node:start()
+  local defs = lsp_definition_at(bufnr, fr, fc)
+
+  local sites = {}
+  for _, def in ipairs(defs) do
+    local b = vim.fn.bufadd(vim.uri_to_fname(def.uri))
+    vim.fn.bufload(b)
+    local dcfg = cfg_for_buf(b)
+    if dcfg then
+      local enc = def.client and def.client.offset_encoding or 'utf-16'
+      local drow = def.range.start.line
+      local dcol = byte_col(b, drow, def.range.start.character, enc)
+      local dnode = vim.treesitter.get_node({ bufnr = b, pos = { drow, dcol } })
+      local decl = dnode and find_ancestor(dnode, dcfg.func_decl)
+      if decl then
+        for _, ret in ipairs(return_expressions(dcfg, decl, result_index)) do
+          local sr, sc = ret.node:start()
+          local key = string.format('%d:%d:%d', b, sr, sc)
+          if not visited[key] then
+            visited[key] = true
+            vim.list_extend(sites,
+              value_sites(dcfg, b, ret.node, ret.result_index, visited, depth + 1))
+          end
+        end
+      end
+    end
+  end
+
+  -- Could not descend (body-less definition, unresolved, or no return here):
+  -- land on the call itself rather than dropping this branch.
+  if #sites == 0 then
+    return { landing_site(bufnr, value, client) }
+  end
+  return sites
 end
 
 -- A short, single-line description of a call site for the picker.
@@ -512,7 +752,19 @@ function M.trace_up(on_done)
       return resolve_sites(sites, {
         prompt = 'Trace up to field write:',
         empty_msg = 'trace: no writes to this field found',
-      }, goto_write_site, on_done)
+      }, goto_landing_site, on_done)
+    end
+
+    -- Cursor on a name declared by `:=` or `var` -> follow its value. A call
+    -- value descends into the callee's return (args emerge from the param case);
+    -- any other value is landed on directly to continue the trace.
+    local decl = var_decl_value_under_cursor(cfg)
+    if decl and decl.value then
+      local sites = value_sites(cfg, bufnr, decl.value, decl.result_index)
+      return resolve_sites(sites, {
+        prompt = 'Trace up to value source:',
+        empty_msg = 'trace: no value source found',
+      }, goto_landing_site, on_done)
     end
   end
 
