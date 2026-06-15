@@ -86,6 +86,14 @@ vim.api.nvim_create_user_command('TraceTree', function(cmd)
   require('config.trace').trace_tree(opts)
 end, { count = true, desc = "Build the full provenance tree into a quickfix list" })
 
+-- Toggle trace debug logging (LSP timeouts/errors and projection hops, shown in
+-- :messages). With a bang, force on; otherwise toggle.
+vim.api.nvim_create_user_command('TraceDebug', function(cmd)
+  local trace = require('config.trace')
+  trace.debug = cmd.bang or not trace.debug
+  print('Trace debug ' .. (trace.debug and 'enabled' or 'disabled'))
+end, { bang = true, desc = "Toggle trace debug logging (:messages)" })
+
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()
   local start_line = vim.fn.line("'<")
@@ -148,6 +156,45 @@ vim.api.nvim_create_user_command('MasonInstallAll', function()
   mason_api.MasonInstall(packages_to_install)
   print("Finished installing LSP servers.")
 end, { desc = "" })
+
+-- Open :messages output in a scratch buffer (floating popup) for copy/paste
+vim.api.nvim_create_user_command('Messages', function()
+  local output = vim.api.nvim_exec2('messages', { output = true }).output
+  local lines = vim.split(output, '\n', { plain = true })
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].modifiable = false
+  vim.bo[buf].filetype = 'messages'
+
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - width) / 2),
+    style = 'minimal',
+    border = 'rounded',
+    title = ' :messages ',
+    title_pos = 'center',
+  })
+
+  -- Close with q or <Esc>
+  for _, key in ipairs({ 'q', '<Esc>' }) do
+    vim.keymap.set('n', key, function()
+      vim.api.nvim_win_close(win, true)
+    end, { buffer = buf, nowait = true, silent = true })
+  end
+end, { desc = "Open :messages in a floating scratch buffer for copy/paste" })
+
+-- Yank the :messages output to the clipboard
+vim.api.nvim_create_user_command('YankMessages', function()
+  local output = vim.api.nvim_exec2('messages', { output = true }).output
+  vim.fn.setreg('+', output)
+  print('Yanked :messages output')
+end, { desc = "Yank the :messages output to the clipboard" })
 
 -- Yank current file path to clipboard
 vim.api.nvim_create_user_command('YankFilePath', function()

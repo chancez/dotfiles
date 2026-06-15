@@ -22,6 +22,8 @@ local M = {}
 local langs = {
   go = {
     func_decl = { function_declaration = true, method_declaration = true },
+    method_decl = 'method_declaration',
+    receiver_field = 'receiver',  -- the parameter_list holding a method receiver
     param_list = 'parameter_list',
     param_decl = { parameter_declaration = true, variadic_parameter_declaration = true },
     variadic_decl = { variadic_parameter_declaration = true },
@@ -29,6 +31,7 @@ local langs = {
     call_func_field = 'function',
     selector_expr = 'selector_expression',
     selector_field = 'field',
+    selector_operand = 'operand',
     arg_list = 'argument_list',
 
     -- Following a value back through a local declaration into the callee's
@@ -50,6 +53,9 @@ local langs = {
     -- the next hop reaches the type definition rather than the package.
     composite_literal = 'composite_literal',
     composite_type = 'type',
+    composite_body = 'body',          -- composite_literal -> literal_value
+    literal_value = 'literal_value',  -- contains keyed_element children
+    literal_element = 'literal_element', -- wraps a keyed_element key/value
     qualified_type = 'qualified_type',
     qualified_name = 'name',
 
@@ -78,6 +84,46 @@ local langs = {
 
 local function cfg_for_buf(bufnr)
   return langs[vim.bo[bufnr].filetype]
+end
+
+-- Debug logging, toggled with M.debug. Messages are visible via :messages.
+M.debug = false
+local function dbg(...)
+  if not M.debug then return end
+  local parts = {}
+  for _, v in ipairs({ ... }) do
+    parts[#parts + 1] = type(v) == 'string' and v or vim.inspect(v)
+  end
+  vim.notify('[trace] ' .. table.concat(parts, ' '), vim.log.levels.INFO)
+end
+
+-- Inspect a synchronous LSP result, logging whether it timed out, errored, or
+-- came back empty. `where` labels the call site. Returns the result unchanged.
+local function check_lsp(where, res_or_resps, single)
+  if not M.debug then return res_or_resps end
+  if single then
+    -- client:request_sync result: { result = ..., err = ... } or nil (timeout).
+    if res_or_resps == nil then
+      dbg(where, 'TIMEOUT (nil result, gopls slow or not ready)')
+    elseif res_or_resps.err then
+      dbg(where, 'ERROR', res_or_resps.err)
+    elseif not res_or_resps.result or vim.tbl_isempty(res_or_resps.result) then
+      dbg(where, 'empty result (genuinely no answer)')
+    end
+  else
+    -- buf_request_sync result: map of client_id -> { result=..., error=... } or nil.
+    if res_or_resps == nil then
+      dbg(where, 'TIMEOUT (nil, gopls slow or not ready)')
+    else
+      local any = false
+      for _, r in pairs(res_or_resps) do
+        if r.error then dbg(where, 'ERROR', r.error) end
+        if r.result and not vim.tbl_isempty(r.result) then any = true end
+      end
+      if not any then dbg(where, 'empty result (genuinely no answer)') end
+    end
+  end
+  return res_or_resps
 end
 
 -- Walk up from `node` to the nearest ancestor whose type is a key in `types`.
@@ -136,6 +182,11 @@ local function child_index_containing(parent, node)
   return nil
 end
 
+-- The treesitter node text of a node in bufnr.
+local function node_text(bufnr, node)
+  return vim.treesitter.get_node_text(node, bufnr)
+end
+
 -- Convert an LSP (utf-16 by default) character offset to a byte column.
 local function byte_col(bufnr, row, character, encoding)
   local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
@@ -144,9 +195,66 @@ local function byte_col(bufnr, row, character, encoding)
   return ok and col or character
 end
 
+-- Load the buffer for `uri` (or a path) in the background, returning its bufnr,
+-- or nil if it can't be loaded. Guards against vim.fn.bufload errors (notably
+-- E325 swap-file collisions when the file is open elsewhere): a single bad
+-- buffer must not abort the whole trace. Swap is disabled for the load.
+local function load_buf(uri)
+  local path = uri:match('^%w+://') and vim.uri_to_fname(uri) or uri
+  local b = vim.fn.bufadd(path)
+  if not vim.api.nvim_buf_is_loaded(b) then
+    local saved = vim.o.shortmess
+    vim.bo[b].swapfile = false
+    local ok = pcall(vim.fn.bufload, b)
+    vim.o.shortmess = saved
+    if not ok then
+      dbg('load_buf failed (swap/other) for', path)
+      return nil
+    end
+  end
+  return b
+end
+
+-- Treesitter node at (row, col) (0-based) in `bufnr`. A buffer loaded in the
+-- background (vim.fn.bufload) has its lines but no parsed treesitter tree, so a
+-- plain vim.treesitter.get_node returns nil for it. We force a parse first, so
+-- cross-file lookups (call sites, definitions in other files) work without the
+-- buffer ever being displayed.
+local function node_at(bufnr, row, col)
+  local ft = vim.bo[bufnr].filetype
+  local lang = vim.treesitter.language.get_lang(ft) or ft
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, lang)
+  if not ok or not parser then return nil end
+  parser:parse({ row, row + 1 })
+  return vim.treesitter.get_node({ bufnr = bufnr, pos = { row, col } })
+end
+
+-- True if `plist` (a parameter_list) is a method's receiver list, not its
+-- regular parameters. A receiver is NOT argument 0 at call sites: it's the
+-- selector operand (`x` in `x.Method(...)`), so it must be handled separately.
+local function is_receiver_list(cfg, plist)
+  local parent = plist:parent()
+  if not parent or parent:type() ~= cfg.method_decl then return false end
+  local recv = parent:field(cfg.receiver_field)[1]
+  return recv and nodes_equal(recv, plist) or false
+end
+
+-- If `node` is a method receiver, return its declaration node, else nil.
+local function receiver_under_cursor(cfg, node)
+  if not node then return nil end
+  local pdecl = find_ancestor(node, cfg.param_decl)
+  if not pdecl then return nil end
+  local plist = pdecl:parent()
+  if plist and plist:type() == cfg.param_list and is_receiver_list(cfg, plist) then
+    return pdecl
+  end
+  return nil
+end
+
 -- If the cursor sits on a parameter in a function signature, return its flat
 -- index (0-based, counting individual names) and whether it is variadic.
--- Returns nil if the cursor is not on a parameter.
+-- Returns nil if the cursor is not on a parameter (or is on a method receiver,
+-- which is handled separately since it maps to the call's operand, not an arg).
 local function param_under_cursor(cfg, node)
   if not node then return nil end
 
@@ -154,6 +262,7 @@ local function param_under_cursor(cfg, node)
   if not pdecl then return nil end
   local plist = pdecl:parent()
   if not plist or plist:type() ~= cfg.param_list then return nil end
+  if is_receiver_list(cfg, plist) then return nil end
 
   -- The identifier the cursor is actually on (for multi-name params).
   local cursor_id = node
@@ -223,6 +332,7 @@ local function incoming_call_sites(bufnr, pos)
     position = pos,
   }
   local prepared = vim.lsp.buf_request_sync(bufnr, 'textDocument/prepareCallHierarchy', params, 2000)
+  check_lsp('prepareCallHierarchy', prepared, false)
   if not prepared then return {} end
 
   local sites = {}
@@ -230,6 +340,7 @@ local function incoming_call_sites(bufnr, pos)
     for _, item in ipairs(resp.result or {}) do
       local client = vim.lsp.get_client_by_id(resp.client_id or 0)
       local calls = vim.lsp.buf_request_sync(bufnr, 'callHierarchy/incomingCalls', { item = item }, 2000)
+      check_lsp('incomingCalls', calls, false)
       for _, cresp in pairs(calls or {}) do
         for _, call in ipairs(cresp.result or {}) do
           for _, range in ipairs(call.fromRanges or {}) do
@@ -251,15 +362,15 @@ end
 -- move the cursor, so it can be used while merely building data.
 local function argument_land(site, index, variadic)
   if index == nil then return nil end
-  local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
-  vim.fn.bufload(b)
+  local b = load_buf(site.uri)
+  if not b then return nil end
   local cfg = cfg_for_buf(b)
   if not cfg then return nil end
 
   local enc = site.client and site.client.offset_encoding or 'utf-16'
   local row = site.range.start.line
   local col = byte_col(b, row, site.range.start.character, enc)
-  local node = vim.treesitter.get_node({ bufnr = b, pos = { row, col } })
+  local node = node_at(b, row, col)
   local call = node and find_ancestor(node, { [cfg.call_expr] = true })
   if not call then return nil end
   local args = call:field('arguments')[1]
@@ -280,6 +391,69 @@ local function argument_land(site, index, variadic)
 
   local r, c = target:start()
   return { row = r, col = c }
+end
+
+-- Like argument_land, but returns the argument's treesitter node along with its
+-- buffer and cfg: { cfg, bufnr, node }. Used by projection to keep tracing into
+-- the argument expression. Returns nil if no matching argument.
+local function argument_node(site, index, variadic)
+  if index == nil then return nil end
+  local b = load_buf(site.uri)
+  if not b then return nil end
+  local cfg = cfg_for_buf(b)
+  if not cfg then return nil end
+
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  local row = site.range.start.line
+  local col = byte_col(b, row, site.range.start.character, enc)
+  local node = node_at(b, row, col)
+  local call = node and find_ancestor(node, { [cfg.call_expr] = true })
+  if not call then
+    dbg(string.format('      argument_node @%d:%d node=%s -> no call_expression ancestor',
+      row, col, node and node:type() or 'nil'))
+    return nil
+  end
+  local args = call:field('arguments')[1]
+  if not args or args:type() ~= cfg.arg_list then
+    dbg('      argument_node: call has no argument_list')
+    return nil
+  end
+
+  local named = {}
+  for child in args:iter_children() do
+    if child:named() then table.insert(named, child) end
+  end
+  local target = named[index + 1]
+  if not target and variadic and #named > 0 then target = named[#named] end
+  if not target then
+    dbg(string.format('      argument_node: want index %d but call has %d args (%q)',
+      index, #named, node_text(b, call):gsub('\n.*', '...')))
+    return nil
+  end
+  return { cfg = cfg, bufnr = b, node = target }
+end
+
+-- For a method call `x.Method(...)` at `site`, return the receiver operand `x`
+-- as { cfg, bufnr, node }. A method receiver maps to the call's selector
+-- operand, NOT to argument 0 -- conflating them is what sent projection chasing
+-- `ctx` into unrelated code. Returns nil if the call isn't a method call.
+local function receiver_operand_node(site)
+  local b = load_buf(site.uri)
+  if not b then return nil end
+  local cfg = cfg_for_buf(b)
+  if not cfg then return nil end
+
+  local enc = site.client and site.client.offset_encoding or 'utf-16'
+  local row = site.range.start.line
+  local col = byte_col(b, row, site.range.start.character, enc)
+  local node = node_at(b, row, col)
+  local call = node and find_ancestor(node, { [cfg.call_expr] = true })
+  if not call then return nil end
+  local fn = call:field(cfg.call_func_field)[1]
+  if not fn or fn:type() ~= cfg.selector_expr then return nil end
+  local operand = fn:field(cfg.selector_operand)[1]
+  if not operand then return nil end
+  return { cfg = cfg, bufnr = b, node = operand }
 end
 
 -- Open a site in the current window and land on `site.land` (0-based) if set,
@@ -385,6 +559,7 @@ local function field_write_sites(bufnr, pos)
     context = { includeDeclaration = false },
   }
   local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, 2000)
+  check_lsp('references (field-write)', resps, false)
   if not resps then return {} end
 
   local sites = {}
@@ -399,13 +574,12 @@ local function field_write_sites(bufnr, pos)
       if not seen[key] then
         seen[key] = true
 
-        local b = vim.fn.bufadd(vim.uri_to_fname(uri))
-        vim.fn.bufload(b)
-        local cfg = cfg_for_buf(b)
+        local b = load_buf(uri)
+        local cfg = b and cfg_for_buf(b)
         if cfg then
           local row = range.start.line
           local col = byte_col(b, row, range.start.character, enc)
-          local ref = vim.treesitter.get_node({ bufnr = b, pos = { row, col } })
+          local ref = node_at(b, row, col)
           if ref then
             local value = classify_field_write(cfg, ref)
             if value ~= nil then
@@ -443,6 +617,7 @@ local function lsp_definition_at(bufnr, row, col)
     position = { line = row, character = character },
   }
   local res = client:request_sync('textDocument/definition', params, 2000, bufnr)
+  check_lsp(string.format('definition @%d:%d', row, col), res, true)
   if not res or res.err or not res.result then return {} end
 
   local result = res.result
@@ -613,6 +788,52 @@ local function call_name_node(cfg, call)
   return fn
 end
 
+-- Resolve the callee of `call` (via LSP definition) and return its return
+-- expressions for tuple position `result_index`, as a list of
+-- { cfg, bufnr, node, result_index }. Handles named funcs/methods and closures
+-- (a variable bound to a func_literal). Shared by value_sites and projection.
+local function callee_returns(cfg, bufnr, call, result_index)
+  local name_node = call_name_node(cfg, call)
+  if not name_node then return {} end
+  local fr, fc = name_node:start()
+  local defs = lsp_definition_at(bufnr, fr, fc)
+
+  local out = {}
+  for _, def in ipairs(defs) do
+    local b = load_buf(def.uri)
+    local dcfg = b and cfg_for_buf(b)
+    if dcfg then
+      local enc = def.client and def.client.offset_encoding or 'utf-16'
+      local drow = def.range.start.line
+      local dcol = byte_col(b, drow, def.range.start.character, enc)
+      local dnode = node_at(b, drow, dcol)
+      -- Named func/method declaration, or a variable bound to a func_literal.
+      -- Require the definition node to BE the func decl's name (not merely
+      -- nested inside some function, which would wrongly match a closure's
+      -- enclosing function).
+      local func
+      if dnode then
+        local decl = find_ancestor(dnode, dcfg.func_decl)
+        local decl_name = decl and decl:field('name')[1]
+        if decl_name and (nodes_equal(decl_name, dnode) or vim.treesitter.is_ancestor(decl_name, dnode)) then
+          func = decl
+        else
+          local bound = bound_value_for(dcfg, dnode)
+          if bound and bound.value and bound.value:type() == dcfg.func_literal then
+            func = bound.value
+          end
+        end
+      end
+      if func then
+        for _, ret in ipairs(return_expressions(dcfg, func, result_index)) do
+          table.insert(out, { cfg = dcfg, bufnr = b, node = ret.node, result_index = ret.result_index })
+        end
+      end
+    end
+  end
+  return out
+end
+
 -- Produce landing sites for following `value` (the source of a declared name).
 -- A call descends into the callee's return; if that return is itself a call we
 -- keep descending (so `v := passthrough(...)` resolves through to the real
@@ -664,50 +885,14 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   end
   if depth > 25 then return { landing_site(bufnr, value, client) } end
 
-  local name_node = call_name_node(cfg, value)
-  if not name_node then return { landing_site(bufnr, value, client) } end
-  local fr, fc = name_node:start()
-  local defs = lsp_definition_at(bufnr, fr, fc)
-
   local sites = {}
-  for _, def in ipairs(defs) do
-    local b = vim.fn.bufadd(vim.uri_to_fname(def.uri))
-    vim.fn.bufload(b)
-    local dcfg = cfg_for_buf(b)
-    if dcfg then
-      local enc = def.client and def.client.offset_encoding or 'utf-16'
-      local drow = def.range.start.line
-      local dcol = byte_col(b, drow, def.range.start.character, enc)
-      local dnode = vim.treesitter.get_node({ bufnr = b, pos = { drow, dcol } })
-      -- The callee is either a named func/method declaration, or a variable
-      -- bound to a function literal (a closure). Both have a body to descend.
-      -- The definition points at the name being defined, so require that the
-      -- name *is* the func decl's name (not merely nested inside some function,
-      -- which would wrongly match the enclosing func of a closure assignment).
-      local func
-      if dnode then
-        local decl = find_ancestor(dnode, dcfg.func_decl)
-        local decl_name = decl and decl:field('name')[1]
-        if decl_name and (nodes_equal(decl_name, dnode) or vim.treesitter.is_ancestor(decl_name, dnode)) then
-          func = decl
-        else
-          local bound = bound_value_for(dcfg, dnode)
-          if bound and bound.value and bound.value:type() == dcfg.func_literal then
-            func = bound.value
-          end
-        end
-      end
-      if func then
-        for _, ret in ipairs(return_expressions(dcfg, func, result_index)) do
-          local sr, sc = ret.node:start()
-          local key = string.format('%d:%d:%d', b, sr, sc)
-          if not visited[key] then
-            visited[key] = true
-            vim.list_extend(sites,
-              value_sites(dcfg, b, ret.node, ret.result_index, visited, depth + 1))
-          end
-        end
-      end
+  for _, ret in ipairs(callee_returns(cfg, bufnr, value, result_index)) do
+    local sr, sc = ret.node:start()
+    local key = string.format('%d:%d:%d', ret.bufnr, sr, sc)
+    if not visited[key] then
+      visited[key] = true
+      vim.list_extend(sites,
+        value_sites(ret.cfg, ret.bufnr, ret.node, ret.result_index, visited, depth + 1))
     end
   end
 
@@ -719,15 +904,326 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   return sites
 end
 
+-- ----------------------------------------------------------------------------
+-- Projection: precise, scope-based field tracing.
+--
+-- A projection is a list of field names (the part after the dots in `x.A.B`).
+-- We trace the *container* (which the LSP scopes to a specific variable) and
+-- *apply* the projection only when we reach a concrete struct, so we find where
+-- this value's field was set rather than every write to that field name in the
+-- codebase. Field-only: an index/map-key in the path terminates the projection.
+-- ----------------------------------------------------------------------------
+
+-- Within a composite literal node, return the value node for the keyed element
+-- whose key matches `field`, or nil if the field is not set (zero value).
+local function composite_field_value(cfg, bufnr, lit, field)
+  local body = lit:field(cfg.composite_body)[1]
+  if not body or body:type() ~= cfg.literal_value then return nil end
+  for el in body:iter_children() do
+    if el:type() == cfg.keyed_element then
+      local key = el:field(cfg.keyed_key)[1]
+      -- key is a literal_element wrapping an identifier
+      local key_text
+      if key then
+        local inner = key:named_child(0) or key
+        key_text = node_text(bufnr, inner)
+      end
+      if key_text == field then
+        local val = el:field(cfg.keyed_value)[1]
+        if val and val:type() == cfg.literal_element then
+          return val:named_child(0) or val
+        end
+        return val
+      end
+    end
+  end
+  return nil
+end
+
+-- Find writes of `.field` on the specific variable declared/named at the given
+-- definition (scope-limited via LSP references on that variable). Returns a list
+-- of value nodes assigned to `.field`, each as { cfg, bufnr, node }.
+local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
+  local params = {
+    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    position = { line = var_row, character = var_col },
+    context = { includeDeclaration = true },
+  }
+  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, 2000)
+  check_lsp(string.format('references (variable .%s @%d:%d)', field, var_row, var_col), resps, false)
+  if not resps then return {} end
+
+  local out, seen = {}, {}
+  for _, resp in pairs(resps) do
+    local client = vim.lsp.get_client_by_id(resp.client_id or 0)
+    local enc = client and client.offset_encoding or 'utf-16'
+    for _, loc in ipairs(resp.result or {}) do
+      local uri = loc.uri or loc.targetUri
+      local range = loc.range or loc.targetRange
+      local key = string.format('%s:%d:%d', uri, range.start.line, range.start.character)
+      if not seen[key] then
+        seen[key] = true
+        local b = load_buf(uri)
+        local bcfg = b and cfg_for_buf(b)
+        if bcfg then
+          local r = range.start.line
+          local c = byte_col(b, r, range.start.character, enc)
+          local refnode = node_at(b, r, c)
+          -- We're on the variable `v`; the write we want is `v.field = <value>`.
+          -- The reference node is the operand of a selector whose field is
+          -- `field`, and that selector is the LHS of an assignment.
+          local sel = refnode and refnode:parent()
+          if sel and sel:type() == bcfg.selector_expr then
+            local fld = sel:field(bcfg.selector_field)[1]
+            if fld and node_text(b, fld) == field then
+              local val = classify_field_write(bcfg, fld)
+              if val then
+                table.insert(out, { cfg = bcfg, bufnr = b, node = val })
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+  return out
+end
+
+-- Apply projection `proj` (list of field names) to `value`, producing landing
+-- sites. Mirrors value_sites but carries the field path: a call descends into
+-- the callee's return carrying proj; a composite literal peels one field; an
+-- identifier resolves to its binding or scope-limited field writes; a selector
+-- prepends its field. Unresolvable points terminate (marked) -- no codebase-wide
+-- fallback. Returns a list of sites (each may carry `note` for marking).
+local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
+  visited = visited or {}
+  depth = depth or 0
+  budget = budget or { nodes = 0, max_nodes = 200, max_depth = 25 }
+  local client = vim.lsp.get_clients({ bufnr = bufnr })[1]
+
+  -- Log with the real file:line:col of `value` so it's unambiguous which code
+  -- we're on (e.g. distinguishing a `c.ctx` in the user's source from our own
+  -- `ctx` variable name).
+  local vr0, vc0 = value:start()
+  local floc = string.format('%s:%d:%d', vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':~:.'), vr0 + 1, vc0 + 1)
+  dbg(string.format('project depth=%d', depth),
+    'value=' .. value:type(),
+    'proj=.' .. table.concat(proj, '.'),
+    'at=' .. floc,
+    string.format('text=%q', node_text(bufnr, value):gsub('\n.*', '...')))
+
+  -- Bounds: stop runaway projection (wide fan-out / deep call chains). Marked,
+  -- never silent.
+  budget.nodes = budget.nodes + 1
+  if budget.nodes > budget.max_nodes then
+    local site = landing_site(bufnr, value, client)
+    site.note = 'projection budget exceeded'
+    return { site }
+  end
+  if depth > budget.max_depth then
+    local site = landing_site(bufnr, value, client)
+    site.note = 'max projection depth'
+    return { site }
+  end
+
+  -- Projection exhausted: fall back to ordinary value following.
+  if #proj == 0 then
+    return value_sites(cfg, bufnr, value, 1, {}, depth)
+  end
+
+  -- Unwrap unary (&x, *x).
+  while value:type() == cfg.unary_expr do
+    local operand = value:field(cfg.unary_operand)[1]
+    if not operand then break end
+    value = operand
+  end
+
+  local field = proj[1]
+  local rest = vim.list_slice(proj, 2)
+
+  -- Selector `a.b`: b becomes part of the projection, recurse on operand a.
+  if value:type() == cfg.selector_expr then
+    local operand = value:field(cfg.selector_operand)[1]
+    local fld = value:field(cfg.selector_field)[1]
+    if operand and fld then
+      local newproj = { node_text(bufnr, fld) }
+      vim.list_extend(newproj, proj)
+      return project_sites(cfg, bufnr, operand, newproj, visited, depth + 1, budget)
+    end
+  end
+
+  -- Composite literal: peel the matching field.
+  if value:type() == cfg.composite_literal then
+    local fv = composite_field_value(cfg, bufnr, value, field)
+    if fv then
+      return project_sites(cfg, bufnr, fv, rest, visited, depth + 1, budget)
+    end
+    -- Field not set in the literal: zero value, an origin. Land on the literal.
+    local site = landing_site(bufnr, value, client)
+    site.note = 'zero value (.' .. field .. ' not set)'
+    return { site }
+  end
+
+  -- Call: descend into the callee's return carrying the projection.
+  if value:type() == cfg.call_expr then
+    local sites = {}
+    for _, ret in ipairs(callee_returns(cfg, bufnr, value, 1)) do
+      local sr, sc = ret.node:start()
+      local key = string.format('%d:%d:%d:%s', ret.bufnr, sr, sc, table.concat(proj, '.'))
+      if not visited[key] then
+        visited[key] = true
+        vim.list_extend(sites, project_sites(ret.cfg, ret.bufnr, ret.node, proj, visited, depth + 1, budget))
+      end
+    end
+    if #sites == 0 then
+      local site = landing_site(bufnr, value, client)
+      site.note = 'unresolved (cannot follow .' .. table.concat(proj, '.') .. ')'
+      return { site }
+    end
+    return sites
+  end
+
+  -- Identifier: a local or parameter. Find scope-limited `.field` writes on it,
+  -- and also follow its binding (so `c := newCfg()` continues into newCfg).
+  if value:type() == 'identifier' then
+    local vr, vc = value:start()
+    local sites = {}
+
+    -- Direct writes of `.field` on this specific variable, in its scope.
+    local fwrites = variable_field_writes(cfg, bufnr, vr, vc, field)
+    dbg(string.format('  identifier .%s: %d in-scope field write(s)', field, #fwrites))
+    for _, w in ipairs(fwrites) do
+      vim.list_extend(sites, project_sites(w.cfg, w.bufnr, w.node, rest, visited, depth + 1, budget))
+    end
+
+    -- Resolve the variable's definition. The node here is usually a *usage*, so
+    -- we ask the LSP for the declaration, then either:
+    --   - follow its bound value (`c := newCfg()`) carrying the projection, or
+    --   - if it is a parameter, ride the projection OUT to each call site's
+    --     matching argument and keep projecting there. This is the common
+    --     config-plumbing case: the struct arrives as a function parameter, and
+    --     the field was set by whoever called us. Multiple callers naturally
+    --     fork the tree.
+    local defs = lsp_definition_at(bufnr, vr, vc)
+    dbg(string.format('  identifier .%s: %d definition(s) resolved', field, #defs))
+    for _, def in ipairs(defs) do
+      local b = load_buf(def.uri)
+      local dcfg = b and cfg_for_buf(b)
+      if b and not dcfg then
+        dbg('    def in buffer with no cfg (filetype not supported?)', vim.uri_to_fname(def.uri))
+      end
+      if dcfg then
+        local enc = def.client and def.client.offset_encoding or 'utf-16'
+        local dr = def.range.start.line
+        local dc = byte_col(b, dr, def.range.start.character, enc)
+        local dnode = node_at(b, dr, dc)
+
+        local bound = dnode and bound_value_for(dcfg, dnode)
+        local index, variadic = nil, nil
+        if dnode then index, variadic = param_under_cursor(dcfg, dnode) end
+        local recv = dnode and receiver_under_cursor(dcfg, dnode)
+        dbg(string.format('    def @%d:%d node=%s bound=%s param_index=%s receiver=%s',
+          dr, dc, dnode and dnode:type() or 'nil',
+          tostring(bound ~= nil and bound.value ~= nil), tostring(index), tostring(recv ~= nil)))
+
+        if bound and bound.value then
+          local key = string.format('bind:%d:%d:%d:%s', b, dr, dc, table.concat(proj, '.'))
+          if not visited[key] then
+            visited[key] = true
+            vim.list_extend(sites, project_sites(dcfg, b, bound.value, proj, visited, depth + 1, budget))
+          end
+        elseif index ~= nil then
+          local fpos = enclosing_func_name_pos(dcfg, dnode)
+          dbg(string.format('    param ride-out: fpos=%s', tostring(fpos ~= nil)))
+          if fpos then
+            local csites = incoming_call_sites(b, fpos)
+            dbg(string.format('    param ride-out: %d call site(s)', #csites))
+            for _, csite in ipairs(csites) do
+              local arg = argument_node(csite, index, variadic)
+              if arg then
+                local ar, ac = arg.node:start()
+                local key = string.format('arg:%d:%d:%d:%s', arg.bufnr, ar, ac, table.concat(proj, '.'))
+                if not visited[key] then
+                  visited[key] = true
+                  vim.list_extend(sites,
+                    project_sites(arg.cfg, arg.bufnr, arg.node, proj, visited, depth + 1, budget))
+                end
+              end
+            end
+          end
+        elseif recv then
+          -- Method receiver: ride out to each call site's selector operand
+          -- (`x` in `x.Method()`), NOT argument 0, and keep projecting into x.
+          local fpos = enclosing_func_name_pos(dcfg, dnode)
+          dbg(string.format('    receiver ride-out: fpos=%s', tostring(fpos ~= nil)))
+          if fpos then
+            local csites = incoming_call_sites(b, fpos)
+            dbg(string.format('    receiver ride-out: %d call site(s)', #csites))
+            for _, csite in ipairs(csites) do
+              local op = receiver_operand_node(csite)
+              if op then
+                local orow, ocol = op.node:start()
+                local key = string.format('recv:%d:%d:%d:%s', op.bufnr, orow, ocol, table.concat(proj, '.'))
+                if not visited[key] then
+                  visited[key] = true
+                  vim.list_extend(sites,
+                    project_sites(op.cfg, op.bufnr, op.node, proj, visited, depth + 1, budget))
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    if #sites == 0 then
+      local site = landing_site(bufnr, value, client)
+      site.note = 'unresolved (.' .. table.concat(proj, '.') .. ' not set in scope)'
+      return { site }
+    end
+    return sites
+  end
+
+  -- Anything else: cannot apply the projection here.
+  local site = landing_site(bufnr, value, client)
+  site.note = 'unresolved (.' .. table.concat(proj, '.') .. ')'
+  return { site }
+end
+
 -- A short, single-line description of a site for a picker.
 local function describe_site(site)
   local path = vim.uri_to_fname(site.uri)
   local rel = vim.fn.fnamemodify(path, ':~:.')
   local line = (site.land and site.land.row) or site.range.start.line
-  local bufnr = vim.fn.bufadd(path)
-  vim.fn.bufload(bufnr)
-  local text = (vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ''):gsub('^%s+', '')
+  local bufnr = load_buf(site.uri)
+  local text = bufnr and (vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ''):gsub('^%s+', '') or ''
   return string.format('%s:%d: %s', rel, line + 1, text)
+end
+
+-- The selector field path of a node, if it is (or is within) a field read like
+-- `a.b.c`: returns the innermost operand node and the list of field names in
+-- order, e.g. for `cfg.Server.Port` -> (operand `cfg`, { 'Server', 'Port' }).
+-- Returns nil if not a field read.
+local function selector_path(cfg, bufnr, node)
+  -- Climb to the outermost selector_expression covering the cursor.
+  local sel = node
+  if sel:type() ~= cfg.selector_expr then
+    sel = find_ancestor(node, { [cfg.selector_expr] = true })
+  end
+  while sel and sel:parent() and sel:parent():type() == cfg.selector_expr do
+    sel = sel:parent()
+  end
+  if not sel or sel:type() ~= cfg.selector_expr then return nil end
+
+  -- Walk down the operand chain collecting field names.
+  local fields = {}
+  local cur = sel
+  while cur and cur:type() == cfg.selector_expr do
+    local fld = cur:field(cfg.selector_field)[1]
+    if fld then table.insert(fields, 1, node_text(bufnr, fld)) end
+    cur = cur:field(cfg.selector_operand)[1]
+  end
+  return cur, fields
 end
 
 -- ----------------------------------------------------------------------------
@@ -738,10 +1234,24 @@ end
 -- where `land` (0-based {row,col}) is the precise spot to land on. This is the
 -- shared engine for both the interactive single hop (trace_up) and the tree
 -- builder. Returns { sites = <list>, empty_msg = <string for 0 results> }.
+--
+-- ctx (optional): { project = true } enables precise, scope-based field tracing:
+-- a field read `cfg.Enabled` follows the *container* `cfg` carrying `.Enabled`
+-- as a projection, resolving it at the concrete struct rather than searching the
+-- whole codebase for `.Enabled` writes.
 -- ----------------------------------------------------------------------------
-local function sources_at(bufnr, row, col)
+local function sources_at(bufnr, row, col, ctx)
+  ctx = ctx or {}
+  -- A fresh projection budget per sources_at call: bounds one hop's worth of
+  -- projection recursion (a single field read can fan out widely). The tree
+  -- builder's own max_nodes/max_depth bound the overall tree on top of this.
+  ctx.budget = {
+    nodes = 0,
+    max_nodes = ctx.project_max_nodes or 200,
+    max_depth = ctx.project_max_depth or 25,
+  }
   local cfg = cfg_for_buf(bufnr)
-  local node = cfg and vim.treesitter.get_node({ bufnr = bufnr, pos = { row, col } })
+  local node = cfg and node_at(bufnr, row, col)
 
   if cfg and node then
     -- Function/method declaration name -> its call sites. A "jump to caller",
@@ -771,7 +1281,25 @@ local function sources_at(bufnr, row, col)
       return { sites = sites, empty_msg = 'trace: no call sites found (origin?)' }
     end
 
-    -- Struct field -> where it is written.
+    -- Field read, in projection mode: follow the container carrying the field
+    -- path, so we resolve where THIS value's field was set (scope-based) rather
+    -- than every write to the field name in the codebase.
+    if ctx.project then
+      local field = field_under_cursor(cfg, node)
+      if field then
+        local operand, fields = selector_path(cfg, bufnr, node)
+        if operand and fields and #fields > 0 then
+          local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
+          for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
+          return {
+            sites = sites,
+            empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
+          }
+        end
+      end
+    end
+
+    -- Struct field -> where it is written (broad / codebase-wide).
     local field = field_under_cursor(cfg, node)
     if field then
       local frow, fcol = field:start()
@@ -780,9 +1308,21 @@ local function sources_at(bufnr, row, col)
       return { sites = sites, empty_msg = 'trace: no writes to this field found' }
     end
 
-    -- Name declared by `:=`/`var` -> follow its value into the callee's return.
+    -- Name declared by `:=`/`var`. In projection mode, if the value is a field
+    -- read, follow its container with the projection; otherwise follow normally.
     local decl = var_decl_value_under_cursor(cfg, node)
     if decl and decl.value then
+      if ctx.project and decl.value:type() == cfg.selector_expr then
+        local operand, fields = selector_path(cfg, bufnr, decl.value)
+        if operand and fields and #fields > 0 then
+          local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
+          for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
+          return {
+            sites = sites,
+            empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
+          }
+        end
+      end
       local sites = value_sites(cfg, bufnr, decl.value, decl.result_index)
       for _, s in ipairs(sites) do s.kind = 'value' end
       return { sites = sites, empty_msg = 'trace: no value source found' }
@@ -911,36 +1451,37 @@ end
 local function site_land(site)
   if site.land then return site.land.row, site.land.col end
   local enc = site.client and site.client.offset_encoding or 'utf-16'
-  local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
-  vim.fn.bufload(b)
+  local b = load_buf(site.uri)
+  if not b then return site.range.start.line, site.range.start.character end
   return site.range.start.line, byte_col(b, site.range.start.line, site.range.start.character, enc)
 end
 
 -- A one-line label for a tree node: "file:line: <trimmed source>".
 local function node_label(uri, row)
-  local b = vim.fn.bufadd(vim.uri_to_fname(uri))
-  vim.fn.bufload(b)
+  local b = load_buf(uri)
   local rel = vim.fn.fnamemodify(vim.uri_to_fname(uri), ':~:.')
-  local text = (vim.api.nvim_buf_get_lines(b, row, row + 1, false)[1] or ''):gsub('^%s+', '')
+  local text = b and (vim.api.nvim_buf_get_lines(b, row, row + 1, false)[1] or ''):gsub('^%s+', '') or ''
   return string.format('%s:%d: %s', rel, row + 1, text), b
 end
 
 -- Build a provenance tree rooted at (bufnr, row, col). opts:
---   max_depth (default 15), max_nodes (default 200).
--- Returns the root node: { uri, row, col, kind, label, children = {...},
+--   max_depth (default 15), max_nodes (default 200),
+--   project (boolean, default true) -- precise scope-based field tracing.
+-- Returns the root node: { uri, row, col, kind, label, note, children = {...},
 -- truncated = nil|'depth'|'nodes'|'cycle' }.
 function M.build_tree(bufnr, row, col, opts)
   opts = opts or {}
   local max_depth = opts.max_depth or 15
   local max_nodes = opts.max_nodes or 200
+  local ctx = { project = opts.project ~= false }
   local visited = {}
   local count = 0
 
   local function loc_key(uri, r, c) return string.format('%s:%d:%d', uri, r, c) end
 
-  local function make_node(uri, b, r, c, kind)
+  local function make_node(uri, b, r, c, kind, note)
     local label = node_label(uri, r)
-    return { uri = uri, bufnr = b, row = r, col = c, kind = kind, label = label, children = {} }
+    return { uri = uri, bufnr = b, row = r, col = c, kind = kind, note = note, label = label, children = {} }
   end
 
   local function expand(node, depth)
@@ -949,18 +1490,18 @@ function M.build_tree(bufnr, row, col, opts)
     if visited[key] then node.truncated = 'cycle'; return end
     visited[key] = true
 
-    local result = sources_at(node.bufnr, node.row, node.col)
+    local result = sources_at(node.bufnr, node.row, node.col, ctx)
     for _, site in ipairs(result.sites) do
       if count >= max_nodes then node.truncated = 'nodes'; break end
       local r, c = site_land(site)
-      local b = vim.fn.bufadd(vim.uri_to_fname(site.uri))
-      vim.fn.bufload(b)
+      local b = load_buf(site.uri)
       -- A site landing on its own location is a fixpoint origin: include it as a
       -- leaf but do not expand (mirrors the linear loop's no-progress guard).
-      local child = make_node(site.uri, b, r, c, site.kind)
+      local child = make_node(site.uri, b, r, c, site.kind, site.note)
       count = count + 1
       table.insert(node.children, child)
-      if not (b == node.bufnr and r == node.row and c == node.col) then
+      -- A site carrying a `note` is a terminal (zero value / unresolved): leaf.
+      if not site.note and not (b == node.bufnr and r == node.row and c == node.col) then
         expand(child, depth + 1)
       end
     end
@@ -985,9 +1526,10 @@ local function flatten_tree(node, prefix, is_last, is_root, out)
   end
 
   local suffix = ''
-  if node.truncated == 'depth' then suffix = '  [max depth]'
-  elseif node.truncated == 'nodes' then suffix = '  [max nodes]'
-  elseif node.truncated == 'cycle' then suffix = '  [cycle]'
+  if node.note then suffix = '  [' .. node.note .. ']' end
+  if node.truncated == 'depth' then suffix = suffix .. '  [max depth]'
+  elseif node.truncated == 'nodes' then suffix = suffix .. '  [max nodes]'
+  elseif node.truncated == 'cycle' then suffix = suffix .. '  [cycle]'
   end
 
   table.insert(out, {
