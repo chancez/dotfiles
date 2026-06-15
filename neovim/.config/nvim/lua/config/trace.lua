@@ -42,6 +42,16 @@ local langs = {
     return_stmt = 'return_statement',
     func_literal = 'func_literal',             -- pruned when scanning returns
     func_body = 'body',
+    -- Unwrap a leading unary operator so we land on the operand, not the symbol:
+    -- `&T{...}` lands on the composite literal, `*p` lands on p.
+    unary_expr = 'unary_expression',
+    unary_operand = 'operand',
+    -- For a composite literal `T{...}` / `pkg.T{...}`, land on the type name so
+    -- the next hop reaches the type definition rather than the package.
+    composite_literal = 'composite_literal',
+    composite_type = 'type',
+    qualified_type = 'qualified_type',
+    qualified_name = 'name',
 
     -- Field-write tracing. We use LSP references to find every use of a field,
     -- then treesitter (these node names) to keep only the writes.
@@ -631,7 +641,25 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   visited = visited or {}
   depth = depth or 0
 
+  -- Unwrap leading unary operators (`&T{...}`, `*p`) so we follow the operand
+  -- rather than landing on the `&`/`*`.
+  while value:type() == cfg.unary_expr do
+    local operand = value:field(cfg.unary_operand)[1]
+    if not operand then break end
+    value = operand
+  end
+
   local client = vim.lsp.get_clients({ bufnr = bufnr })[1]
+
+  -- For a composite literal, land on the type name so the next hop reaches the
+  -- type definition. With a qualified type `pkg.T`, use the `T` part, not `pkg`.
+  if value:type() == cfg.composite_literal then
+    local ty = value:field(cfg.composite_type)[1]
+    if ty and ty:type() == cfg.qualified_type then
+      ty = ty:field(cfg.qualified_name)[1] or ty
+    end
+    return { landing_site(bufnr, ty or value, client) }
+  end
 
   if value:type() ~= cfg.call_expr then
     return { landing_site(bufnr, value, client) }
