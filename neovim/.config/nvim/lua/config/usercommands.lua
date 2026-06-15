@@ -87,11 +87,10 @@ vim.api.nvim_create_user_command('TraceTree', function(cmd)
 end, { count = true, desc = "Build the full provenance tree into a quickfix list" })
 
 -- Toggle trace debug logging (LSP timeouts/errors and projection hops, shown in
--- :messages). With a bang, force on; otherwise toggle.
+-- :messages). With a bang, force on; otherwise toggle. Stored in vim.g.trace_debug.
 vim.api.nvim_create_user_command('TraceDebug', function(cmd)
-  local trace = require('config.trace')
-  trace.debug = cmd.bang or not trace.debug
-  print('Trace debug ' .. (trace.debug and 'enabled' or 'disabled'))
+  vim.g.trace_debug = cmd.bang or not vim.g.trace_debug
+  print('Trace debug ' .. (vim.g.trace_debug and 'enabled' or 'disabled'))
 end, { bang = true, desc = "Toggle trace debug logging (:messages)" })
 
 -- Reverse the lines of the selection in visual mode

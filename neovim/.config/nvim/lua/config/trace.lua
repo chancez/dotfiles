@@ -23,7 +23,7 @@ local langs = {
   go = {
     func_decl = { function_declaration = true, method_declaration = true },
     method_decl = 'method_declaration',
-    receiver_field = 'receiver',  -- the parameter_list holding a method receiver
+    receiver_field = 'receiver', -- the parameter_list holding a method receiver
     param_list = 'parameter_list',
     param_decl = { parameter_declaration = true, variadic_parameter_declaration = true },
     variadic_decl = { variadic_parameter_declaration = true },
@@ -38,12 +38,12 @@ local langs = {
     -- return (the "trace into the function, args emerge from the param logic"
     -- step). A declared name's value comes from the matching value expression;
     -- when that value is a call, we descend into the callee's return.
-    short_var_decl = 'short_var_declaration',  -- a, b := x, y    (left/right)
-    var_spec = 'var_spec',                     -- var a, b = x, y (name.../value)
+    short_var_decl = 'short_var_declaration', -- a, b := x, y    (left/right)
+    var_spec = 'var_spec',                    -- var a, b = x, y (name.../value)
     var_spec_name = 'name',
     var_spec_value = 'value',
     return_stmt = 'return_statement',
-    func_literal = 'func_literal',             -- pruned when scanning returns
+    func_literal = 'func_literal', -- pruned when scanning returns
     func_body = 'body',
     -- Unwrap a leading unary operator so we land on the operand, not the symbol:
     -- `&T{...}` lands on the composite literal, `*p` lands on p.
@@ -53,8 +53,8 @@ local langs = {
     -- the next hop reaches the type definition rather than the package.
     composite_literal = 'composite_literal',
     composite_type = 'type',
-    composite_body = 'body',          -- composite_literal -> literal_value
-    literal_value = 'literal_value',  -- contains keyed_element children
+    composite_body = 'body',             -- composite_literal -> literal_value
+    literal_value = 'literal_value',     -- contains keyed_element children
     literal_element = 'literal_element', -- wraps a keyed_element key/value
     qualified_type = 'qualified_type',
     qualified_name = 'name',
@@ -71,7 +71,7 @@ local langs = {
     composite_key_ref = { identifier = true },
 
     -- Write classification.
-    assignment = 'assignment_statement',  -- covers `=` and compound `+=` etc.
+    assignment = 'assignment_statement', -- covers `=` and compound `+=` etc.
     assign_left = 'left',
     assign_right = 'right',
     expr_list = 'expression_list',
@@ -86,10 +86,33 @@ local function cfg_for_buf(bufnr)
   return langs[vim.bo[bufnr].filetype]
 end
 
--- Debug logging, toggled with M.debug. Messages are visible via :messages.
-M.debug = false
+-- Configuration. Each key is backed by `vim.g.trace_<key>`, so it can be set
+-- from anywhere (vimrc, :let, lua) and survives reloading this module; the
+-- `defaults` table is the single source of truth for the keys and their
+-- defaults. Read via field access -- `Config.lsp_timeout` returns
+-- vim.g.trace_lsp_timeout or the default. No string keys at the call sites.
+--
+-- NOTE: defaults MUST live in a separate table, and `Config` itself MUST be
+-- empty, because __index only fires for ABSENT keys. If the defaults were stored
+-- directly in Config, every read would hit the stored value and vim.g would be
+-- ignored entirely.
+local defaults = {
+  debug = false,           -- vim.g.trace_debug: log to :messages
+  lsp_timeout = 2000,      -- vim.g.trace_lsp_timeout: per-LSP-request ms
+  project_max_nodes = 200, -- vim.g.trace_project_max_nodes: projection fan-out cap
+  project_max_depth = 25,  -- vim.g.trace_project_max_depth: projection recursion cap
+}
+local Config = setmetatable({}, {
+  __index = function(_, key)
+    local v = vim.g['trace_' .. key]
+    if v == nil then return defaults[key] end
+    return v
+  end,
+})
+
+-- Debug logging, toggled with vim.g.trace_debug. Visible via :messages.
 local function dbg(...)
-  if not M.debug then return end
+  if not Config.debug then return end
   local parts = {}
   for _, v in ipairs({ ... }) do
     parts[#parts + 1] = type(v) == 'string' and v or vim.inspect(v)
@@ -100,7 +123,7 @@ end
 -- Inspect a synchronous LSP result, logging whether it timed out, errored, or
 -- came back empty. `where` labels the call site. Returns the result unchanged.
 local function check_lsp(where, res_or_resps, single)
-  if not M.debug then return res_or_resps end
+  if not Config.debug then return res_or_resps end
   if single then
     -- client:request_sync result: { result = ..., err = ... } or nil (timeout).
     if res_or_resps == nil then
@@ -331,7 +354,7 @@ local function incoming_call_sites(bufnr, pos)
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = pos,
   }
-  local prepared = vim.lsp.buf_request_sync(bufnr, 'textDocument/prepareCallHierarchy', params, 2000)
+  local prepared = vim.lsp.buf_request_sync(bufnr, 'textDocument/prepareCallHierarchy', params, Config.lsp_timeout)
   check_lsp('prepareCallHierarchy', prepared, false)
   if not prepared then return {} end
 
@@ -339,7 +362,7 @@ local function incoming_call_sites(bufnr, pos)
   for _, resp in pairs(prepared) do
     for _, item in ipairs(resp.result or {}) do
       local client = vim.lsp.get_client_by_id(resp.client_id or 0)
-      local calls = vim.lsp.buf_request_sync(bufnr, 'callHierarchy/incomingCalls', { item = item }, 2000)
+      local calls = vim.lsp.buf_request_sync(bufnr, 'callHierarchy/incomingCalls', { item = item }, Config.lsp_timeout)
       check_lsp('incomingCalls', calls, false)
       for _, cresp in pairs(calls or {}) do
         for _, call in ipairs(cresp.result or {}) do
@@ -558,7 +581,7 @@ local function field_write_sites(bufnr, pos)
     position = pos,
     context = { includeDeclaration = false },
   }
-  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, 2000)
+  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, Config.lsp_timeout)
   check_lsp('references (field-write)', resps, false)
   if not resps then return {} end
 
@@ -616,7 +639,7 @@ local function lsp_definition_at(bufnr, row, col)
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = { line = row, character = character },
   }
-  local res = client:request_sync('textDocument/definition', params, 2000, bufnr)
+  local res = client:request_sync('textDocument/definition', params, Config.lsp_timeout, bufnr)
   check_lsp(string.format('definition @%d:%d', row, col), res, true)
   if not res or res.err or not res.result then return {} end
 
@@ -949,7 +972,7 @@ local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
     position = { line = var_row, character = var_col },
     context = { includeDeclaration = true },
   }
-  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, 2000)
+  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, Config.lsp_timeout)
   check_lsp(string.format('references (variable .%s @%d:%d)', field, var_row, var_col), resps, false)
   if not resps then return {} end
 
@@ -1247,8 +1270,8 @@ local function sources_at(bufnr, row, col, ctx)
   -- builder's own max_nodes/max_depth bound the overall tree on top of this.
   ctx.budget = {
     nodes = 0,
-    max_nodes = ctx.project_max_nodes or 200,
-    max_depth = ctx.project_max_depth or 25,
+    max_nodes = ctx.project_max_nodes or Config.project_max_nodes,
+    max_depth = ctx.project_max_depth or Config.project_max_depth,
   }
   local cfg = cfg_for_buf(bufnr)
   local node = cfg and node_at(bufnr, row, col)
@@ -1485,14 +1508,20 @@ function M.build_tree(bufnr, row, col, opts)
   end
 
   local function expand(node, depth)
-    if depth >= max_depth then node.truncated = 'depth'; return end
+    if depth >= max_depth then
+      node.truncated = 'depth'; return
+    end
     local key = loc_key(node.uri, node.row, node.col)
-    if visited[key] then node.truncated = 'cycle'; return end
+    if visited[key] then
+      node.truncated = 'cycle'; return
+    end
     visited[key] = true
 
     local result = sources_at(node.bufnr, node.row, node.col, ctx)
     for _, site in ipairs(result.sites) do
-      if count >= max_nodes then node.truncated = 'nodes'; break end
+      if count >= max_nodes then
+        node.truncated = 'nodes'; break
+      end
       local r, c = site_land(site)
       local b = load_buf(site.uri)
       -- A site landing on its own location is a fixpoint origin: include it as a
@@ -1527,9 +1556,12 @@ local function flatten_tree(node, prefix, is_last, is_root, out)
 
   local suffix = ''
   if node.note then suffix = '  [' .. node.note .. ']' end
-  if node.truncated == 'depth' then suffix = suffix .. '  [max depth]'
-  elseif node.truncated == 'nodes' then suffix = suffix .. '  [max nodes]'
-  elseif node.truncated == 'cycle' then suffix = suffix .. '  [cycle]'
+  if node.truncated == 'depth' then
+    suffix = suffix .. '  [max depth]'
+  elseif node.truncated == 'nodes' then
+    suffix = suffix .. '  [max nodes]'
+  elseif node.truncated == 'cycle' then
+    suffix = suffix .. '  [cycle]'
   end
 
   table.insert(out, {
