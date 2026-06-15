@@ -143,7 +143,7 @@ end, { desc = "" })
 
 -- Yank current file path to clipboard
 vim.api.nvim_create_user_command('YankFilePath', function()
-  local file_path = vim.fn.expand('%')
+  local file_path = vim.fn.expand('%:p')
   vim.fn.setreg('+', file_path)
   print('Yanked file path: ' .. file_path)
 end, { desc = "Yank the current file's absolute path to the clipboard." })
