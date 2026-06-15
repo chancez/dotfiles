@@ -66,6 +66,12 @@ end, { nargs = '+', complete = 'shellcmdline' })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
 
+-- Trace a value one hop "up" toward its origin. With a count, repeat that many
+-- times, stopping early at any branch point (multiple call sites) or origin.
+vim.api.nvim_create_user_command('TraceUp', function(cmd)
+  require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1)
+end, { count = true, desc = "Trace a value one hop up toward its origin (accepts a count)" })
+
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()
   local start_line = vim.fn.line("'<")

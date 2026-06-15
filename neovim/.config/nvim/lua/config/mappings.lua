@@ -124,3 +124,9 @@ map('x', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
 -- incremental selection treesitter/lsp
 map('x', '<C-o>', 'an', { desc = 'Select [o]uter node', remap = true })
 map('x', '<C-i>', 'in', { desc = 'Select [i]nner node', remap = true })
+
+-- Trace a value one hop "up" toward its origin. With a count, repeat that many
+-- times, stopping early at any branch point (multiple call sites) or origin.
+vim.keymap.set('n', 'gu', function()
+  require('config.trace').trace_up_n(vim.v.count1)
+end, { desc = "Trace value up toward origin" })
