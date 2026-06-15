@@ -207,31 +207,6 @@ return {
     },
   },
 
-  -- Render mermaid diagrams in markdown files
-  {
-    "3rd/diagram.nvim",
-    dependencies = {
-      { "3rd/image.nvim", opts = {} },
-    },
-    opts = {
-      renderer_options = {
-        mermaid = {
-          background = "transparent", -- nil | "transparent" | "white" | "#hex"
-          theme = "dark",             -- nil | "default" | "dark" | "forest" | "neutral"
-        },
-      },
-    },
-    ft = { "markdown" },
-    config = function(_, opts)
-      local md = require("diagram.integrations.markdown")
-      md.renderers = {
-        require("diagram.renderers.mermaid"),
-      }
-      opts.integrations = { md }
-      require("diagram").setup(opts)
-    end,
-  },
-
   -- language/syntax integrations
   { 'jjo/vim-cue' },
   { 'google/vim-jsonnet' },
