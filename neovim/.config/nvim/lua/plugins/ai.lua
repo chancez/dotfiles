@@ -134,6 +134,12 @@ return {
 
       windows = {
         width = "33%",
+        chat = { buffer_name = "Agentic Chat" },
+        input = { buffer_name = "Agentic Prompt" },
+        code = { buffer_name = "Code Snippets" },
+        files = { buffer_name = "Files" },
+        diagnostics = { buffer_name = "Diagnostics" },
+        todos = { buffer_name = "Tasks" },
       },
 
       hooks = {
