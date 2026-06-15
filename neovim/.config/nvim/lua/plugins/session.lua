@@ -57,7 +57,7 @@ return {
     ---@module "auto-session"
     ---@type AutoSession.Config
     opts = {
-      suppressed_dirs = { '~/', '~/projects', '~/Downloads', '/', '/tmp', '/private/tmp' },
+      suppressed_dirs = { '~/', '~/projects', '~/Downloads/**', '/', '/tmp', '/private/tmp' },
       close_filetypes_on_save = { "neotest-output", "neotest-output-panel", "neotest-summary" },
       -- Don't close quickfix
       -- close_unsupported_windows = false,
