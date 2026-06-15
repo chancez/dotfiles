@@ -668,6 +668,17 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
     return { landing_site(bufnr, ty or value, client) }
   end
 
+  -- For a field read `x.field`, land on the field rather than the operand, so
+  -- the next hop traces where that field is written (the field-write case)
+  -- rather than where the containing value came from. The field is almost
+  -- always what you want here; a package-qualified name (`pkg.Name`) has the
+  -- same syntax but falls through to the field-write case, which reports "no
+  -- writes" -- itself a useful signal.
+  if value:type() == cfg.selector_expr then
+    local field = value:field(cfg.selector_field)[1]
+    return { landing_site(bufnr, field or value, client) }
+  end
+
   if value:type() ~= cfg.call_expr then
     return { landing_site(bufnr, value, client) }
   end
