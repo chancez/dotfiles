@@ -113,7 +113,27 @@ return {
     cmd = 'Regedit',
   },
 
-  { 'windwp/nvim-autopairs', event = "InsertEnter", opts = { check_ts = true } },
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",
+    opts = { check_ts = true },
+    config = function(_, opts)
+      local npairs = require('nvim-autopairs')
+      npairs.setup(opts)
+      -- The default triple-backtick rules are scoped to markdown-like
+      -- filetypes. Apply the same behavior to the AgenticInput buffer so
+      -- typing ``` produces a single code fence instead of four backticks.
+      local Rule = require('nvim-autopairs.rule')
+      local cond = require('nvim-autopairs.conds')
+      npairs.add_rules({
+        Rule('```', '```', { 'AgenticInput' })
+          :with_pair(cond.not_before_char('`', 3)),
+        Rule('```.*$', '```', { 'AgenticInput' })
+          :only_cr()
+          :use_regex(true),
+      })
+    end,
+  },
 
   { 'nicwest/vim-camelsnek' },
   {
