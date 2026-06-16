@@ -18,6 +18,26 @@
 
 local M = {}
 
+-- Configuration. A single plain table is the ONE place config lives -- read at
+-- use time as `M.config.<key>`, written by assigning into it (do that from your
+-- own setup file, keeping this module a pure engine). No vim.g, no setter, no
+-- setup() -- one read path, one write path.
+--
+-- `picker` is a custom branch-point picker (multiple sources). Same contract as
+-- vim.ui.select:
+--   picker(sites, { prompt = string, format_item = fn(site)->string }, on_choice)
+-- where `sites` are the raw site tables ({ uri, range, land = {row,col}, kind })
+-- so a custom picker (e.g. telescope) can build a preview from each site, and
+-- on_choice(site|nil) is called with the chosen site or nil if cancelled.
+M.config = {
+  debug = false,             -- log diagnostics (see dbg/check_lsp) to :messages
+  lsp_timeout = 2000,        -- per-LSP-request timeout, ms
+  lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
+  project_max_nodes = 200,   -- projection fan-out cap
+  project_max_depth = 25,    -- projection recursion-depth cap
+  picker = nil,              -- branch-point picker (else vim.ui.select)
+}
+
 -- Per-language treesitter node names.
 local langs = {
   go = {
@@ -86,31 +106,6 @@ local function cfg_for_buf(bufnr)
   return langs[vim.bo[bufnr].filetype]
 end
 
--- Configuration. Each key is backed by `vim.g.trace_<key>`, so it can be set
--- from anywhere (vimrc, :let, lua) and survives reloading this module; the
--- `defaults` table is the single source of truth for the keys and their
--- defaults. Read via field access -- `Config.lsp_timeout` returns
--- vim.g.trace_lsp_timeout or the default. No string keys at the call sites.
---
--- NOTE: defaults MUST live in a separate table, and `Config` itself MUST be
--- empty, because __index only fires for ABSENT keys. If the defaults were stored
--- directly in Config, every read would hit the stored value and vim.g would be
--- ignored entirely.
-local defaults = {
-  debug = false,           -- vim.g.trace_debug: log to :messages
-  lsp_timeout = 2000,      -- vim.g.trace_lsp_timeout: per-LSP-request ms
-  lsp_ready_timeout = 10000, -- vim.g.trace_lsp_ready_timeout: ms to wait for a
-                             -- client to attach before tracing (gopls startup)
-  project_max_nodes = 200, -- vim.g.trace_project_max_nodes: projection fan-out cap
-  project_max_depth = 25,  -- vim.g.trace_project_max_depth: projection recursion cap
-}
-local Config = setmetatable({}, {
-  __index = function(_, key)
-    local v = vim.g['trace_' .. key]
-    if v == nil then return defaults[key] end
-    return v
-  end,
-})
 
 -- Whether any client on `bufnr` has in-flight work-done progress (e.g. gopls
 -- indexing the workspace). A client can be attached but still indexing, which
@@ -131,9 +126,9 @@ local function lsp_progress_active(bufnr)
   return false
 end
 
--- Debug logging, toggled with vim.g.trace_debug. Visible via :messages.
+-- Debug logging, toggled with M.config.debug. Visible via :messages.
 local function dbg(...)
-  if not Config.debug then return end
+  if not M.config.debug then return end
   local parts = {}
   for _, v in ipairs({ ... }) do
     parts[#parts + 1] = type(v) == 'string' and v or vim.inspect(v)
@@ -144,7 +139,7 @@ end
 -- Inspect a synchronous LSP result, logging whether it timed out, errored, or
 -- came back empty. `where` labels the call site. Returns the result unchanged.
 local function check_lsp(where, res_or_resps, single)
-  if not Config.debug then return res_or_resps end
+  if not M.config.debug then return res_or_resps end
   if single then
     -- client:request_sync result: { result = ..., err = ... } or nil (timeout).
     if res_or_resps == nil then
@@ -249,7 +244,7 @@ local function await_buf_request(bufnr, method, params)
   end)
   -- Timeout safety net (mirrors buf_request_sync): resume with nil if nothing
   -- comes back in time, so a slow/non-responding client cannot hang the trace.
-  vim.defer_fn(function() finish(nil) end, Config.lsp_timeout)
+  vim.defer_fn(function() finish(nil) end, M.config.lsp_timeout)
 
   return coroutine.yield()
 end
@@ -259,7 +254,7 @@ local function lsp_buf_request(bufnr, method, params)
   if coroutine.isyieldable() then
     return await_buf_request(bufnr, method, params)
   end
-  return vim.lsp.buf_request_sync(bufnr, method, params, Config.lsp_timeout)
+  return vim.lsp.buf_request_sync(bufnr, method, params, M.config.lsp_timeout)
 end
 
 -- A client on `bufnr` is "ready" when one is attached AND none is mid-progress
@@ -278,7 +273,7 @@ local function await_lsp_ready(bufnr)
     return true
   end
   local co = assert(coroutine.running(), 'await_lsp_ready must run in a coroutine')
-  local deadline = Config.lsp_ready_timeout
+  local deadline = M.config.lsp_ready_timeout
   local interval = 100
   local waited = 0
   local timer = assert(vim.uv.new_timer())
@@ -1565,8 +1560,8 @@ local function sources_at(bufnr, row, col, ctx)
   -- builder's own max_nodes/max_depth bound the overall tree on top of this.
   ctx.budget = {
     nodes = 0,
-    max_nodes = ctx.project_max_nodes or Config.project_max_nodes,
-    max_depth = ctx.project_max_depth or Config.project_max_depth,
+    max_nodes = ctx.project_max_nodes or M.config.project_max_nodes,
+    max_depth = ctx.project_max_depth or M.config.project_max_depth,
   }
   local cfg = cfg_for_buf(bufnr)
   local node = cfg and node_at(bufnr, row, col)
@@ -1683,7 +1678,7 @@ local function resolve_sites(result, opts, on_done)
     goto_site(sites[1])
     return on_done(sites[1].chains ~= false)
   end
-  local select = opts.select or vim.ui.select
+  local select = opts.select or M.config.picker or vim.ui.select
   select(sites, { prompt = 'Trace up:', format_item = describe_site }, function(choice)
     if choice then
       goto_site(choice)
@@ -1770,7 +1765,7 @@ function M.trace_up_n(count, opts)
       end
       -- defer so LSP/treesitter state for the new buffer is settled
       vim.schedule(function() step(remaining - 1) end)
-    end)
+    end, { select = opts.select })
   end
   step(count)
 end
@@ -1951,7 +1946,7 @@ function M.trace_tree(opts)
     if failed then
       vim.api.nvim_echo(
         { { '[trace] no LSP client ready after '
-        .. Config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
+        .. M.config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
       return
     end
     local nodes = {}

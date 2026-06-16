@@ -66,32 +66,7 @@ end, { nargs = '+', complete = 'shellcmdline' })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
 
--- Trace a value one hop "up" toward its origin. With a count, repeat that many
--- times, stopping early at any branch point (multiple call sites) or origin.
-vim.api.nvim_create_user_command('TraceUp', function(cmd)
-  require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1)
-end, { count = true, desc = "Trace a value one hop up toward its origin (accepts a count)" })
-
--- Trace a value all the way to its origin, recording the path into a "Trace"
--- quickfix list. Auto-hops until an origin or a branch point; a count caps hops.
-vim.api.nvim_create_user_command('TraceOrigin', function(cmd)
-  require('config.trace').trace_up_n(cmd.count > 0 and cmd.count or 1000, { quickfix = true })
-end, { count = true, desc = "Trace a value to its origin, recording the path into a quickfix list" })
-
--- Build the full provenance tree (all sources, all branches, bounded) from the
--- cursor and render it into a "Trace Tree" quickfix list. A count caps depth.
-vim.api.nvim_create_user_command('TraceTree', function(cmd)
-  local opts = {}
-  if cmd.count > 0 then opts.max_depth = cmd.count end
-  require('config.trace').trace_tree(opts)
-end, { count = true, desc = "Build the full provenance tree into a quickfix list" })
-
--- Toggle trace debug logging (LSP timeouts/errors and projection hops, shown in
--- :messages). With a bang, force on; otherwise toggle. Stored in vim.g.trace_debug.
-vim.api.nvim_create_user_command('TraceDebug', function(cmd)
-  vim.g.trace_debug = cmd.bang or not vim.g.trace_debug
-  print('Trace debug ' .. (vim.g.trace_debug and 'enabled' or 'disabled'))
-end, { bang = true, desc = "Toggle trace debug logging (:messages)" })
+-- Trace commands/keymaps live in config.trace-setup (the trace engine's wiring).
 
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()

@@ -125,24 +125,4 @@ map('x', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
 map('x', '<C-o>', 'an', { desc = 'Select [o]uter node', remap = true })
 map('x', '<C-i>', 'in', { desc = 'Select [i]nner node', remap = true })
 
--- Trace a value one hop "up" toward its origin. With a count, repeat that many
--- times, stopping early at any branch point (multiple call sites) or origin.
-vim.keymap.set('n', 'gu', function()
-  require('config.trace').trace_up_n(vim.v.count1)
-end, { desc = "Trace value up toward origin" })
-
--- Trace all the way to the origin: auto-hop until an origin or a branch point,
--- recording the path into a "Trace" quickfix list. A count caps the hops.
-vim.keymap.set('n', 'gU', function()
-  local count = vim.v.count > 0 and vim.v.count or 1000
-  require('config.trace').trace_up_n(count, { quickfix = true })
-end, { desc = "Trace value to origin (quickfix trail)" })
-
--- Build the full provenance tree (all sources, all branches) into a "Trace
--- Tree" quickfix list. A count caps the depth. (gt/gT are taken by tabs; gz is
--- free and keeps the trace family on the g-prefix.)
-vim.keymap.set('n', 'gz', function()
-  local opts = {}
-  if vim.v.count > 0 then opts.max_depth = vim.v.count end
-  require('config.trace').trace_tree(opts)
-end, { desc = "Trace value provenance tree (quickfix)" })
+-- Trace keymaps (gu/gU/gz) live in config.trace-setup (the trace engine's wiring).
