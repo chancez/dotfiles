@@ -1679,7 +1679,7 @@ local function resolve_sites(result, opts, on_done)
     return on_done(sites[1].chains ~= false)
   end
   local select = opts.select or M.config.picker or vim.ui.select
-  select(sites, { prompt = 'Trace up:', format_item = describe_site }, function(choice)
+  select(sites, { prompt = 'Trace up', format_item = describe_site }, function(choice)
     if choice then
       goto_site(choice)
     end

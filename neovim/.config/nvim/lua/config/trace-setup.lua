@@ -6,10 +6,84 @@
 local trace = require('config.trace')
 
 -- Config. One table, assigned directly. Defaults live in config.trace.M.config;
--- only override what you want here. (picker = a custom branch-point picker with
--- the vim.ui.select contract; left nil = use vim.ui.select.)
+-- only override what you want here.
 -- trace.config.lsp_timeout = 3000
--- trace.config.picker = function(sites, opts, on_choice) ... end
+
+-- Telescope-backed branch-point picker. Same contract as vim.ui.select, but with
+-- a file previewer focused on each site's LANDING location (where the next hop
+-- would put the cursor), so you can see each candidate source in context before
+-- choosing. Falls back to vim.ui.select if telescope isn't available.
+trace.config.picker = function(sites, opts, on_choice)
+  local ok, pickers = pcall(require, 'telescope.pickers')
+  if not ok then
+    return vim.ui.select(sites, opts, on_choice)
+  end
+  local finders = require('telescope.finders')
+  local conf = require('telescope.config').values
+  local actions = require('telescope.actions')
+  local action_state = require('telescope.actions.state')
+
+  -- The picker contract requires on_choice to fire EXACTLY ONCE (with nil on
+  -- cancel), else resolve_sites' on_done never runs and the trace stalls. Guard
+  -- so selection and the close-without-selection path can't both fire.
+  local answered = false
+  local function answer(site)
+    if answered then return end
+    answered = true
+    on_choice(site)
+  end
+
+  pickers.new(require('telescope.themes').get_ivy({}), {
+    prompt_title = opts.prompt or 'Trace',
+    finder = finders.new_table({
+      results = sites,
+      entry_maker = function(site)
+        -- land is 0-based {row,col}; telescope entries are 1-based lnum/col.
+        local land = site.land or { row = site.range.start.line, col = site.range.start.character }
+        local filename = vim.uri_to_fname(site.uri)
+        local label = opts.format_item(site)
+        -- The label is `path:line: source  -> target`. Telescope writes its own
+        -- `filename:lnum:` prefix to the quickfix line, so strip the label's
+        -- leading `path:line:` for `text` to avoid showing the location twice.
+        -- Non-greedy up to the first `:<digits>:` so paths with spaces survive.
+        local qf_text = label:gsub('^.-:%d+:%s*', '')
+        return {
+          value = site,
+          display = label,
+          ordinal = label,
+          filename = filename,
+          lnum = land.row + 1,
+          col = land.col + 1,
+          -- `text` is what telescope writes to the quickfix line on <C-q>, so the
+          -- rich label (source + `-> target`) survives "send to quickfix" instead
+          -- of degrading to bare filename:lnum.
+          text = qf_text,
+        }
+      end,
+    }),
+    sorter = conf.generic_sorter({}),
+    -- Built-in previewer reads entry.filename/lnum/col and highlights that line.
+    previewer = conf.qflist_previewer({}),
+    attach_mappings = function(prompt_bufnr)
+      actions.select_default:replace(function()
+        local entry = action_state.get_selected_entry()
+        -- Answer BEFORE closing: actions.close wipes the prompt buffer, which
+        -- fires the BufWipeout fallback below; the `answered` guard means
+        -- whichever runs first wins, so we must record the real choice first.
+        answer(entry and entry.value or nil)
+        actions.close(prompt_bufnr)
+      end)
+      -- Any close (Esc, <C-c>, etc.) that didn't go through a selection still
+      -- has to settle the trace: report no choice.
+      vim.api.nvim_create_autocmd('BufWipeout', {
+        buffer = prompt_bufnr,
+        once = true,
+        callback = function() answer(nil) end,
+      })
+      return true
+    end,
+  }):find()
+end
 
 -- Commands ------------------------------------------------------------------
 
