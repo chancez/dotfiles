@@ -120,6 +120,12 @@ vim.api.nvim_create_user_command('DiagnosticsQF', function()
   vim.cmd('copen')
 end, {})
 
+-- Clear the quickfix list and close the quickfix window
+vim.api.nvim_create_user_command('ClearQF', function()
+  vim.fn.setqflist({})
+  vim.cmd('cclose')
+end, { desc = "Clear the quickfix list and close the quickfix window" })
+
 -- Close all buffers and tabs
 vim.api.nvim_create_user_command('WipeSession', function()
   -- Close all other tabs
