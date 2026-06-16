@@ -383,6 +383,32 @@ end
 -- or nil if it can't be loaded. Guards against vim.fn.bufload errors (notably
 -- E325 swap-file collisions when the file is open elsewhere): a single bad
 -- buffer must not abort the whole trace. Swap is disabled for the load.
+-- Attach any already-running LSP client whose config supports buffer `b`'s
+-- filetype. A background-loaded buffer (vim.fn.bufload) has lines but no LSP
+-- attached -- the cross-file twin of the node_at treesitter bug -- so references
+-- and definition on it return "no client" and projection dead-ends. We reuse the
+-- live client (cheap: sends didOpen, no server spawn) so those files resolve
+-- without ever being opened. Returns true if a client is now attached.
+local function ensure_lsp_attached(b)
+  if #vim.lsp.get_clients({ bufnr = b }) > 0 then
+    return true
+  end
+  -- Background bufload may not have run filetype detection; do it so we can match
+  -- clients by filetype.
+  if vim.bo[b].filetype == '' then
+    pcall(function() vim.api.nvim_buf_call(b, function() vim.cmd('filetype detect') end) end)
+  end
+  local ft = vim.bo[b].filetype
+  local attached = false
+  for _, client in ipairs(vim.lsp.get_clients()) do
+    local fts = client.config and client.config.filetypes
+    if (not fts or vim.tbl_contains(fts, ft)) and vim.lsp.buf_attach_client(b, client.id) then
+      attached = true
+    end
+  end
+  return attached
+end
+
 local function load_buf(uri)
   local path = uri:match('^%w+://') and vim.uri_to_fname(uri) or uri
   local b = vim.fn.bufadd(path)
@@ -396,6 +422,7 @@ local function load_buf(uri)
       return nil
     end
   end
+  ensure_lsp_attached(b)
   return b
 end
 
