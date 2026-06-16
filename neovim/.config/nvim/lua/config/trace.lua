@@ -149,6 +149,114 @@ local function check_lsp(where, res_or_resps, single)
   return res_or_resps
 end
 
+-- ----------------------------------------------------------------------------
+-- Async LSP via coroutines.
+--
+-- We reuse neovim's own async LSP (`buf_request_all`, the function that
+-- `buf_request_sync` is itself built on -- same client_id->{err,result} result
+-- map). A coroutine just bridges its callback back into straight-line code, so
+-- the recursive tracing logic keeps its `local x = lsp(); use(x)` shape.
+--
+-- The request helpers are DUAL-MODE: inside a coroutine they run async (editor
+-- stays responsive); outside one they fall back to the blocking sync call. So
+-- the SAME code path serves the synchronous `gu`/`gU` and the async tree -- only
+-- `trace_tree` runs its build inside a coroutine.
+-- ----------------------------------------------------------------------------
+
+-- Async buf_request_all, awaited: yields until all clients respond, returns the
+-- same results map buf_request_sync would. Only valid inside a coroutine.
+--
+-- Crucially, buf_request_all (unlike buf_request_sync) has NO timeout: if no
+-- client responds the handler never fires. That happens whenever the target
+-- buffer has no client attached (common for background-loaded caller/definition
+-- files). So we (a) short-circuit when there are no clients, and (b) guard with
+-- a timeout that resumes with nil -- otherwise the coroutine hangs forever. A
+-- `done` flag prevents the callback and the timeout from both resuming.
+-- Per-coroutine completion callbacks (weak-keyed so dead coroutines are GC'd).
+local co_done = setmetatable({}, { __mode = 'k' })
+
+-- Resume a traced coroutine. When it finishes, its `done` callback runs on a
+-- FRESH main-loop tick (vim.schedule), NOT inside the resume: window-modifying
+-- ex-commands like `copen` are unreliable when executed inside a coroutine
+-- resume driven from an LSP callback. Scheduling done sidesteps that entirely.
+local function resume_co(co, ...)
+  local ok, err = coroutine.resume(co, ...)
+  if not ok then
+    vim.notify('[trace] coroutine error: ' .. tostring(err), vim.log.levels.ERROR)
+  end
+  if coroutine.status(co) == 'dead' then
+    local done = co_done[co]
+    if done then
+      co_done[co] = nil
+      vim.schedule(done)
+    end
+  end
+end
+
+-- Async buf_request_all, awaited: yields until all clients respond, returns the
+-- same results map buf_request_sync would. Only valid inside a coroutine.
+--
+-- Crucially, buf_request_all (unlike buf_request_sync) has NO timeout: if no
+-- client responds the handler never fires. That happens whenever the target
+-- buffer has no client attached (common for background-loaded caller/definition
+-- files). So we (a) short-circuit when there are no clients, and (b) guard with
+-- a timeout that resumes with nil -- otherwise the coroutine hangs forever. A
+-- `done` flag prevents the callback and the timeout from both resuming.
+local function await_buf_request(bufnr, method, params)
+  local co = assert(coroutine.running(), 'await must run in a coroutine')
+
+  -- Check for ANY attached client, not one filtered by `method`: the method
+  -- filter can transiently report 0 even when a capable client is attached, and
+  -- buf_request_all already routes only to capable clients (the timeout covers
+  -- non-response). Filtering here caused false "no client" short-circuits.
+  if #vim.lsp.get_clients({ bufnr = bufnr }) == 0 then
+    dbg(string.format('await %s: no client on %s, skipping', method,
+      vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t')))
+    return nil
+  end
+
+  local resumed = false
+  local function finish(results)
+    if resumed then return end
+    resumed = true
+    resume_co(co, results)
+  end
+
+  vim.lsp.buf_request_all(bufnr, method, params, function(results)
+    -- resume on the main loop, not inside the LSP callback context
+    vim.schedule(function() finish(results) end)
+  end)
+  -- Timeout safety net (mirrors buf_request_sync): resume with nil if nothing
+  -- comes back in time, so a slow/non-responding client cannot hang the trace.
+  vim.defer_fn(function() finish(nil) end, Config.lsp_timeout)
+
+  return coroutine.yield()
+end
+
+-- buf_request, dual-mode: async (awaited) inside a coroutine, sync otherwise.
+local function lsp_buf_request(bufnr, method, params)
+  if coroutine.isyieldable() then
+    return await_buf_request(bufnr, method, params)
+  end
+  return vim.lsp.buf_request_sync(bufnr, method, params, Config.lsp_timeout)
+end
+
+-- Run `fn` either inside a fresh coroutine (when `async` is true) or directly.
+-- The coroutine drives itself: the first resume runs until the first await's
+-- yield, and each LSP callback resumes it, so `fn` runs to completion across
+-- many event-loop ticks without blocking. `done()` is called (scheduled) when
+-- fn returns, in both async and sync modes.
+local function run_traced(async, fn, done)
+  done = done or function() end
+  if not async then
+    fn()
+    return done()
+  end
+  local co = coroutine.create(fn)
+  co_done[co] = done
+  resume_co(co)
+end
+
 -- Walk up from `node` to the nearest ancestor whose type is a key in `types`.
 local function find_ancestor(node, types)
   while node do
@@ -354,15 +462,15 @@ local function incoming_call_sites(bufnr, pos)
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = pos,
   }
-  local prepared = vim.lsp.buf_request_sync(bufnr, 'textDocument/prepareCallHierarchy', params, Config.lsp_timeout)
+  local prepared = lsp_buf_request(bufnr, 'textDocument/prepareCallHierarchy', params)
   check_lsp('prepareCallHierarchy', prepared, false)
   if not prepared then return {} end
 
   local sites = {}
-  for _, resp in pairs(prepared) do
+  for client_id, resp in pairs(prepared) do
     for _, item in ipairs(resp.result or {}) do
-      local client = vim.lsp.get_client_by_id(resp.client_id or 0)
-      local calls = vim.lsp.buf_request_sync(bufnr, 'callHierarchy/incomingCalls', { item = item }, Config.lsp_timeout)
+      local client = vim.lsp.get_client_by_id(resp.client_id or client_id or 0)
+      local calls = lsp_buf_request(bufnr, 'callHierarchy/incomingCalls', { item = item })
       check_lsp('incomingCalls', calls, false)
       for _, cresp in pairs(calls or {}) do
         for _, call in ipairs(cresp.result or {}) do
@@ -581,7 +689,7 @@ local function field_write_sites(bufnr, pos)
     position = pos,
     context = { includeDeclaration = false },
   }
-  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, Config.lsp_timeout)
+  local resps = lsp_buf_request(bufnr, 'textDocument/references', params)
   check_lsp('references (field-write)', resps, false)
   if not resps then return {} end
 
@@ -639,23 +747,27 @@ local function lsp_definition_at(bufnr, row, col)
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = { line = row, character = character },
   }
-  local res = client:request_sync('textDocument/definition', params, Config.lsp_timeout, bufnr)
-  check_lsp(string.format('definition @%d:%d', row, col), res, true)
-  if not res or res.err or not res.result then return {} end
-
-  local result = res.result
-  -- Result may be a single Location/LocationLink or a list of them.
-  if result.uri or result.targetUri then result = { result } end
+  local resps = lsp_buf_request(bufnr, 'textDocument/definition', params)
+  check_lsp(string.format('definition @%d:%d', row, col), resps, false)
+  if not resps then return {} end
 
   local sites, seen = {}, {}
-  for _, loc in ipairs(result) do
-    local uri = loc.uri or loc.targetUri
-    local range = loc.range or loc.targetSelectionRange or loc.targetRange
-    if uri and range then
-      local key = string.format('%s:%d:%d', uri, range.start.line, range.start.character)
-      if not seen[key] then
-        seen[key] = true
-        table.insert(sites, { uri = uri, range = range, client = client })
+  for client_id, resp in pairs(resps) do
+    local c = vim.lsp.get_client_by_id(client_id) or client
+    local result = resp.result
+    if result then
+      -- Result may be a single Location/LocationLink or a list of them.
+      if result.uri or result.targetUri then result = { result } end
+      for _, loc in ipairs(result) do
+        local uri = loc.uri or loc.targetUri
+        local range = loc.range or loc.targetSelectionRange or loc.targetRange
+        if uri and range then
+          local key = string.format('%s:%d:%d', uri, range.start.line, range.start.character)
+          if not seen[key] then
+            seen[key] = true
+            table.insert(sites, { uri = uri, range = range, client = c })
+          end
+        end
       end
     end
   end
@@ -972,7 +1084,7 @@ local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
     position = { line = var_row, character = var_col },
     context = { includeDeclaration = true },
   }
-  local resps = vim.lsp.buf_request_sync(bufnr, 'textDocument/references', params, Config.lsp_timeout)
+  local resps = lsp_buf_request(bufnr, 'textDocument/references', params)
   check_lsp(string.format('references (variable .%s @%d:%d)', field, var_row, var_col), resps, false)
   if not resps then return {} end
 
@@ -1578,16 +1690,36 @@ end
 
 -- Build the provenance tree from the cursor and render it into a "Trace Tree"
 -- quickfix list. opts is passed to build_tree (max_depth, max_nodes).
+--
+-- By default the build runs ASYNC inside a coroutine: the editor stays
+-- responsive while gopls is queried, and the quickfix list is populated (and
+-- opened) only once the whole tree is built, so the cursor is never moved
+-- mid-run. Pass opts.async = false to build synchronously (blocking).
 function M.trace_tree(opts)
   opts = opts or {}
+  local async = opts.async ~= false
   local bufnr = vim.api.nvim_get_current_buf()
   local pos = vim.api.nvim_win_get_cursor(0)
-  local root = M.build_tree(bufnr, pos[1] - 1, pos[2], opts)
+  local row, col = pos[1] - 1, pos[2]
 
-  local entries = {}
-  flatten_tree(root, '', true, true, entries)
-  vim.fn.setqflist({}, ' ', { title = 'Trace Tree', items = entries })
-  vim.cmd('copen')
+  if async then
+    -- Transient echo (not vim.notify) so it overwrites cleanly on completion
+    -- rather than lingering in the message area behind the quickfix window.
+    vim.api.nvim_echo({ { '[trace] building provenance tree...' } }, false, {})
+  end
+
+  local root
+  run_traced(async, function()
+    root = M.build_tree(bufnr, row, col, opts)
+  end, function()
+    local entries = {}
+    flatten_tree(root, '', true, true, entries)
+    vim.fn.setqflist({}, ' ', { title = 'Trace Tree', items = entries })
+    vim.cmd('copen')
+    if async then
+      vim.api.nvim_echo({ { string.format('[trace] provenance tree: %d nodes', #entries) } }, false, {})
+    end
+  end)
 end
 
 return M
