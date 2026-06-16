@@ -99,6 +99,8 @@ end
 local defaults = {
   debug = false,           -- vim.g.trace_debug: log to :messages
   lsp_timeout = 2000,      -- vim.g.trace_lsp_timeout: per-LSP-request ms
+  lsp_ready_timeout = 10000, -- vim.g.trace_lsp_ready_timeout: ms to wait for a
+                             -- client to attach before tracing (gopls startup)
   project_max_nodes = 200, -- vim.g.trace_project_max_nodes: projection fan-out cap
   project_max_depth = 25,  -- vim.g.trace_project_max_depth: projection recursion cap
 }
@@ -109,6 +111,25 @@ local Config = setmetatable({}, {
     return v
   end,
 })
+
+-- Whether any client on `bufnr` has in-flight work-done progress (e.g. gopls
+-- indexing the workspace). A client can be attached but still indexing, which
+-- yields incomplete trace results.
+--
+-- We read `client.progress.pending` -- a token->title map of UNFINISHED progress
+-- sequences maintained by neovim's core $/progress handler. This is current
+-- STATE (not an event stream), so it is correct no matter when we start looking
+-- (no missed-begin bootstrap hole) and, unlike iterating client.progress, does
+-- not consume the ring buffer the statusline uses.
+local function lsp_progress_active(bufnr)
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+    local pending = client.progress and client.progress.pending
+    if pending and next(pending) ~= nil then
+      return true
+    end
+  end
+  return false
+end
 
 -- Debug logging, toggled with vim.g.trace_debug. Visible via :messages.
 local function dbg(...)
@@ -239,6 +260,38 @@ local function lsp_buf_request(bufnr, method, params)
     return await_buf_request(bufnr, method, params)
   end
   return vim.lsp.buf_request_sync(bufnr, method, params, Config.lsp_timeout)
+end
+
+-- A client on `bufnr` is "ready" when one is attached AND none is mid-progress
+-- (e.g. gopls finished indexing). Attached-but-indexing is the common cause of
+-- incomplete results right after startup, so waiting for attach alone is not
+-- enough -- we must also wait for progress to drain.
+local function lsp_ready(bufnr)
+  return #vim.lsp.get_clients({ bufnr = bufnr }) > 0 and not lsp_progress_active(bufnr)
+end
+
+-- Await until the LSP is ready (see lsp_ready) on `bufnr`. Polls on the main
+-- loop without blocking; returns true once ready, or false after
+-- lsp_ready_timeout. Only valid inside a coroutine.
+local function await_lsp_ready(bufnr)
+  if lsp_ready(bufnr) then
+    return true
+  end
+  local co = assert(coroutine.running(), 'await_lsp_ready must run in a coroutine')
+  local deadline = Config.lsp_ready_timeout
+  local interval = 100
+  local waited = 0
+  local timer = assert(vim.uv.new_timer())
+  timer:start(interval, interval, vim.schedule_wrap(function()
+    waited = waited + interval
+    local ready = lsp_ready(bufnr)
+    if ready or waited >= deadline then
+      timer:stop()
+      timer:close()
+      resume_co(co, ready)
+    end
+  end))
+  return coroutine.yield()
 end
 
 -- Run `fn` either inside a fresh coroutine (when `async` is true) or directly.
@@ -1702,22 +1755,72 @@ function M.trace_tree(opts)
   local pos = vim.api.nvim_win_get_cursor(0)
   local row, col = pos[1] - 1, pos[2]
 
+  -- Transient echo (not vim.notify) so it overwrites cleanly on completion
+  -- rather than lingering in the message area behind the quickfix window.
+  local function echo(msg)
+    vim.api.nvim_echo({ { msg } }, false, {})
+  end
+
   if async then
-    -- Transient echo (not vim.notify) so it overwrites cleanly on completion
-    -- rather than lingering in the message area behind the quickfix window.
-    vim.api.nvim_echo({ { '[trace] building provenance tree...' } }, false, {})
+    -- Reflect whether we're about to wait on the LSP, so the message isn't a
+    -- misleading "building..." while we're actually blocked on gopls indexing.
+    if lsp_ready(bufnr) then
+      echo('[trace] building provenance tree...')
+    else
+      echo('[trace] waiting for LSP...')
+    end
   end
 
   local root
+  local failed = false
+  local indexing = false
   run_traced(async, function()
+    -- Wait for gopls (or whichever client) before tracing: starting while it is
+    -- still loading yields incomplete results. In sync mode we cannot await, so
+    -- just check presence. On timeout, abort with an error rather than building
+    -- a misleading partial tree.
+    if async then
+      if not await_lsp_ready(bufnr) then
+        failed = true
+        return
+      end
+      -- Wait done; now actually building (overwrites the "waiting" message).
+      echo('[trace] building provenance tree...')
+    elseif #vim.lsp.get_clients({ bufnr = bufnr }) == 0 then
+      failed = true
+      return
+    end
+    -- Even after awaiting readiness, indexing can resume mid-build (or in sync
+    -- mode we never waited); if so, results may be incomplete, so note and warn.
+    indexing = lsp_progress_active(bufnr)
     root = M.build_tree(bufnr, row, col, opts)
+    indexing = indexing or lsp_progress_active(bufnr)
   end, function()
+    if failed then
+      vim.api.nvim_echo(
+        { { '[trace] no LSP client ready after '
+        .. Config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
+      return
+    end
+    local nodes = {}
+    flatten_tree(root, '', true, true, nodes)
     local entries = {}
-    flatten_tree(root, '', true, true, entries)
+    -- If the LSP was indexing during the build, results may be incomplete: warn
+    -- as the first quickfix entry (invalid, so it doesn't hijack navigation).
+    if indexing then
+      table.insert(entries, {
+        valid = 0,
+        text = '[trace] WARNING: LSP was still indexing -- results may be incomplete',
+      })
+    end
+    vim.list_extend(entries, nodes)
     vim.fn.setqflist({}, ' ', { title = 'Trace Tree', items = entries })
     vim.cmd('copen')
     if async then
-      vim.api.nvim_echo({ { string.format('[trace] provenance tree: %d nodes', #entries) } }, false, {})
+      local extra = indexing and ' (LSP indexing -- may be incomplete)' or ''
+      vim.api.nvim_echo({ {
+        string.format('[trace] provenance tree: %d nodes%s', #nodes, extra),
+      } }, false, {})
     end
   end)
 end
