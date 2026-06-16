@@ -760,6 +760,28 @@ local function classify_field_write(cfg, ref)
   return nil
 end
 
+-- Refine an assigned-value node to the node we should actually LAND on, so the
+-- next hop continues from the meaningful sub-node: unwrap leading unary (`&x`,
+-- `*x`) and, for a field read `a.b.c`, land on the trailing field rather than the
+-- operand `a` (the same rule value_sites applies; field_write_sites builds its
+-- landing independently and must apply it too).
+local function refine_landing_node(cfg, value)
+  -- A struct-literal keyed value comes wrapped in a literal_element; unwrap to
+  -- the real expression (e.g. the selector inside `BatchSize: ing.cfg.BatchSize`).
+  if value:type() == cfg.literal_element then
+    value = value:named_child(0) or value
+  end
+  while value:type() == cfg.unary_expr do
+    local operand = value:field(cfg.unary_operand)[1]
+    if not operand then break end
+    value = operand
+  end
+  if value:type() == cfg.selector_expr then
+    return value:field(cfg.selector_field)[1] or value
+  end
+  return value
+end
+
 -- Find every write to the field whose name is at `pos`, via LSP references +
 -- treesitter classification. Returns a list of
 --   { uri, range, client, land = { row, col } }  (land is 0-based)
@@ -796,7 +818,7 @@ local function field_write_sites(bufnr, pos)
             if value ~= nil then
               local land = { row = row, col = col }
               if value then
-                local vr, vc = value:start()
+                local vr, vc = refine_landing_node(cfg, value):start()
                 land = { row = vr, col = vc }
               end
               table.insert(sites, { uri = uri, range = range, client = client, land = land })
@@ -1089,10 +1111,10 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   -- rather than where the containing value came from. The field is almost
   -- always what you want here; a package-qualified name (`pkg.Name`) has the
   -- same syntax but falls through to the field-write case, which reports "no
-  -- writes" -- itself a useful signal.
+  -- writes" -- itself a useful signal. (Same rule field_write_sites applies via
+  -- refine_landing_node.)
   if value:type() == cfg.selector_expr then
-    local field = value:field(cfg.selector_field)[1]
-    return { landing_site(bufnr, field or value, client) }
+    return { landing_site(bufnr, refine_landing_node(cfg, value), client) }
   end
 
   if value:type() ~= cfg.call_expr then
@@ -1201,6 +1223,71 @@ local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
       end
     end
   end
+  return out
+end
+
+-- Find all the value-sources of a plain local variable at (var_row, var_col):
+-- the declaration's RHS (`x := <value>` / `var x = <value>`) AND every later
+-- reassignment (`x = <value>`, `x += <value>`). The variable analog of
+-- field-write tracing -- scope-limited via LSP references on the variable, so it
+-- only sees writes in the enclosing function. Each result is a value node as
+-- { cfg, bufnr, node }; a write with no source (e.g. `x++`) is skipped.
+-- Returns the list, which may have several entries (branches).
+local function variable_writes(cfg, bufnr, var_row, var_col)
+  local params = {
+    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    position = { line = var_row, character = var_col },
+    context = { includeDeclaration = true },
+  }
+  local resps = lsp_buf_request(bufnr, 'textDocument/references', params)
+  check_lsp(string.format('references (variable @%d:%d)', var_row, var_col), resps, false)
+  if not resps then return {} end
+
+  local out, seen = {}, {}
+  for _, resp in pairs(resps) do
+    local client = vim.lsp.get_client_by_id(resp.client_id or 0)
+    local enc = client and client.offset_encoding or 'utf-16'
+    for _, loc in ipairs(resp.result or {}) do
+      local uri = loc.uri or loc.targetUri
+      local range = loc.range or loc.targetRange
+      local key = string.format('%s:%d:%d', uri, range.start.line, range.start.character)
+      if not seen[key] then
+        seen[key] = true
+        local b = load_buf(uri)
+        local bcfg = b and cfg_for_buf(b)
+        if bcfg then
+          local r = range.start.line
+          local c = byte_col(b, r, range.start.character, enc)
+          local refnode = node_at(b, r, c)
+          if refnode then
+            -- A declaration name (`x := v` / `var x = v`): take its bound value.
+            local bound = bound_value_for(bcfg, refnode)
+            if bound and bound.value then
+              table.insert(out, { cfg = bcfg, bufnr = b, node = bound.value, row = r, col = c })
+            else
+              -- A reassignment (`x = v` / `x += v`): classify_field_write's
+              -- assignment branch maps a plain-identifier LHS to its value slot
+              -- too. nil = a read; false = a write with no source (skip both).
+              local val = classify_field_write(bcfg, refnode)
+              if val then
+                table.insert(out, { cfg = bcfg, bufnr = b, node = val, row = r, col = c })
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Order latest-write-first: reading backward from the use, the nearest
+  -- preceding write (a reassignment) should come before the declaration. Sort by
+  -- source position descending (same buffer here, since references on a local are
+  -- function-scoped; uri is included to keep it total).
+  table.sort(out, function(a, b)
+    if a.bufnr ~= b.bufnr then return a.bufnr > b.bufnr end
+    if a.row ~= b.row then return a.row > b.row end
+    return a.col > b.col
+  end)
   return out
 end
 
@@ -1412,6 +1499,22 @@ local function describe_site(site)
   local line = (site.land and site.land.row) or site.range.start.line
   local bufnr = load_buf(site.uri)
   local text = bufnr and (vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ''):gsub('^%s+', '') or ''
+
+  -- The source line alone doesn't show WHERE on it the hop lands (e.g. for
+  -- `shardCount = 1` you can't tell it lands on `1` vs `shardCount`). Append the
+  -- exact landing target: the treesitter node at the land position.
+  local target
+  if bufnr and site.land then
+    local n = node_at(bufnr, site.land.row, site.land.col)
+    if n then
+      target = node_text(bufnr, n):gsub('\n.*', '...')
+      if target == text then target = nil end -- whole-line node adds nothing
+    end
+  end
+
+  if target then
+    return string.format('%s:%d: %s  -> %s', rel, line + 1, text, target)
+  end
   return string.format('%s:%d: %s', rel, line + 1, text)
 end
 
@@ -1523,24 +1626,41 @@ local function sources_at(bufnr, row, col, ctx)
       return { sites = sites, empty_msg = 'trace: no writes to this field found' }
     end
 
-    -- Name declared by `:=`/`var`. In projection mode, if the value is a field
-    -- read, follow its container with the projection; otherwise follow normally.
+    -- Name declared by `:=`/`var`, cursor on the declaration name itself. In
+    -- projection mode, if the value is a field read, follow its container with
+    -- the projection. (Handled here, before the general variable case, because a
+    -- projected selector RHS needs the container-following treatment.)
     local decl = var_decl_value_under_cursor(cfg, node)
-    if decl and decl.value then
-      if ctx.project and decl.value:type() == cfg.selector_expr then
-        local operand, fields = selector_path(cfg, bufnr, decl.value)
-        if operand and fields and #fields > 0 then
-          local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
-          for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
-          return {
-            sites = sites,
-            empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
-          }
-        end
+    if decl and decl.value and ctx.project and decl.value:type() == cfg.selector_expr then
+      local operand, fields = selector_path(cfg, bufnr, decl.value)
+      if operand and fields and #fields > 0 then
+        local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
+        for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
+        return {
+          sites = sites,
+          empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
+        }
       end
-      local sites = value_sites(cfg, bufnr, decl.value, decl.result_index)
-      for _, s in ipairs(sites) do s.kind = 'value' end
-      return { sites = sites, empty_msg = 'trace: no value source found' }
+    end
+
+    -- A plain local variable, whether the cursor is on the declaration name or a
+    -- later use. Trace ALL its value-sources: the declaration's RHS plus every
+    -- reassignment (the variable analog of field-write tracing). Multiple writes
+    -- become branches. We detect "is a local variable" by asking for its writes;
+    -- if it has any, this is the case (a package/func/type name yields none and
+    -- falls through to go-to-definition).
+    if node:type() == 'identifier' then
+      local writes = variable_writes(cfg, bufnr, row, col)
+      if #writes > 0 then
+        local sites = {}
+        for _, w in ipairs(writes) do
+          for _, s in ipairs(value_sites(w.cfg, w.bufnr, w.node, 1)) do
+            s.kind = s.kind or 'value'
+            table.insert(sites, s)
+          end
+        end
+        return { sites = sites, empty_msg = 'trace: no value source found' }
+      end
     end
   end
 
@@ -1615,6 +1735,11 @@ function M.trace_up_n(count, opts)
   opts = opts or {}
   count = math.max(count or 1, 1)
   local record = opts.quickfix == true
+
+  -- Record the launch site in the jumplist ONCE (not per hop), so after tracing
+  -- down a branch you can `<C-o>` back to where you started and `gu` again to
+  -- pick a sibling branch. `m'` sets the ' mark, which seeds the jumplist.
+  vim.cmd("normal! m'")
 
   -- The trail: start position first, then each landing as we hop upward.
   local entries = {}
