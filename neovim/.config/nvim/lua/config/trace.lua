@@ -18,6 +18,132 @@
 
 local M = {}
 
+-- ----------------------------------------------------------------------------
+-- Types (LuaLS annotations). The recurring data shapes used throughout.
+-- ----------------------------------------------------------------------------
+
+---A 0-based cursor/landing position within a buffer.
+---@class trace.Land
+---@field row integer 0-based line
+---@field col integer 0-based byte column
+
+---Per-language treesitter node/field names. Scalar fields are node-type or
+---field-name strings; set fields are `table<string, true>` of node types.
+---@class trace.LangSpec
+---@field func_decl table<string, true> function/method declaration node types
+---@field method_decl string method_declaration node type
+---@field receiver_field string field name of a method's receiver parameter_list
+---@field param_list string parameter_list node type
+---@field param_decl table<string, true> parameter declaration node types
+---@field variadic_decl table<string, true> variadic parameter declaration node types
+---@field call_expr string call_expression node type
+---@field call_func_field string field name of a call's function
+---@field selector_expr string selector_expression node type
+---@field selector_field string field name of a selector's field
+---@field selector_operand string field name of a selector's operand
+---@field arg_list string argument_list node type
+---@field short_var_decl string short_var_declaration node type
+---@field var_spec string var_spec node type
+---@field var_spec_name string field name of a var_spec's names
+---@field var_spec_value string field name of a var_spec's value
+---@field return_stmt string return_statement node type
+---@field func_literal string func_literal node type
+---@field func_body string field name of a function body
+---@field unary_expr string unary_expression node type
+---@field unary_operand string field name of a unary expression's operand
+---@field composite_literal string composite_literal node type
+---@field composite_type string field name of a composite literal's type
+---@field composite_body string field name of a composite literal's body
+---@field literal_value string literal_value node type
+---@field literal_element string literal_element node type
+---@field qualified_type string qualified_type node type
+---@field qualified_name string field name of a qualified type's name
+---@field field_ref table<string, true> node types that name a field
+---@field field_ref_exclude_parent table<string, true> parents that disqualify a field ref
+---@field composite_key_ref table<string, true> node types valid as a struct-literal key
+---@field assignment string assignment_statement node type
+---@field assign_left string field name of an assignment's left side
+---@field assign_right string field name of an assignment's right side
+---@field expr_list string expression_list node type
+---@field inc_dec table<string, true> increment/decrement statement node types
+---@field keyed_element string keyed_element node type
+---@field keyed_key string field name of a keyed element's key
+---@field keyed_value string field name of a keyed element's value
+
+---A branch-point picker, same contract as `vim.ui.select`.
+---@alias trace.Picker fun(sites: trace.Site[], opts: { prompt: string, format_item: fun(site: trace.Site): string }, on_choice: fun(site: trace.Site?))
+
+---Module configuration (M.config).
+---@class trace.Config
+---@field debug boolean log diagnostics to :messages
+---@field lsp_timeout integer per-LSP-request timeout, ms
+---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
+---@field project_max_nodes integer projection fan-out cap
+---@field project_max_depth integer projection recursion-depth cap
+---@field picker trace.Picker? branch-point picker (else vim.ui.select)
+
+---A normalized "up" source: a place to jump to, plus how to render/continue it.
+---@class trace.Site
+---@field uri string document URI of the source
+---@field range lsp.Range the LSP range (its start is the fallback land position)
+---@field client vim.lsp.Client? the client that produced it (for offset encoding)
+---@field land trace.Land? precise 0-based spot to land on (else range start)
+---@field kind string? classification (call-site|argument|field-write|value|projection|definition|root)
+---@field chains boolean? false = do not auto-continue from here (jump-to-caller)
+---@field note string? terminal marker (zero value / unresolved / budget), shown in renders
+
+---Result of sources_at: the sources plus a message for the zero-result case.
+---@class trace.SourcesResult
+---@field sites trace.Site[]
+---@field empty_msg string
+
+---A treesitter value node together with the buffer and lang spec it lives in.
+---Used to carry write/return/argument results across buffers. `row`/`col` are
+---only set where ordering matters (variable_writes).
+---@class trace.NodeRef
+---@field cfg trace.LangSpec
+---@field bufnr integer
+---@field node TSNode
+---@field row integer?
+---@field col integer?
+---@field result_index integer? tuple position to follow (callee returns)
+
+---The value feeding a declared name: an expression node and the tuple position
+---to follow within it (for `v, err := f()` style multi-returns).
+---@class trace.BoundValue
+---@field value TSNode
+---@field result_index integer
+
+---A return expression and the tuple position to follow within it.
+---@class trace.ReturnExpr
+---@field node TSNode
+---@field result_index integer
+
+---Projection recursion bounds, threaded through project_sites.
+---@class trace.Budget
+---@field nodes integer running count of visited nodes
+---@field max_nodes integer fan-out cap
+---@field max_depth integer recursion-depth cap
+
+---Context threaded through sources_at / build_tree.
+---@class trace.Ctx
+---@field project boolean? enable precise scope-based field tracing
+---@field project_max_nodes integer? override M.config.project_max_nodes
+---@field project_max_depth integer? override M.config.project_max_depth
+---@field budget trace.Budget? per-call projection budget (set internally)
+
+---A node in the provenance tree built by build_tree.
+---@class trace.TreeNode
+---@field uri string
+---@field bufnr integer?
+---@field row integer 0-based
+---@field col integer 0-based
+---@field kind string?
+---@field note string?
+---@field label string rendered "file:line: source" label
+---@field children trace.TreeNode[]
+---@field truncated ('depth'|'nodes'|'cycle')? why this node was not expanded
+
 -- Configuration. A single plain table is the ONE place config lives -- read at
 -- use time as `M.config.<key>`, written by assigning into it (do that from your
 -- own setup file, keeping this module a pure engine). No vim.g, no setter, no
@@ -29,6 +155,7 @@ local M = {}
 -- where `sites` are the raw site tables ({ uri, range, land = {row,col}, kind })
 -- so a custom picker (e.g. telescope) can build a preview from each site, and
 -- on_choice(site|nil) is called with the chosen site or nil if cancelled.
+---@type trace.Config
 M.config = {
   debug = false,             -- log diagnostics (see dbg/check_lsp) to :messages
   lsp_timeout = 2000,        -- per-LSP-request timeout, ms
@@ -39,6 +166,7 @@ M.config = {
 }
 
 -- Per-language treesitter node names.
+---@type table<string, trace.LangSpec>
 local langs = {
   go = {
     func_decl = { function_declaration = true, method_declaration = true },
@@ -102,6 +230,8 @@ local langs = {
   },
 }
 
+---@param bufnr integer
+---@return trace.LangSpec? spec the lang spec for the buffer's filetype, or nil
 local function cfg_for_buf(bufnr)
   return langs[vim.bo[bufnr].filetype]
 end
@@ -116,6 +246,8 @@ end
 -- STATE (not an event stream), so it is correct no matter when we start looking
 -- (no missed-begin bootstrap hole) and, unlike iterating client.progress, does
 -- not consume the ring buffer the statusline uses.
+---@param bufnr integer
+---@return boolean
 local function lsp_progress_active(bufnr)
   for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
     local pending = client.progress and client.progress.pending
@@ -127,6 +259,7 @@ local function lsp_progress_active(bufnr)
 end
 
 -- Debug logging, toggled with M.config.debug. Visible via :messages.
+---@param ... any parts (strings used as-is, others vim.inspect'd)
 local function dbg(...)
   if not M.config.debug then return end
   local parts = {}
@@ -138,6 +271,11 @@ end
 
 -- Inspect a synchronous LSP result, logging whether it timed out, errored, or
 -- came back empty. `where` labels the call site. Returns the result unchanged.
+---@generic T
+---@param where string label for the call site
+---@param res_or_resps T the LSP result (single request_sync result, or buf_request_sync map)
+---@param single boolean true for a single client:request_sync result shape
+---@return T res_or_resps unchanged
 local function check_lsp(where, res_or_resps, single)
   if not M.config.debug then return res_or_resps end
   if single then
@@ -195,6 +333,8 @@ local co_done = setmetatable({}, { __mode = 'k' })
 -- FRESH main-loop tick (vim.schedule), NOT inside the resume: window-modifying
 -- ex-commands like `copen` are unreliable when executed inside a coroutine
 -- resume driven from an LSP callback. Scheduling done sidesteps that entirely.
+---@param co thread the traced coroutine
+---@param ... any values passed to coroutine.resume
 local function resume_co(co, ...)
   local ok, err = coroutine.resume(co, ...)
   if not ok then
@@ -218,6 +358,10 @@ end
 -- files). So we (a) short-circuit when there are no clients, and (b) guard with
 -- a timeout that resumes with nil -- otherwise the coroutine hangs forever. A
 -- `done` flag prevents the callback and the timeout from both resuming.
+---@param bufnr integer
+---@param method string LSP method
+---@param params table request params
+---@return table<integer, {error: lsp.ResponseError?, result: any}>? results map, or nil
 local function await_buf_request(bufnr, method, params)
   local co = assert(coroutine.running(), 'await must run in a coroutine')
 
@@ -250,7 +394,12 @@ local function await_buf_request(bufnr, method, params)
 end
 
 -- buf_request, dual-mode: async (awaited) inside a coroutine, sync otherwise.
+---@param bufnr integer
+---@param method string LSP method
+---@param params table request params
+---@return table<integer, {error: lsp.ResponseError?, result: any}>? results map, or nil
 local function lsp_buf_request(bufnr, method, params)
+  ---@diagnostic disable-next-line: deprecated
   if coroutine.isyieldable() then
     return await_buf_request(bufnr, method, params)
   end
@@ -261,6 +410,8 @@ end
 -- (e.g. gopls finished indexing). Attached-but-indexing is the common cause of
 -- incomplete results right after startup, so waiting for attach alone is not
 -- enough -- we must also wait for progress to drain.
+---@param bufnr integer
+---@return boolean
 local function lsp_ready(bufnr)
   return #vim.lsp.get_clients({ bufnr = bufnr }) > 0 and not lsp_progress_active(bufnr)
 end
@@ -269,6 +420,8 @@ end
 -- If already ready, calls cb(true) SYNCHRONOUSLY (so callers stay snappy when
 -- gopls is up); otherwise polls on the main loop and calls cb(true) once ready
 -- or cb(false) after lsp_ready_timeout. Usable outside a coroutine.
+---@param bufnr integer
+---@param cb fun(ready: boolean)
 local function wait_lsp_ready(bufnr, cb)
   if lsp_ready(bufnr) then
     return cb(true)
@@ -293,6 +446,8 @@ end
 -- lsp_ready_timeout. Only valid inside a coroutine. (The not-ready path always
 -- resumes on a later tick, never synchronously, so we never resume a running
 -- coroutine.)
+---@param bufnr integer
+---@return boolean ready
 local function await_lsp_ready(bufnr)
   if lsp_ready(bufnr) then
     return true
@@ -312,6 +467,9 @@ end
 -- yield, and each LSP callback resumes it, so `fn` runs to completion across
 -- many event-loop ticks without blocking. `done()` is called (scheduled) when
 -- fn returns, in both async and sync modes.
+---@param async boolean run fn inside a coroutine (true) or directly (false)
+---@param fn fun() the traced body
+---@param done fun()? called (scheduled) when fn returns
 local function run_traced(async, fn, done)
   done = done or function() end
   if not async then
@@ -324,6 +482,9 @@ local function run_traced(async, fn, done)
 end
 
 -- Walk up from `node` to the nearest ancestor whose type is a key in `types`.
+---@param node TSNode?
+---@param types table<string, true> set of node types to match
+---@return TSNode? ancestor the matching ancestor (or self), or nil
 local function find_ancestor(node, types)
   while node do
     if types[node:type()] then
@@ -333,6 +494,9 @@ local function find_ancestor(node, types)
   end
 end
 
+---@param a TSNode?
+---@param b TSNode?
+---@return boolean
 local function nodes_equal(a, b)
   if not (a and b) then return false end
   local ar, ac = a:start()
@@ -341,6 +505,8 @@ local function nodes_equal(a, b)
 end
 
 -- Named children of a node, as a list.
+---@param node TSNode
+---@return TSNode[]
 local function named_children(node)
   local out = {}
   for child in node:iter_children() do
@@ -352,6 +518,9 @@ local function named_children(node)
 end
 
 -- 1-based index of `target` among the named children of `node`, or nil.
+---@param node TSNode
+---@param target TSNode
+---@return integer? index 1-based, or nil if not a named child
 local function index_in_named(node, target)
   local i = 0
   for child in node:iter_children() do
@@ -366,6 +535,9 @@ local function index_in_named(node, target)
 end
 
 -- 1-based index of the named child of `parent` that is, or contains, `node`.
+---@param parent TSNode
+---@param node TSNode
+---@return integer? index 1-based, or nil
 local function child_index_containing(parent, node)
   local i = 0
   for child in parent:iter_children() do
@@ -380,11 +552,19 @@ local function child_index_containing(parent, node)
 end
 
 -- The treesitter node text of a node in bufnr.
+---@param bufnr integer
+---@param node TSNode
+---@return string
 local function node_text(bufnr, node)
   return vim.treesitter.get_node_text(node, bufnr)
 end
 
 -- Convert an LSP (utf-16 by default) character offset to a byte column.
+---@param bufnr integer
+---@param row integer 0-based line
+---@param character integer LSP character offset
+---@param encoding string? offset encoding (default 'utf-16')
+---@return integer col 0-based byte column
 local function byte_col(bufnr, row, character, encoding)
   local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
   if not line then return character end
@@ -402,6 +582,8 @@ end
 -- and definition on it return "no client" and projection dead-ends. We reuse the
 -- live client (cheap: sends didOpen, no server spawn) so those files resolve
 -- without ever being opened. Returns true if a client is now attached.
+---@param b integer bufnr
+---@return boolean attached
 local function ensure_lsp_attached(b)
   if #vim.lsp.get_clients({ bufnr = b }) > 0 then
     return true
@@ -414,6 +596,7 @@ local function ensure_lsp_attached(b)
   local ft = vim.bo[b].filetype
   local attached = false
   for _, client in ipairs(vim.lsp.get_clients()) do
+    ---@diagnostic disable-next-line: undefined-field
     local fts = client.config and client.config.filetypes
     if (not fts or vim.tbl_contains(fts, ft)) and vim.lsp.buf_attach_client(b, client.id) then
       attached = true
@@ -422,6 +605,8 @@ local function ensure_lsp_attached(b)
   return attached
 end
 
+---@param uri string a document URI or a filesystem path
+---@return integer? bufnr the loaded buffer, or nil if it couldn't be loaded
 local function load_buf(uri)
   local path = uri:match('^%w+://') and vim.uri_to_fname(uri) or uri
   local b = vim.fn.bufadd(path)
@@ -444,6 +629,10 @@ end
 -- plain vim.treesitter.get_node returns nil for it. We force a parse first, so
 -- cross-file lookups (call sites, definitions in other files) work without the
 -- buffer ever being displayed.
+---@param bufnr integer
+---@param row integer 0-based line
+---@param col integer 0-based byte column
+---@return TSNode? node the node at the position, or nil
 local function node_at(bufnr, row, col)
   local ft = vim.bo[bufnr].filetype
   local lang = vim.treesitter.language.get_lang(ft) or ft
@@ -456,6 +645,9 @@ end
 -- True if `plist` (a parameter_list) is a method's receiver list, not its
 -- regular parameters. A receiver is NOT argument 0 at call sites: it's the
 -- selector operand (`x` in `x.Method(...)`), so it must be handled separately.
+---@param cfg trace.LangSpec
+---@param plist TSNode a parameter_list node
+---@return boolean
 local function is_receiver_list(cfg, plist)
   local parent = plist:parent()
   if not parent or parent:type() ~= cfg.method_decl then return false end
@@ -464,6 +656,9 @@ local function is_receiver_list(cfg, plist)
 end
 
 -- If `node` is a method receiver, return its declaration node, else nil.
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return TSNode? receiver_decl
 local function receiver_under_cursor(cfg, node)
   if not node then return nil end
   local pdecl = find_ancestor(node, cfg.param_decl)
@@ -479,6 +674,10 @@ end
 -- index (0-based, counting individual names) and whether it is variadic.
 -- Returns nil if the cursor is not on a parameter (or is on a method receiver,
 -- which is handled separately since it maps to the call's operand, not an arg).
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return integer? index 0-based flat parameter index, or nil
+---@return boolean? variadic whether the parameter is variadic
 local function param_under_cursor(cfg, node)
   if not node then return nil end
 
@@ -489,6 +688,7 @@ local function param_under_cursor(cfg, node)
   if is_receiver_list(cfg, plist) then return nil end
 
   -- The identifier the cursor is actually on (for multi-name params).
+  ---@type TSNode?
   local cursor_id = node
   while cursor_id and cursor_id:type() ~= 'identifier' do
     cursor_id = cursor_id:parent()
@@ -524,6 +724,9 @@ end
 
 -- If the cursor is on the *name* of a function/method declaration, return that
 -- name node's start position (for call hierarchy). Returns nil otherwise.
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return lsp.Position? pos 0-based {line, character} of the decl name, or nil
 local function func_name_decl_under_cursor(cfg, node)
   if not node then return nil end
   local decl = find_ancestor(node, cfg.func_decl)
@@ -539,6 +742,9 @@ local function func_name_decl_under_cursor(cfg, node)
 end
 
 -- Start position of the enclosing function's *name*, for call hierarchy.
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return lsp.Position? pos 0-based {line, character} of the enclosing func name, or nil
 local function enclosing_func_name_pos(cfg, node)
   node = find_ancestor(node, cfg.func_decl)
   if not node then return nil end
@@ -549,7 +755,9 @@ local function enclosing_func_name_pos(cfg, node)
 end
 
 -- Collect call sites of the function whose name is at `pos` via call hierarchy.
--- Returns a list of { uri = string, range = lsp.Range }.
+---@param bufnr integer
+---@param pos lsp.Position 0-based position of the function name
+---@return trace.Site[] sites
 local function incoming_call_sites(bufnr, pos)
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
@@ -562,7 +770,7 @@ local function incoming_call_sites(bufnr, pos)
   local sites = {}
   for client_id, resp in pairs(prepared) do
     for _, item in ipairs(resp.result or {}) do
-      local client = vim.lsp.get_client_by_id(resp.client_id or client_id or 0)
+      local client = vim.lsp.get_client_by_id(client_id)
       local calls = lsp_buf_request(bufnr, 'callHierarchy/incomingCalls', { item = item })
       check_lsp('incomingCalls', calls, false)
       for _, cresp in pairs(calls or {}) do
@@ -584,6 +792,10 @@ end
 -- `site` (an LSP location). Returns nil to mean "land on the call itself"
 -- (function-name case, or no matching argument). Loads the buffer but does not
 -- move the cursor, so it can be used while merely building data.
+---@param site trace.Site the call site
+---@param index integer? 0-based argument index (nil = land on the call itself)
+---@param variadic boolean? whether the parameter is variadic
+---@return trace.Land? land 0-based landing, or nil to land on the call
 local function argument_land(site, index, variadic)
   if index == nil then return nil end
   local b = load_buf(site.uri)
@@ -620,6 +832,10 @@ end
 -- Like argument_land, but returns the argument's treesitter node along with its
 -- buffer and cfg: { cfg, bufnr, node }. Used by projection to keep tracing into
 -- the argument expression. Returns nil if no matching argument.
+---@param site trace.Site the call site
+---@param index integer? 0-based argument index
+---@param variadic boolean? whether the parameter is variadic
+---@return trace.NodeRef? ref the argument node, or nil
 local function argument_node(site, index, variadic)
   if index == nil then return nil end
   local b = load_buf(site.uri)
@@ -661,6 +877,8 @@ end
 -- as { cfg, bufnr, node }. A method receiver maps to the call's selector
 -- operand, NOT to argument 0 -- conflating them is what sent projection chasing
 -- `ctx` into unrelated code. Returns nil if the call isn't a method call.
+---@param site trace.Site the call site
+---@return trace.NodeRef? ref the receiver operand node, or nil
 local function receiver_operand_node(site)
   local b = load_buf(site.uri)
   if not b then return nil end
@@ -682,6 +900,7 @@ end
 
 -- Open a site in the current window and land on `site.land` (0-based) if set,
 -- else at the site's range start. The single jump primitive for all cases.
+---@param site trace.Site
 local function goto_site(site)
   local enc = site.client and site.client.offset_encoding or 'utf-16'
   vim.lsp.util.show_document({ uri = site.uri, range = site.range }, enc, { focus = true })
@@ -704,6 +923,9 @@ end
 -- reuse the field_identifier node type, so we exclude those: declaration names
 -- (handled by the func-name case) and method calls like `s.method()` (which
 -- should go to the method definition, like a plain function usage).
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return TSNode? field the field-name node, or nil
 local function field_under_cursor(cfg, node)
   if not node then return nil end
   if not cfg.field_ref[node:type()] then return nil end
@@ -734,6 +956,9 @@ end
 -- Given the treesitter node at a field reference, decide whether it is a write.
 -- Returns nil for reads, otherwise a treesitter node to land on (the source
 -- value expression), or false to mean "a write with no source" (e.g. `x++`).
+---@param cfg trace.LangSpec
+---@param ref TSNode the reference node (a field or identifier)
+---@return TSNode|false|nil value source value node, false for a sourceless write, nil for a read
 local function classify_field_write(cfg, ref)
   -- struct literal key: S{field: <value>}
   local keyed = find_ancestor(ref, { [cfg.keyed_element] = true })
@@ -778,6 +1003,9 @@ end
 -- `*x`) and, for a field read `a.b.c`, land on the trailing field rather than the
 -- operand `a` (the same rule value_sites applies; field_write_sites builds its
 -- landing independently and must apply it too).
+---@param cfg trace.LangSpec
+---@param value TSNode the assigned-value node
+---@return TSNode landing the node to actually land on
 local function refine_landing_node(cfg, value)
   -- A struct-literal keyed value comes wrapped in a literal_element; unwrap to
   -- the real expression (e.g. the selector inside `BatchSize: ing.cfg.BatchSize`).
@@ -796,8 +1024,10 @@ local function refine_landing_node(cfg, value)
 end
 
 -- Find every write to the field whose name is at `pos`, via LSP references +
--- treesitter classification. Returns a list of
---   { uri, range, client, land = { row, col } }  (land is 0-based)
+-- treesitter classification.
+---@param bufnr integer
+---@param pos lsp.Position 0-based position of the field name
+---@return trace.Site[] sites
 local function field_write_sites(bufnr, pos)
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
@@ -810,8 +1040,8 @@ local function field_write_sites(bufnr, pos)
 
   local sites = {}
   local seen = {}
-  for _, resp in pairs(resps) do
-    local client = vim.lsp.get_client_by_id(resp.client_id or 0)
+  for client_id, resp in pairs(resps) do
+    local client = vim.lsp.get_client_by_id(client_id)
     local enc = client and client.offset_encoding or 'utf-16'
     for _, loc in ipairs(resp.result or {}) do
       local uri = loc.uri or loc.targetUri
@@ -822,7 +1052,7 @@ local function field_write_sites(bufnr, pos)
 
         local b = load_buf(uri)
         local cfg = b and cfg_for_buf(b)
-        if cfg then
+        if b and cfg then
           local row = range.start.line
           local col = byte_col(b, row, range.start.character, enc)
           local ref = node_at(b, row, col)
@@ -850,6 +1080,10 @@ end
 -- vim.lsp.buf.definition would let us record a stale position). A symbol can
 -- resolve to several definitions (interfaces, etc). Used both for the cursor
 -- fallback and for descending into a callee while following a value.
+---@param bufnr integer
+---@param row integer 0-based line
+---@param col integer 0-based byte column
+---@return trace.Site[] sites definition sites (deduped)
 local function lsp_definition_at(bufnr, row, col)
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/definition' })
   if #clients == 0 then return {} end
@@ -889,11 +1123,6 @@ local function lsp_definition_at(bufnr, row, col)
   return sites
 end
 
-local function definition_sites(bufnr)
-  local pos = vim.api.nvim_win_get_cursor(0)
-  return lsp_definition_at(bufnr, pos[1] - 1, pos[2])
-end
-
 -- ----------------------------------------------------------------------------
 -- Following a value back through a local declaration.
 --
@@ -908,6 +1137,10 @@ end
 -- ----------------------------------------------------------------------------
 
 -- An LSP range (in `encoding`) for a treesitter node in `bufnr`.
+---@param bufnr integer
+---@param node TSNode
+---@param encoding string? offset encoding (default 'utf-16')
+---@return lsp.Range
 local function node_lsp_range(bufnr, node, encoding)
   local sr, sc, er, ec = node:range()
   local function pos(row, col)
@@ -921,6 +1154,10 @@ local function node_lsp_range(bufnr, node, encoding)
 end
 
 -- Build a landing site (same shape as field-write sites) for a node in bufnr.
+---@param bufnr integer
+---@param node TSNode the node to land on
+---@param client vim.lsp.Client? for offset encoding
+---@return trace.Site
 local function landing_site(bufnr, node, client)
   local row, col = node:start()
   local enc = client and client.offset_encoding or 'utf-16'
@@ -935,6 +1172,10 @@ end
 -- Given `n_targets` assignment targets and the value expression list, return the
 -- value feeding target `idx` (1-based): { value = node, result_index = N }.
 -- Handles the multi-return case `v, err := f()` where one call feeds many names.
+---@param n_targets integer number of assignment targets
+---@param value_list TSNode the value expression_list
+---@param idx integer 1-based target index
+---@return trace.BoundValue
 local function tuple_value(n_targets, value_list, idx)
   local vals = named_children(value_list)
   if #vals == n_targets then
@@ -949,6 +1190,9 @@ end
 -- If `node` is a name declared by a `:=` or `var` declaration, return
 -- { value, result_index } describing where that name's value comes from.
 -- Returns nil otherwise.
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return trace.BoundValue? bound
 local function bound_value_for(cfg, node)
   if not node or node:type() ~= 'identifier' then return nil end
 
@@ -982,6 +1226,9 @@ end
 -- If the cursor is on the name being declared in a `:=` or `var` declaration,
 -- return { value, result_index } describing where that name's value comes from.
 -- Returns nil otherwise.
+---@param cfg trace.LangSpec
+---@param node TSNode?
+---@return trace.BoundValue? bound
 local function var_decl_value_under_cursor(cfg, node)
   return bound_value_for(cfg, node)
 end
@@ -991,6 +1238,10 @@ end
 -- since their returns belong to a different scope). Each result is
 -- { node, result_index }: the expression and, if it is itself a call, the tuple
 -- position to follow within it (preserved across `return f()` passthroughs).
+---@param cfg trace.LangSpec
+---@param func_node TSNode a function/method declaration or func_literal
+---@param result_index integer 1-based tuple position
+---@return trace.ReturnExpr[] returns
 local function return_expressions(cfg, func_node, result_index)
   local body = func_node:field(cfg.func_body)[1]
   if not body then return {} end
@@ -1029,6 +1280,9 @@ local function return_expressions(cfg, func_node, result_index)
 end
 
 -- The function name node of a call (handles `pkg.Fn` / `recv.Method`).
+---@param cfg trace.LangSpec
+---@param call TSNode a call_expression
+---@return TSNode? name the callee name node, or nil
 local function call_name_node(cfg, call)
   local fn = call:field(cfg.call_func_field)[1]
   if not fn then return nil end
@@ -1042,6 +1296,11 @@ end
 -- expressions for tuple position `result_index`, as a list of
 -- { cfg, bufnr, node, result_index }. Handles named funcs/methods and closures
 -- (a variable bound to a func_literal). Shared by value_sites and projection.
+---@param cfg trace.LangSpec
+---@param bufnr integer
+---@param call TSNode a call_expression
+---@param result_index integer 1-based tuple position
+---@return trace.NodeRef[] returns return expressions with their buffer/cfg
 local function callee_returns(cfg, bufnr, call, result_index)
   local name_node = call_name_node(cfg, call)
   if not name_node then return {} end
@@ -1052,7 +1311,7 @@ local function callee_returns(cfg, bufnr, call, result_index)
   for _, def in ipairs(defs) do
     local b = load_buf(def.uri)
     local dcfg = b and cfg_for_buf(b)
-    if dcfg then
+    if b and dcfg then
       local enc = def.client and def.client.offset_encoding or 'utf-16'
       local drow = def.range.start.line
       local dcol = byte_col(b, drow, def.range.start.character, enc)
@@ -1095,6 +1354,13 @@ end
 -- definition, or one with no return at this position) falls back to landing on
 -- the call expression itself. We never silently drop a branch: better to arrive
 -- at the call and let the trace continue manually than to lose it.
+---@param cfg trace.LangSpec
+---@param bufnr integer
+---@param value TSNode the value node to follow
+---@param result_index integer 1-based tuple position
+---@param visited table<string, true>? cycle-guard (keyed by location)
+---@param depth integer? recursion depth
+---@return trace.Site[] sites
 local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   visited = visited or {}
   depth = depth or 0
@@ -1166,6 +1432,11 @@ end
 
 -- Within a composite literal node, return the value node for the keyed element
 -- whose key matches `field`, or nil if the field is not set (zero value).
+---@param cfg trace.LangSpec
+---@param bufnr integer
+---@param lit TSNode a composite_literal
+---@param field string the field name to match
+---@return TSNode? value the keyed element's value node, or nil
 local function composite_field_value(cfg, bufnr, lit, field)
   local body = lit:field(cfg.composite_body)[1]
   if not body or body:type() ~= cfg.literal_value then return nil end
@@ -1192,8 +1463,14 @@ end
 
 -- Find writes of `.field` on the specific variable declared/named at the given
 -- definition (scope-limited via LSP references on that variable). Returns a list
--- of value nodes assigned to `.field`, each as { cfg, bufnr, node }.
-local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
+-- of value nodes assigned to `.field`, each as { cfg, bufnr, node }. The lang
+-- spec is derived per result buffer, so the start buffer's spec is not needed.
+---@param bufnr integer
+---@param var_row integer 0-based line of the variable
+---@param var_col integer 0-based byte column of the variable
+---@param field string the field name to match
+---@return trace.NodeRef[] writes
+local function variable_field_writes(bufnr, var_row, var_col, field)
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = { line = var_row, character = var_col },
@@ -1204,8 +1481,8 @@ local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
   if not resps then return {} end
 
   local out, seen = {}, {}
-  for _, resp in pairs(resps) do
-    local client = vim.lsp.get_client_by_id(resp.client_id or 0)
+  for client_id, resp in pairs(resps) do
+    local client = vim.lsp.get_client_by_id(client_id)
     local enc = client and client.offset_encoding or 'utf-16'
     for _, loc in ipairs(resp.result or {}) do
       local uri = loc.uri or loc.targetUri
@@ -1215,7 +1492,7 @@ local function variable_field_writes(cfg, bufnr, var_row, var_col, field)
         seen[key] = true
         local b = load_buf(uri)
         local bcfg = b and cfg_for_buf(b)
-        if bcfg then
+        if b and bcfg then
           local r = range.start.line
           local c = byte_col(b, r, range.start.character, enc)
           local refnode = node_at(b, r, c)
@@ -1245,8 +1522,13 @@ end
 -- field-write tracing -- scope-limited via LSP references on the variable, so it
 -- only sees writes in the enclosing function. Each result is a value node as
 -- { cfg, bufnr, node }; a write with no source (e.g. `x++`) is skipped.
--- Returns the list, which may have several entries (branches).
-local function variable_writes(cfg, bufnr, var_row, var_col)
+-- Returns the list, which may have several entries (branches), latest-first.
+-- The lang spec is derived per result buffer, so the start spec is not needed.
+---@param bufnr integer
+---@param var_row integer 0-based line of the variable
+---@param var_col integer 0-based byte column of the variable
+---@return trace.NodeRef[] writes value sources, ordered latest-write-first
+local function variable_writes(bufnr, var_row, var_col)
   local params = {
     textDocument = vim.lsp.util.make_text_document_params(bufnr),
     position = { line = var_row, character = var_col },
@@ -1257,8 +1539,8 @@ local function variable_writes(cfg, bufnr, var_row, var_col)
   if not resps then return {} end
 
   local out, seen = {}, {}
-  for _, resp in pairs(resps) do
-    local client = vim.lsp.get_client_by_id(resp.client_id or 0)
+  for client_id, resp in pairs(resps) do
+    local client = vim.lsp.get_client_by_id(client_id)
     local enc = client and client.offset_encoding or 'utf-16'
     for _, loc in ipairs(resp.result or {}) do
       local uri = loc.uri or loc.targetUri
@@ -1268,7 +1550,7 @@ local function variable_writes(cfg, bufnr, var_row, var_col)
         seen[key] = true
         local b = load_buf(uri)
         local bcfg = b and cfg_for_buf(b)
-        if bcfg then
+        if b and bcfg then
           local r = range.start.line
           local c = byte_col(b, r, range.start.character, enc)
           local refnode = node_at(b, r, c)
@@ -1310,6 +1592,14 @@ end
 -- identifier resolves to its binding or scope-limited field writes; a selector
 -- prepends its field. Unresolvable points terminate (marked) -- no codebase-wide
 -- fallback. Returns a list of sites (each may carry `note` for marking).
+---@param cfg trace.LangSpec
+---@param bufnr integer
+---@param value TSNode the container value to follow
+---@param proj string[] the pending field path (e.g. { 'Server', 'Port' })
+---@param visited table<string, true>? cycle-guard (keyed by location + proj)
+---@param depth integer? recursion depth
+---@param budget trace.Budget? projection bounds
+---@return trace.Site[] sites
 local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
   visited = visited or {}
   depth = depth or 0
@@ -1405,7 +1695,7 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
     local sites = {}
 
     -- Direct writes of `.field` on this specific variable, in its scope.
-    local fwrites = variable_field_writes(cfg, bufnr, vr, vc, field)
+    local fwrites = variable_field_writes(bufnr, vr, vc, field)
     dbg(string.format('  identifier .%s: %d in-scope field write(s)', field, #fwrites))
     for _, w in ipairs(fwrites) do
       vim.list_extend(sites, project_sites(w.cfg, w.bufnr, w.node, rest, visited, depth + 1, budget))
@@ -1427,7 +1717,7 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
       if b and not dcfg then
         dbg('    def in buffer with no cfg (filetype not supported?)', vim.uri_to_fname(def.uri))
       end
-      if dcfg then
+      if b and dcfg then
         local enc = def.client and def.client.offset_encoding or 'utf-16'
         local dr = def.range.start.line
         local dc = byte_col(b, dr, def.range.start.character, enc)
@@ -1506,6 +1796,8 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
 end
 
 -- A short, single-line description of a site for a picker.
+---@param site trace.Site
+---@return string
 local function describe_site(site)
   local path = vim.uri_to_fname(site.uri)
   local rel = vim.fn.fnamemodify(path, ':~:.')
@@ -1535,10 +1827,18 @@ end
 -- `a.b.c`: returns the innermost operand node and the list of field names in
 -- order, e.g. for `cfg.Server.Port` -> (operand `cfg`, { 'Server', 'Port' }).
 -- Returns nil if not a field read.
+---@param cfg trace.LangSpec
+---@param bufnr integer
+---@param node TSNode
+---@return TSNode? operand the innermost operand (or nil if not a field read)
+---@return string[]? fields the field names in order
 local function selector_path(cfg, bufnr, node)
-  -- Climb to the outermost selector_expression covering the cursor.
+  -- Climb to the outermost selector_expression covering the cursor. `node` is
+  -- non-nil; `sel` becomes optional only because the loop below may walk off the
+  -- top via :parent().
+  ---@type TSNode?
   local sel = node
-  if sel:type() ~= cfg.selector_expr then
+  if node:type() ~= cfg.selector_expr then
     sel = find_ancestor(node, { [cfg.selector_expr] = true })
   end
   while sel and sel:parent() and sel:parent():type() == cfg.selector_expr do
@@ -1571,6 +1871,11 @@ end
 -- as a projection, resolving it at the concrete struct rather than searching the
 -- whole codebase for `.Enabled` writes.
 -- ----------------------------------------------------------------------------
+---@param bufnr integer
+---@param row integer 0-based line
+---@param col integer 0-based byte column
+---@param ctx trace.Ctx? tracing context (projection toggle, bounds)
+---@return trace.SourcesResult
 local function sources_at(bufnr, row, col, ctx)
   ctx = ctx or {}
   -- A fresh projection budget per sources_at call: bounds one hop's worth of
@@ -1663,7 +1968,7 @@ local function sources_at(bufnr, row, col, ctx)
     -- if it has any, this is the case (a package/func/type name yields none and
     -- falls through to go-to-definition).
     if node:type() == 'identifier' then
-      local writes = variable_writes(cfg, bufnr, row, col)
+      local writes = variable_writes(bufnr, row, col)
       if #writes > 0 then
         local sites = {}
         for _, w in ipairs(writes) do
@@ -1686,6 +1991,9 @@ end
 -- Shared "land on a site" UX: zero sites stops with a message, one site jumps
 -- silently (so chaining continues), many sites prompt (a branch point, so we
 -- stop). `opts.select` overrides the picker (defaults to vim.ui.select).
+---@param result trace.SourcesResult
+---@param opts { select: trace.Picker? }
+---@param on_done fun(moved: boolean)
 local function resolve_sites(result, opts, on_done)
   local sites = result.sites
   if #sites == 0 then
@@ -1708,6 +2016,8 @@ end
 -- One hop "up". Returns true if the cursor moved (so a caller can keep going),
 -- false if we stopped (origin reached, ambiguous and prompting, or error).
 -- `on_done(moved)` is called when the hop settles. opts.select overrides picker.
+---@param on_done fun(moved: boolean)?
+---@param opts { select: trace.Picker? }?
 function M.trace_up(on_done, opts)
   on_done = on_done or function() end
   opts = opts or {}
@@ -1718,6 +2028,7 @@ function M.trace_up(on_done, opts)
 end
 
 -- Build a quickfix entry describing the current cursor position.
+---@return vim.quickfix.entry
 local function qf_entry_for_cursor()
   local pos = vim.api.nvim_win_get_cursor(0)
   return {
@@ -1731,19 +2042,25 @@ end
 -- A comparable snapshot of the cursor location, to detect a hop that lands where
 -- it started (e.g. go-to-definition on an identifier that is already its own
 -- definition). Such a fixpoint is an origin, so the loop must stop there.
+---@return { buf: integer, row: integer, col: integer }
 local function cursor_location()
   local pos = vim.api.nvim_win_get_cursor(0)
   return { buf = vim.api.nvim_get_current_buf(), row = pos[1], col = pos[2] }
 end
 
+---@param a { buf: integer, row: integer, col: integer }?
+---@param b { buf: integer, row: integer, col: integer }?
+---@return boolean
 local function same_location(a, b)
-  return a and b and a.buf == b.buf and a.row == b.row and a.col == b.col
+  return a ~= nil and b ~= nil and a.buf == b.buf and a.row == b.row and a.col == b.col
 end
 
 -- Repeat trace_up up to `count` times, stopping early at any branch point or
 -- origin. opts:
 --   quickfix (boolean)  when true, record the start position and every hop into
 --                       a new quickfix list titled "Trace", opening it at the end.
+---@param count integer? number of hops (default 1)
+---@param opts { quickfix: boolean?, select: trace.Picker? }?
 function M.trace_up_n(count, opts)
   opts = opts or {}
   count = math.max(count or 1, 1)
@@ -1798,7 +2115,7 @@ function M.trace_up_n(count, opts)
   wait_lsp_ready(bufnr, function(ready)
     if not ready then
       vim.api.nvim_echo({ { '[trace] no LSP client ready after '
-        .. M.config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
+      .. M.config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
       return
     end
     vim.api.nvim_echo({ { '' } }, false, {}) -- clear the "waiting" message
@@ -1819,6 +2136,9 @@ end
 -- ----------------------------------------------------------------------------
 
 -- The land location of a site (0-based row/col), defaulting to its range start.
+---@param site trace.Site
+---@return integer row 0-based
+---@return integer col 0-based
 local function site_land(site)
   if site.land then return site.land.row, site.land.col end
   local enc = site.client and site.client.offset_encoding or 'utf-16'
@@ -1828,6 +2148,10 @@ local function site_land(site)
 end
 
 -- A one-line label for a tree node: "file:line: <trimmed source>".
+---@param uri string
+---@param row integer 0-based line
+---@return string label
+---@return integer? bufnr the loaded buffer (or nil)
 local function node_label(uri, row)
   local b = load_buf(uri)
   local rel = vim.fn.fnamemodify(vim.uri_to_fname(uri), ':~:.')
@@ -1838,8 +2162,12 @@ end
 -- Build a provenance tree rooted at (bufnr, row, col). opts:
 --   max_depth (default 15), max_nodes (default 200),
 --   project (boolean, default true) -- precise scope-based field tracing.
--- Returns the root node: { uri, row, col, kind, label, note, children = {...},
--- truncated = nil|'depth'|'nodes'|'cycle' }.
+-- Returns the root node.
+---@param bufnr integer
+---@param row integer 0-based line
+---@param col integer 0-based byte column
+---@param opts { max_depth: integer?, max_nodes: integer?, project: boolean? }?
+---@return trace.TreeNode root
 function M.build_tree(bufnr, row, col, opts)
   opts = opts or {}
   local max_depth = opts.max_depth or 15
@@ -1850,6 +2178,13 @@ function M.build_tree(bufnr, row, col, opts)
 
   local function loc_key(uri, r, c) return string.format('%s:%d:%d', uri, r, c) end
 
+  ---@param uri string
+  ---@param b integer?
+  ---@param r integer
+  ---@param c integer
+  ---@param kind string?
+  ---@param note string?
+  ---@return trace.TreeNode
   local function make_node(uri, b, r, c, kind, note)
     local label = node_label(uri, r)
     return { uri = uri, bufnr = b, row = r, col = c, kind = kind, note = note, label = label, children = {} }
@@ -1893,6 +2228,11 @@ end
 -- Flatten a tree (pre-order DFS) into quickfix entries with indentation +
 -- box-drawing prefixes. quickfix is structurally flat, so the tree is rendered
 -- as static text; each entry still jumps to real code via bufnr/lnum/col.
+---@param node trace.TreeNode
+---@param prefix string accumulated indentation prefix
+---@param is_last boolean whether this node is the last child
+---@param is_root boolean whether this is the tree root
+---@param out vim.quickfix.entry[] accumulator
 local function flatten_tree(node, prefix, is_last, is_root, out)
   local branch, child_prefix
   if is_root then
@@ -1931,6 +2271,7 @@ end
 -- responsive while gopls is queried, and the quickfix list is populated (and
 -- opened) only once the whole tree is built, so the cursor is never moved
 -- mid-run. Pass opts.async = false to build synchronously (blocking).
+---@param opts { max_depth: integer?, max_nodes: integer?, project: boolean?, async: boolean? }?
 function M.trace_tree(opts)
   opts = opts or {}
   local async = opts.async ~= false
