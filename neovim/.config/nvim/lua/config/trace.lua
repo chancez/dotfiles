@@ -265,14 +265,14 @@ local function lsp_ready(bufnr)
   return #vim.lsp.get_clients({ bufnr = bufnr }) > 0 and not lsp_progress_active(bufnr)
 end
 
--- Await until the LSP is ready (see lsp_ready) on `bufnr`. Polls on the main
--- loop without blocking; returns true once ready, or false after
--- lsp_ready_timeout. Only valid inside a coroutine.
-local function await_lsp_ready(bufnr)
+-- Wait (non-blocking) until the LSP is ready on `bufnr`, then call `cb(ready)`.
+-- If already ready, calls cb(true) SYNCHRONOUSLY (so callers stay snappy when
+-- gopls is up); otherwise polls on the main loop and calls cb(true) once ready
+-- or cb(false) after lsp_ready_timeout. Usable outside a coroutine.
+local function wait_lsp_ready(bufnr, cb)
   if lsp_ready(bufnr) then
-    return true
+    return cb(true)
   end
-  local co = assert(coroutine.running(), 'await_lsp_ready must run in a coroutine')
   local deadline = M.config.lsp_ready_timeout
   local interval = 100
   local waited = 0
@@ -283,9 +283,27 @@ local function await_lsp_ready(bufnr)
     if ready or waited >= deadline then
       timer:stop()
       timer:close()
-      resume_co(co, ready)
+      cb(ready)
     end
   end))
+end
+
+-- Await until the LSP is ready (see lsp_ready) on `bufnr`. Polls on the main
+-- loop without blocking; returns true once ready, or false after
+-- lsp_ready_timeout. Only valid inside a coroutine. (The not-ready path always
+-- resumes on a later tick, never synchronously, so we never resume a running
+-- coroutine.)
+local function await_lsp_ready(bufnr)
+  if lsp_ready(bufnr) then
+    return true
+  end
+  local co = assert(coroutine.running(), 'await_lsp_ready must run in a coroutine')
+  -- Defer the resume: wait_lsp_ready may invoke its cb synchronously (if the
+  -- buffer became ready between our check and its recheck), which would resume
+  -- this coroutine before it has yielded. vim.schedule guarantees a later tick.
+  wait_lsp_ready(bufnr, function(ready)
+    vim.schedule(function() resume_co(co, ready) end)
+  end)
   return coroutine.yield()
 end
 
@@ -1767,7 +1785,25 @@ function M.trace_up_n(count, opts)
       vim.schedule(function() step(remaining - 1) end)
     end, { select = opts.select })
   end
-  step(count)
+
+  -- Wait for the LSP to be ready before the first hop (just like trace_tree):
+  -- running right after startup against a still-indexing gopls otherwise fails.
+  -- When already ready (the common case) this runs synchronously, so `gu` stays
+  -- instant; only a cold/indexing server defers.
+  local bufnr = vim.api.nvim_get_current_buf()
+  if lsp_ready(bufnr) then
+    return step(count)
+  end
+  vim.api.nvim_echo({ { '[trace] waiting for LSP...' } }, false, {})
+  wait_lsp_ready(bufnr, function(ready)
+    if not ready then
+      vim.api.nvim_echo({ { '[trace] no LSP client ready after '
+        .. M.config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
+      return
+    end
+    vim.api.nvim_echo({ { '' } }, false, {}) -- clear the "waiting" message
+    step(count)
+  end)
 end
 
 -- ----------------------------------------------------------------------------
