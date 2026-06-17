@@ -1656,12 +1656,34 @@ local function variable_field_writes(bufnr, var_row, var_col, field)
   return out
 end
 
+-- Whether (row, col) (0-based, byte col) falls within `node`'s range.
+---@param node TSNode
+---@param row integer
+---@param col integer
+---@return boolean
+local function node_contains(node, row, col)
+  local sr, sc, er, ec = node:range()
+  if row < sr or row > er then return false end
+  if row == sr and col < sc then return false end
+  if row == er and col >= ec then return false end
+  return true
+end
+
 -- Find all the value-sources of a plain local variable at (var_row, var_col):
 -- the declaration's RHS (`x := <value>` / `var x = <value>`) AND every later
 -- reassignment (`x = <value>`, `x += <value>`). The variable analog of
 -- field-write tracing -- scope-limited via LSP references on the variable, so it
 -- only sees writes in the enclosing function. Each result is a value node as
 -- { cfg, bufnr, node }; a write with no source (e.g. `x++`) is skipped.
+--
+-- Two refinements beyond plain writes:
+--  * If the variable IS a function parameter, the parameter declaration is also a
+--    source: we ride out to each call site's matching argument (like the param
+--    branch of sources_at), adding those argument expressions as value-sources.
+--  * A self-referential reassignment whose RHS CONTAINS the cursor usage
+--    (`x = f(x)` read while on the inner `x`) is skipped: at that read the
+--    post-assignment value does not exist yet. This is narrow, unambiguous flow
+--    logic, not general reaching-definitions.
 -- Returns the list, which may have several entries (branches), latest-first.
 -- The lang spec is derived per result buffer, so the start spec is not needed.
 ---@param bufnr integer
@@ -1697,14 +1719,33 @@ local function variable_writes(bufnr, var_row, var_col)
           if refnode then
             -- A declaration name (`x := v` / `var x = v`): take its bound value.
             local bound = bound_value_for(bcfg, refnode)
+            local index, variadic = param_under_cursor(bcfg, refnode)
             if bound and bound.value then
               table.insert(out, { cfg = bcfg, bufnr = b, node = bound.value, row = r, col = c })
+            elseif index ~= nil then
+              -- The variable IS a function parameter: its value comes from the
+              -- caller, so ride out to each call site's matching argument (the
+              -- param branch of sources_at, applied as a value-source here).
+              local fpos = enclosing_func_name_pos(bcfg, refnode)
+              if fpos then
+                for _, csite in ipairs(incoming_call_sites(b, fpos)) do
+                  local arg = argument_node(csite, index, variadic)
+                  if arg then
+                    local ar, ac = arg.node:start()
+                    table.insert(out, { cfg = arg.cfg, bufnr = arg.bufnr, node = arg.node, row = ar, col = ac })
+                  end
+                end
+              end
             else
               -- A reassignment (`x = v` / `x += v`): classify_field_write's
               -- assignment branch maps a plain-identifier LHS to its value slot
               -- too. nil = a read; false = a write with no source (skip both).
               local val = classify_field_write(bcfg, refnode)
-              if val then
+              -- Skip a self-referential reassignment whose RHS contains the cursor
+              -- usage (`x = f(x)` read while ON the inner x): the post-assignment
+              -- value does not exist at that read, so this write is not its source.
+              local self_ref = val and b == bufnr and node_contains(val, var_row, var_col)
+              if val and not self_ref then
                 table.insert(out, { cfg = bcfg, bufnr = b, node = val, row = r, col = c })
               end
             end
