@@ -81,6 +81,7 @@ local M = {}
 ---@field lsp_timeout integer per-LSP-request timeout, ms
 ---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
 ---@field project_hops boolean projection-aware interactive hops (gu/gU); stateless, per-hop
+---@field descend_external boolean when transitively following a value, descend into callees defined OUTSIDE the workspace (stdlib/deps); default false stops at the call
 ---@field cache boolean memoize sources_at results until the next edit/LSP change (degraded/timeout results are never cached)
 ---@field project_max_nodes integer projection fan-out cap
 ---@field project_max_depth integer projection recursion-depth cap
@@ -169,6 +170,7 @@ M.config = {
   lsp_timeout = 2000,        -- per-LSP-request timeout, ms
   lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
   project_hops = true,       -- gu/gU use projection (stateless, per-hop)
+  descend_external = false,  -- transitively descend into stdlib/dep callees (else stop at the call)
   cache = true,              -- memoize sources_at until next edit/LSP change
   project_max_nodes = 200,   -- projection fan-out cap
   project_max_depth = 25,    -- projection recursion-depth cap
@@ -1382,10 +1384,37 @@ local function call_name_node(cfg, call)
   return fn
 end
 
+-- Whether a definition URI lives OUTSIDE the workspace (stdlib / dependency).
+-- We compare the def path against the producing client's root_dir (then its
+-- workspace_folders). A def with no resolvable root is treated as in-workspace
+-- (conservative: don't suppress descent when we can't tell). Used to stop
+-- transitive value-following at an external boundary (see callee_returns).
+---@param def trace.Site a definition site (has uri + client)
+---@return boolean external
+local function is_external_def(def)
+  local path = vim.fs.normalize(vim.uri_to_fname(def.uri))
+  local roots = {}
+  local client = def.client
+  if client then
+    if client.root_dir then roots[#roots + 1] = vim.fs.normalize(client.root_dir) end
+    for _, wf in ipairs(client.workspace_folders or {}) do
+      roots[#roots + 1] = vim.fs.normalize(vim.uri_to_fname(wf.uri))
+    end
+  end
+  if #roots == 0 then return false end -- can't tell: assume in-workspace
+  for _, root in ipairs(roots) do
+    if path == root or vim.startswith(path, root .. '/') then
+      return false
+    end
+  end
+  return true
+end
+
 -- Resolve the callee of `call` (via LSP definition) and return its return
 -- expressions for tuple position `result_index`, as a list of
 -- { cfg, bufnr, node, result_index }. Handles named funcs/methods and closures
 -- (a variable bound to a func_literal). Shared by value_sites and projection.
+-- Callees defined outside the workspace are skipped unless descend_external.
 ---@param cfg trace.LangSpec
 ---@param bufnr integer
 ---@param call TSNode a call_expression
@@ -1399,36 +1428,50 @@ local function callee_returns(cfg, bufnr, call, result_index)
 
   local out = {}
   for _, def in ipairs(defs) do
-    local b = load_buf(def.uri)
-    local dcfg = b and cfg_for_buf(b)
-    if b and dcfg then
-      local enc = def.client and def.client.offset_encoding or 'utf-16'
-      local drow = def.range.start.line
-      local dcol = byte_col(b, drow, def.range.start.character, enc)
-      local dnode = node_at(b, drow, dcol)
-      -- Named func/method declaration, or a variable bound to a func_literal.
-      -- Require the definition node to BE the func decl's name (not merely
-      -- nested inside some function, which would wrongly match a closure's
-      -- enclosing function).
-      local func
-      if dnode then
-        local decl = find_ancestor(dnode, dcfg.func_decl)
-        local decl_name = decl and decl:field('name')[1]
-        if decl_name and (nodes_equal(decl_name, dnode) or vim.treesitter.is_ancestor(decl_name, dnode)) then
-          func = decl
-        else
-          local bound = bound_value_for(dcfg, dnode)
-          if bound and bound.value and bound.value:type() == dcfg.func_literal then
-            func = bound.value
+    -- Stop transitive following at an external boundary: a callee defined in
+    -- stdlib/a dependency is not "our" code, so we do not auto-descend into its
+    -- body. The caller (value_sites / project_sites) then lands on the call
+    -- itself -- which is the value's local origin (e.g. the `fmt.Sprintf(...)`
+    -- line). A DIRECT hop onto the call still descends (that path uses plain
+    -- go-to-definition, not callee_returns), so "stop at the boundary, descend
+    -- only from the boundary" falls out naturally. Override: descend_external.
+    if not M.config.descend_external and is_external_def(def) then
+      dbg('callee_returns: skipping external def', def.uri)
+      goto continue
+    end
+    do
+      local b = load_buf(def.uri)
+      local dcfg = b and cfg_for_buf(b)
+      if b and dcfg then
+        local enc = def.client and def.client.offset_encoding or 'utf-16'
+        local drow = def.range.start.line
+        local dcol = byte_col(b, drow, def.range.start.character, enc)
+        local dnode = node_at(b, drow, dcol)
+        -- Named func/method declaration, or a variable bound to a func_literal.
+        -- Require the definition node to BE the func decl's name (not merely
+        -- nested inside some function, which would wrongly match a closure's
+        -- enclosing function).
+        local func
+        if dnode then
+          local decl = find_ancestor(dnode, dcfg.func_decl)
+          local decl_name = decl and decl:field('name')[1]
+          if decl_name and (nodes_equal(decl_name, dnode) or vim.treesitter.is_ancestor(decl_name, dnode)) then
+            func = decl
+          else
+            local bound = bound_value_for(dcfg, dnode)
+            if bound and bound.value and bound.value:type() == dcfg.func_literal then
+              func = bound.value
+            end
+          end
+        end
+        if func then
+          for _, ret in ipairs(return_expressions(dcfg, func, result_index)) do
+            table.insert(out, { cfg = dcfg, bufnr = b, node = ret.node, result_index = ret.result_index })
           end
         end
       end
-      if func then
-        for _, ret in ipairs(return_expressions(dcfg, func, result_index)) do
-          table.insert(out, { cfg = dcfg, bufnr = b, node = ret.node, result_index = ret.result_index })
-        end
-      end
     end
+    ::continue::
   end
   return out
 end
@@ -1489,7 +1532,14 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
   if value:type() ~= cfg.call_expr then
     return { landing_site(bufnr, value, client) }
   end
-  if depth > 25 then return { landing_site(bufnr, value, client) } end
+
+  -- When we land on the call itself (cannot/should not descend), land on the
+  -- callee NAME (`Sprintf` in `fmt.Sprintf(...)`), not the call's start, which
+  -- for a package-qualified call is the package operand `fmt`. Falls back to the
+  -- whole call node if the name can't be isolated.
+  local call_land = call_name_node(cfg, value) or value
+
+  if depth > 25 then return { landing_site(bufnr, call_land, client) } end
 
   local sites = {}
   for _, ret in ipairs(callee_returns(cfg, bufnr, value, result_index)) do
@@ -1502,10 +1552,10 @@ local function value_sites(cfg, bufnr, value, result_index, visited, depth)
     end
   end
 
-  -- Could not descend (body-less definition, unresolved, or no return here):
-  -- land on the call itself rather than dropping this branch.
+  -- Could not descend (external boundary, body-less definition, unresolved, or
+  -- no return here): land on the callee name rather than dropping this branch.
   if #sites == 0 then
-    return { landing_site(bufnr, value, client) }
+    return { landing_site(bufnr, call_land, client) }
   end
   return sites
 end
