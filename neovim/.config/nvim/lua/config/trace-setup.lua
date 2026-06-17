@@ -33,6 +33,10 @@ trace.config.picker = function(sites, opts, on_choice)
     on_choice(site)
   end
 
+  -- The chosen site, captured on selection and consumed once the picker has
+  -- fully closed (see select_default / BufWipeout below). nil means cancelled.
+  local choice = nil
+
   pickers.new(require('telescope.themes').get_ivy({}), {
     prompt_title = opts.prompt or 'Trace',
     finder = finders.new_table({
@@ -66,19 +70,26 @@ trace.config.picker = function(sites, opts, on_choice)
     previewer = conf.qflist_previewer({}),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
-        local entry = action_state.get_selected_entry()
-        -- Answer BEFORE closing: actions.close wipes the prompt buffer, which
-        -- fires the BufWipeout fallback below; the `answered` guard means
-        -- whichever runs first wins, so we must record the real choice first.
-        answer(entry and entry.value or nil)
+        -- Record the choice, then close. We must NOT answer (and thus jump) here:
+        -- on_choice -> goto_site -> vim.lsp.util.show_document runs while the
+        -- telescope prompt window is still current, so show_document swaps that
+        -- window's buffer, which tears down the picker and closes the window out
+        -- from under show_document's own nvim_set_current_win (E5108: invalid
+        -- window id). Defer the answer to BufWipeout, which fires after telescope
+        -- has restored the original window, so the jump targets a live window.
+        choice = action_state.get_selected_entry()
+        choice = choice and choice.value or nil
         actions.close(prompt_bufnr)
       end)
-      -- Any close (Esc, <C-c>, etc.) that didn't go through a selection still
-      -- has to settle the trace: report no choice.
+      -- The single settle point for every close path (selection, Esc, <C-c>):
+      -- answer with the recorded choice, or nil if the picker was cancelled
+      -- without a selection. Runs after the prompt window is gone.
       vim.api.nvim_create_autocmd('BufWipeout', {
         buffer = prompt_bufnr,
         once = true,
-        callback = function() answer(nil) end,
+        callback = function()
+          vim.schedule(function() answer(choice) end)
+        end,
       })
       return true
     end,
