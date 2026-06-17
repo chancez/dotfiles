@@ -78,6 +78,7 @@ local M = {}
 ---@field debug boolean log diagnostics to :messages
 ---@field lsp_timeout integer per-LSP-request timeout, ms
 ---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
+---@field project_hops boolean projection-aware interactive hops (gu/gU); stateless, per-hop
 ---@field project_max_nodes integer projection fan-out cap
 ---@field project_max_depth integer projection recursion-depth cap
 ---@field peek_max_sites integer max sources rendered in the peek float
@@ -163,6 +164,7 @@ M.config = {
   debug = false,             -- log diagnostics (see dbg/check_lsp) to :messages
   lsp_timeout = 2000,        -- per-LSP-request timeout, ms
   lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
+  project_hops = true,       -- gu/gU use projection (stateless, per-hop)
   project_max_nodes = 200,   -- projection fan-out cap
   project_max_depth = 25,    -- projection recursion-depth cap
   peek_max_sites = 10,       -- max sources rendered in the peek float
@@ -2145,14 +2147,19 @@ end
 -- One hop "up". Returns true if the cursor moved (so a caller can keep going),
 -- false if we stopped (origin reached, ambiguous and prompting, or error).
 -- `on_done(moved)` is called when the hop settles. opts.select overrides picker.
+-- opts.project enables projection for this hop (stateless: each hop re-derives
+-- the field path from what's under the cursor, nothing is carried between hops);
+-- defaults to M.config.project_hops.
 ---@param on_done fun(moved: boolean)?
----@param opts { select: trace.Picker? }?
+---@param opts { select: trace.Picker?, project: boolean? }?
 function M.trace_up(on_done, opts)
   on_done = on_done or function() end
   opts = opts or {}
+  local project = opts.project
+  if project == nil then project = M.config.project_hops end
   local bufnr = vim.api.nvim_get_current_buf()
   local pos = vim.api.nvim_win_get_cursor(0)
-  local result = sources_at(bufnr, pos[1] - 1, pos[2])
+  local result = sources_at(bufnr, pos[1] - 1, pos[2], { project = project })
   return resolve_sites(result, opts, on_done)
 end
 
@@ -2229,8 +2236,9 @@ end
 -- origin. opts:
 --   quickfix (boolean)  when true, record the start position and every hop into
 --                       a new quickfix list titled "Trace", opening it at the end.
+--   project (boolean)   projection-aware hops (defaults to M.config.project_hops).
 ---@param count integer? number of hops (default 1)
----@param opts { quickfix: boolean?, select: trace.Picker? }?
+---@param opts { quickfix: boolean?, select: trace.Picker?, project: boolean? }?
 function M.trace_up_n(count, opts)
   opts = opts or {}
   count = math.max(count or 1, 1)
@@ -2270,7 +2278,7 @@ function M.trace_up_n(count, opts)
       end
       -- defer so LSP/treesitter state for the new buffer is settled
       vim.schedule(function() step(remaining - 1) end)
-    end, { select = opts.select })
+    end, { select = opts.select, project = opts.project })
   end
 
   -- Wait for the LSP to be ready before the first hop (just like trace_tree):
