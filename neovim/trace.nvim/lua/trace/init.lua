@@ -77,6 +77,7 @@ local M = {}
 ---Module configuration (M.config).
 ---@class trace.Config
 ---@field debug boolean log diagnostics to :messages
+---@field debug_file string? when set (and debug is on), append logs to this file instead of :messages (useful while an interactive UI like the picker owns the screen)
 ---@field lsp_timeout integer per-LSP-request timeout, ms
 ---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
 ---@field project_hops boolean projection-aware interactive hops (gu/gU); stateless, per-hop
@@ -163,6 +164,7 @@ local M = {}
 ---@type trace.Config
 M.config = {
   debug = false,             -- log diagnostics (see dbg/check_lsp) to :messages
+  debug_file = nil,          -- if set (+debug), append logs here instead of :messages
   lsp_timeout = 2000,        -- per-LSP-request timeout, ms
   lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
   project_hops = true,       -- gu/gU use projection (stateless, per-hop)
@@ -252,9 +254,13 @@ local langs = {
 -- Extmark namespace for highlighting the landing line in the peek float.
 local peek_ns = vim.api.nvim_create_namespace('trace_peek')
 
--- Extmark namespace for marking candidate options in the SOURCE buffers during a
--- peek (only sites in currently-visible windows; cleared when the peek dismisses).
+-- Extmark namespaces for marking candidate options in the SOURCE buffers during a
+-- peek or branch-point pick (only sites in currently-visible windows; cleared
+-- when the peek/pick dismisses). `option_ns` holds the base mark on every visible
+-- candidate; `active_option_ns` holds a single higher-priority mark on the option
+-- the picker currently has selected, so it layers on top of the base mark.
 local option_ns = vim.api.nvim_create_namespace('trace_peek_options')
+local active_option_ns = vim.api.nvim_create_namespace('trace_active_option')
 
 ---@param bufnr integer
 ---@return trace.LangSpec? spec the lang spec for the buffer's filetype, or nil
@@ -292,7 +298,19 @@ local function dbg(...)
   for _, v in ipairs({ ... }) do
     parts[#parts + 1] = type(v) == 'string' and v or vim.inspect(v)
   end
-  vim.notify('[trace] ' .. table.concat(parts, ' '), vim.log.levels.INFO)
+  local msg = '[trace] ' .. table.concat(parts, ' ')
+  -- When a logfile is configured, append there instead of notify: an interactive
+  -- UI (e.g. the telescope picker) owns the screen, so echoed messages are
+  -- unreadable and disruptive. `tail -f` the file to watch live.
+  if M.config.debug_file then
+    local f = io.open(M.config.debug_file, 'a')
+    if f then
+      f:write(msg .. '\n')
+      f:close()
+      return
+    end
+  end
+  vim.notify(msg, vim.log.levels.INFO)
 end
 
 -- Inspect a synchronous LSP result, logging whether it timed out, errored, or
@@ -2205,13 +2223,23 @@ local function visible_buffers()
   return vis
 end
 
--- Clear any option marks left in any buffer (idempotent; safe to call anytime).
+-- Clear all option marks (base + active) from every buffer. Idempotent; safe to
+-- call anytime. This is the SINGLE lifecycle clear: callers that mark options
+-- must call this when the peek/pick settles.
 local function clear_option_marks()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(b) then
       vim.api.nvim_buf_clear_namespace(b, option_ns, 0, -1)
+      vim.api.nvim_buf_clear_namespace(b, active_option_ns, 0, -1)
     end
   end
+end
+
+-- The 0-based row a site lands on (land position, else range start).
+---@param site trace.Site
+---@return integer row
+local function site_row(site)
+  return site.land and site.land.row or site.range.start.line
 end
 
 -- When a hop/peek surfaces MORE THAN ONE candidate, mark the ones that live in a
@@ -2228,14 +2256,45 @@ local function mark_visible_options(sites)
   for _, site in ipairs(sites) do
     local b = vim.uri_to_bufnr(site.uri)
     if vis[b] and vim.api.nvim_buf_is_loaded(b) then
-      local row = site.land and site.land.row or site.range.start.line
-      vim.api.nvim_buf_set_extmark(b, option_ns, row, 0, {
+      vim.api.nvim_buf_set_extmark(b, option_ns, site_row(site), 0, {
         line_hl_group = 'Search',
+        priority = 200,
       })
       marked = true
     end
   end
   return marked
+end
+
+-- Public: tell the engine which option the picker currently has selected, so the
+-- engine emphasizes that candidate's line (CurSearch, layered over the base
+-- Search mark) in its source buffer if visible. The picker only reports the
+-- selection; all marking lives here. Pass nil to clear just the active emphasis.
+-- The base marks and overall lifecycle are owned by the engine (resolve_sites
+-- paints them at the branch and clears everything when the choice settles), so a
+-- picker never has to manage extmarks.
+---@param site trace.Site? the currently selected site, or nil
+function M.set_active_option(site)
+  -- Clear the previous active emphasis everywhere (cheap; one extmark at most).
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(b) then
+      vim.api.nvim_buf_clear_namespace(b, active_option_ns, 0, -1)
+    end
+  end
+  if not site then return end
+  local b = vim.uri_to_bufnr(site.uri)
+  local vis = visible_buffers()
+  if vis[b] and vim.api.nvim_buf_is_loaded(b) then
+    -- Higher priority than the base option mark (200) so the active emphasis wins
+    -- on a line that is ALSO a base candidate (a file with multiple options has a
+    -- Search mark on each; without this the two line_hl_groups tie and the base
+    -- can render on top, hiding the active highlight -- the "one file not
+    -- highlighting" bug, which struck the file with the most candidates).
+    vim.api.nvim_buf_set_extmark(b, active_option_ns, site_row(site), 0, {
+      line_hl_group = 'CurSearch',
+      priority = 210,
+    })
+  end
 end
 
 -- Shared "land on a site" UX: zero sites stops with a message, one site jumps

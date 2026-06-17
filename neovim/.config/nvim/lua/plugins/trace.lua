@@ -91,7 +91,23 @@ return {
           }),
           sorter = conf.generic_sorter({}),
           -- Built-in previewer reads entry.filename/lnum/col and highlights the line.
-          previewer = conf.qflist_previewer({}),
+          -- We wrap its `preview` (per-instance, shadowing the metatable method so
+          -- nothing leaks to other pickers) purely to report the selection to the
+          -- engine: telescope calls preview on EVERY selection change, so this is
+          -- our "selection changed" hook. The picker only reports; the engine owns
+          -- all marking (M.set_active_option emphasizes the selected option's line
+          -- in the source buffer). pcall so a marking error can't break telescope.
+          previewer = (function()
+            local previewer = conf.qflist_previewer({})
+            local orig_preview = previewer.preview
+            previewer.preview = function(self, entry, status)
+              pcall(function()
+                require("trace").set_active_option(entry and entry.value or nil)
+              end)
+              return orig_preview(self, entry, status)
+            end
+            return previewer
+          end)(),
           attach_mappings = function(prompt_bufnr)
             actions.select_default:replace(function()
               -- Record the choice, then close. We must NOT answer (and thus jump)
