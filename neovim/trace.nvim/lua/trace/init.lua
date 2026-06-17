@@ -252,6 +252,10 @@ local langs = {
 -- Extmark namespace for highlighting the landing line in the peek float.
 local peek_ns = vim.api.nvim_create_namespace('trace_peek')
 
+-- Extmark namespace for marking candidate options in the SOURCE buffers during a
+-- peek (only sites in currently-visible windows; cleared when the peek dismisses).
+local option_ns = vim.api.nvim_create_namespace('trace_peek_options')
+
 ---@param bufnr integer
 ---@return trace.LangSpec? spec the lang spec for the buffer's filetype, or nil
 local function cfg_for_buf(bufnr)
@@ -1738,7 +1742,7 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
     -- selector's field child is `Second`.
     local sel = value:parent()
     local field_node = sel and sel:type() == cfg.selector_expr
-      and sel:field(cfg.selector_field)[1] or nil
+        and sel:field(cfg.selector_field)[1] or nil
 
     -- Direct writes of `.field` on this specific variable, in its scope.
     local fwrites = variable_field_writes(bufnr, vr, vc, field)
@@ -2189,9 +2193,56 @@ local function sources_at(bufnr, row, col, ctx)
   return { sites = sites, empty_msg = 'trace: no definition found' }
 end
 
+-- The set of buffers currently displayed in a window. Option marks are only
+-- drawn in these (off-screen / other-file sites can't be seen anyway; they live
+-- in the float / picker). Returns a set keyed by bufnr.
+---@return table<integer, true>
+local function visible_buffers()
+  local vis = {}
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    vis[vim.api.nvim_win_get_buf(win)] = true
+  end
+  return vis
+end
+
+-- Clear any option marks left in any buffer (idempotent; safe to call anytime).
+local function clear_option_marks()
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(b) then
+      vim.api.nvim_buf_clear_namespace(b, option_ns, 0, -1)
+    end
+  end
+end
+
+-- When a hop/peek surfaces MORE THAN ONE candidate, mark the ones that live in a
+-- currently-visible buffer, so the spread of in-file options is visible in place
+-- before you choose. Off-screen sites are skipped (only surveyable in the float /
+-- picker). Uses Search (not Visual) so it reads as "candidate", not an accidental
+-- selection, in your real buffer. Returns true if any mark was drawn.
+---@param sites trace.Site[]
+---@return boolean marked
+local function mark_visible_options(sites)
+  if #sites < 2 then return false end
+  local vis = visible_buffers()
+  local marked = false
+  for _, site in ipairs(sites) do
+    local b = vim.uri_to_bufnr(site.uri)
+    if vis[b] and vim.api.nvim_buf_is_loaded(b) then
+      local row = site.land and site.land.row or site.range.start.line
+      vim.api.nvim_buf_set_extmark(b, option_ns, row, 0, {
+        line_hl_group = 'Search',
+      })
+      marked = true
+    end
+  end
+  return marked
+end
+
 -- Shared "land on a site" UX: zero sites stops with a message, one site jumps
 -- silently (so chaining continues), many sites prompt (a branch point, so we
--- stop). `opts.select` overrides the picker (defaults to vim.ui.select).
+-- stop). `opts.select` overrides the picker (defaults to vim.ui.select). At a
+-- branch we mark the in-file options before prompting, so the spread is visible
+-- while choosing; the marks are cleared once a choice settles.
 ---@param result trace.SourcesResult
 ---@param opts { select: trace.Picker? }
 ---@param on_done fun(moved: boolean)
@@ -2205,8 +2256,13 @@ local function resolve_sites(result, opts, on_done)
     goto_site(sites[1])
     return on_done(sites[1].chains ~= false)
   end
+  -- Branch point: mark the in-file candidates so you can see them in place while
+  -- the picker is up. Cleared when the choice settles below (jump or cancel).
+  clear_option_marks()
+  mark_visible_options(sites)
   local select = opts.select or M.config.picker or vim.ui.select
   select(sites, { prompt = 'Trace up', format_item = describe_site }, function(choice)
+    clear_option_marks()
     if choice then
       goto_site(choice)
     end
@@ -2244,6 +2300,8 @@ function M.peek(opts)
   local project = opts.project ~= false -- default on; explicit false disables
   local bufnr = vim.api.nvim_get_current_buf()
   local function show()
+    -- Clear marks from any prior peek before drawing this one's.
+    clear_option_marks()
     local pos = vim.api.nvim_win_get_cursor(0)
     local result = sources_at(bufnr, pos[1] - 1, pos[2], { project = project })
     local lines, targets = peek_lines(result)
@@ -2256,6 +2314,16 @@ function M.peek(opts)
     for _, l in ipairs(targets) do
       vim.api.nvim_buf_set_extmark(fbuf, peek_ns, l, 0, {
         line_hl_group = 'Visual',
+      })
+    end
+    -- Mark the in-file candidate options (when there's a branch) so the spread is
+    -- visible in place. Clear them on the SAME events the float closes on, so the
+    -- marks and float dismiss together (focusing into the float to scroll does
+    -- not fire CursorMoved, so the marks survive that, matching the float).
+    if mark_visible_options(result.sites) then
+      vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI', 'InsertCharPre' }, {
+        once = true,
+        callback = clear_option_marks,
       })
     end
   end
