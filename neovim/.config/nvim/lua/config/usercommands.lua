@@ -66,7 +66,7 @@ end, { nargs = '+', complete = 'shellcmdline' })
 
 vim.api.nvim_create_user_command('DiagnosticsOpen', function() vim.diagnostic.open_float() end, {})
 
--- Trace commands/keymaps live in config.trace-setup (the trace engine's wiring).
+-- Trace commands/keymaps live in plugins/trace.lua (the trace.nvim lazy spec).
 
 -- Reverse the lines of the selection in visual mode
 vim.api.nvim_create_user_command('ReverseLines', function()

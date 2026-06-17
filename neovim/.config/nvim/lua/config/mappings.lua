@@ -125,4 +125,4 @@ map('x', 'gw', fmt.gw, { expr = true, desc = 'Format keep cursor (TS-aware)' })
 map('x', '<C-o>', 'an', { desc = 'Select [o]uter node', remap = true })
 map('x', '<C-i>', 'in', { desc = 'Select [i]nner node', remap = true })
 
--- Trace keymaps (gu/gU/gz) live in config.trace-setup (the trace engine's wiring).
+-- Trace keymaps (gu/gU/gz/gp) live in plugins/trace.lua (the trace.nvim lazy spec).

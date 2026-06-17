@@ -173,6 +173,16 @@ M.config = {
   picker = nil,              -- branch-point picker (else vim.ui.select)
 }
 
+-- Merge `opts` into M.config. The classic lazy.nvim entry point: a spec's `opts`
+-- table is passed here so settings live in `opts` like any other plugin. Plain
+-- shallow merge (config is a flat table); omitted keys keep their defaults.
+---@param opts trace.Config? overrides to merge into M.config
+function M.setup(opts)
+  if opts then
+    M.config = vim.tbl_extend('force', M.config, opts)
+  end
+end
+
 -- Per-language treesitter node names.
 ---@type table<string, trace.LangSpec>
 local langs = {

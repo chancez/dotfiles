@@ -12,6 +12,7 @@
   "workspace.library": [
     "$VIMRUNTIME",
     "$HOME/.config/nvim/lua",
-    "$HOME/.local/share/nvim/lazy"
+    "$HOME/.local/share/nvim/lazy",
+    "$HOME/.dotfiles/neovim/trace.nvim/lua"
   ]
 }
