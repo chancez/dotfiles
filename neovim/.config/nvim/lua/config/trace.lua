@@ -98,6 +98,7 @@ local M = {}
 ---@class trace.SourcesResult
 ---@field sites trace.Site[]
 ---@field empty_msg string
+---@field projection string? the field path being projected (e.g. ".Enabled"), set only in projection mode
 
 ---A treesitter value node together with the buffer and lang spec it lives in.
 ---Used to carry write/return/argument results across buffers. `row`/`col` are
@@ -1917,8 +1918,15 @@ local function peek_lines(result)
     local snippet, ft, target = peek_snippet(site, M.config.peek_context)
 
     -- Location reads first (bold), the hop kind trails as a dim parenthetical so
-    -- it is visually distinct from the path. Terminal note (if any) appended.
-    local header = string.format('**%s:%d** (%s)', rel, lnum, site.kind or 'source')
+    -- it is visually distinct from the path. In projection mode the projected
+    -- field path rides inside that parenthetical (e.g. `(projection: .Enabled)`),
+    -- so the indicator costs no extra line and the highlight mapping is untouched.
+    -- Terminal note (if any) appended.
+    local kind = site.kind or 'source'
+    if result.projection and kind == 'projection' then
+      kind = kind .. ': ' .. result.projection
+    end
+    local header = string.format('**%s:%d** (%s)', rel, lnum, kind)
     if site.note then
       header = header .. ' [' .. site.note .. ']'
     end
@@ -2044,9 +2052,11 @@ local function sources_at(bufnr, row, col, ctx)
         if operand and fields and #fields > 0 then
           local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
           for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
+          local path = '.' .. table.concat(fields, '.')
           return {
             sites = sites,
-            empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
+            empty_msg = 'trace: could not flow-resolve ' .. path,
+            projection = path,
           }
         end
       end
@@ -2071,9 +2081,11 @@ local function sources_at(bufnr, row, col, ctx)
       if operand and fields and #fields > 0 then
         local sites = project_sites(cfg, bufnr, operand, fields, nil, 0, ctx.budget)
         for _, s in ipairs(sites) do s.kind = s.kind or 'projection' end
+        local path = '.' .. table.concat(fields, '.')
         return {
           sites = sites,
-          empty_msg = 'trace: could not flow-resolve .' .. table.concat(fields, '.'),
+          empty_msg = 'trace: could not flow-resolve ' .. path,
+          projection = path,
         }
       end
     end
@@ -2145,16 +2157,18 @@ function M.trace_up(on_done, opts)
 end
 
 -- Peek at where the value under the cursor would trace to, WITHOUT moving. Shows
--- the sources (same as a projection-free `gu` hop) in an LSP-hover-style float,
--- one block per source. Gates on LSP-ready exactly like trace_up_n so the peek
--- is trustworthy right after startup (sync-fast when already ready).
+-- the sources in an LSP-hover-style float, one block per source. Projection is ON
+-- by default (precise, scope-based field tracing; pass project=false for the
+-- projection-free `gu`-style view). Gates on LSP-ready exactly like trace_up_n so
+-- the peek is trustworthy right after startup (sync-fast when already ready).
 ---@param opts { project: boolean? }?
 function M.peek(opts)
   opts = opts or {}
+  local project = opts.project ~= false -- default on; explicit false disables
   local bufnr = vim.api.nvim_get_current_buf()
   local function show()
     local pos = vim.api.nvim_win_get_cursor(0)
-    local result = sources_at(bufnr, pos[1] - 1, pos[2], { project = opts.project })
+    local result = sources_at(bufnr, pos[1] - 1, pos[2], { project = project })
     local lines, targets = peek_lines(result)
     local fbuf = vim.lsp.util.open_floating_preview(lines, 'markdown', {
       border = 'rounded',
