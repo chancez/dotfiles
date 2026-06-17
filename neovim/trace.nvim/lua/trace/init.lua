@@ -81,6 +81,7 @@ local M = {}
 ---@field lsp_timeout integer per-LSP-request timeout, ms
 ---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
 ---@field project_hops boolean projection-aware interactive hops (gu/gU); stateless, per-hop
+---@field cache boolean memoize sources_at results until the next edit/LSP change (degraded/timeout results are never cached)
 ---@field project_max_nodes integer projection fan-out cap
 ---@field project_max_depth integer projection recursion-depth cap
 ---@field peek_max_sites integer max sources rendered in the peek float
@@ -168,6 +169,7 @@ M.config = {
   lsp_timeout = 2000,        -- per-LSP-request timeout, ms
   lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
   project_hops = true,       -- gu/gU use projection (stateless, per-hop)
+  cache = true,              -- memoize sources_at until next edit/LSP change
   project_max_nodes = 200,   -- projection fan-out cap
   project_max_depth = 25,    -- projection recursion-depth cap
   peek_max_sites = 10,       -- max sources rendered in the peek float
@@ -261,6 +263,24 @@ local peek_ns = vim.api.nvim_create_namespace('trace_peek')
 -- the picker currently has selected, so it layers on top of the base mark.
 local option_ns = vim.api.nvim_create_namespace('trace_peek_options')
 local active_option_ns = vim.api.nvim_create_namespace('trace_active_option')
+
+-- sources_at memoization. `sources_cache` maps "bufnr:row:col:project" to
+-- { gen, result }; an entry is valid only while its `gen` matches `cache_gen`.
+-- `cache_gen` is bumped on any edit / LSP attach-detach (see the autocmds below),
+-- so a single counter invalidates the whole cache without walking it. gopls
+-- answers reflect the IN-MEMORY buffer (didChange), so we invalidate on the edit
+-- (TextChanged), NOT on save -- caching until save would serve stale results for
+-- unsaved edits. `lsp_tainted` tracks whether the current sources_at saw an LSP
+-- timeout/no-client (a degraded result); such results are NEVER cached, so the
+-- "just run it again" recovery still works after a cold/slow gopls.
+local sources_cache = {}
+local cache_gen = 0
+local lsp_tainted = false
+
+vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'LspAttach', 'LspDetach' }, {
+  group = vim.api.nvim_create_augroup('trace_cache_invalidate', { clear = true }),
+  callback = function() cache_gen = cache_gen + 1 end,
+})
 
 ---@param bufnr integer
 ---@return trace.LangSpec? spec the lang spec for the buffer's filetype, or nil
@@ -444,10 +464,19 @@ end
 ---@return table<integer, {error: lsp.ResponseError?, result: any}>? results map, or nil
 local function lsp_buf_request(bufnr, method, params)
   ---@diagnostic disable-next-line: deprecated
+  local results
   if coroutine.isyieldable() then
-    return await_buf_request(bufnr, method, params)
+    results = await_buf_request(bufnr, method, params)
+  else
+    results = vim.lsp.buf_request_sync(bufnr, method, params, M.config.lsp_timeout)
   end
-  return vim.lsp.buf_request_sync(bufnr, method, params, M.config.lsp_timeout)
+  -- A nil result is a timeout / no-client: the answer is degraded, so taint the
+  -- enclosing sources_at run (its result must not be cached, or a rerun -- our
+  -- recovery from a cold/slow gopls -- would just return the same thin result).
+  if results == nil then
+    lsp_tainted = true
+  end
+  return results
 end
 
 -- A client on `bufnr` is "ready" when one is attached AND none is mid-progress
@@ -2094,7 +2123,7 @@ end
 ---@param col integer 0-based byte column
 ---@param ctx trace.Ctx? tracing context (projection toggle, bounds)
 ---@return trace.SourcesResult
-local function sources_at(bufnr, row, col, ctx)
+local function sources_at_uncached(bufnr, row, col, ctx)
   ctx = ctx or {}
   -- A fresh projection budget per sources_at call: bounds one hop's worth of
   -- projection recursion (a single field read can fan out widely). The tree
@@ -2209,6 +2238,39 @@ local function sources_at(bufnr, row, col, ctx)
   local sites = lsp_definition_at(bufnr, row, col)
   for _, s in ipairs(sites) do s.kind = 'definition' end
   return { sites = sites, empty_msg = 'trace: no definition found' }
+end
+
+-- Caching wrapper around sources_at_uncached. Memoizes by location + projection
+-- mode, valid only within the current cache generation (any edit / LSP change
+-- bumps cache_gen, invalidating everything). A result computed while an LSP call
+-- timed out (lsp_tainted) is returned but NOT cached, so re-running recovers from
+-- a cold/slow gopls. Disabled via M.config.cache = false. The signature matches
+-- the original so all callers (gu/gp/gz) are unchanged.
+---@param bufnr integer
+---@param row integer 0-based line
+---@param col integer 0-based byte column
+---@param ctx trace.Ctx? tracing context (projection toggle, bounds)
+---@return trace.SourcesResult
+local function sources_at(bufnr, row, col, ctx)
+  if not M.config.cache then
+    return sources_at_uncached(bufnr, row, col, ctx)
+  end
+  local project = (ctx and ctx.project) and 1 or 0
+  local key = string.format('%d:%d:%d:%d', bufnr, row, col, project)
+  local hit = sources_cache[key]
+  if hit and hit.gen == cache_gen then
+    dbg('sources_at cache hit', key)
+    return hit.result
+  end
+  -- Recompute. Reset the taint flag so it reflects only THIS run's LSP calls.
+  lsp_tainted = false
+  local result = sources_at_uncached(bufnr, row, col, ctx)
+  if lsp_tainted then
+    dbg('sources_at NOT cached (lsp timeout/degraded)', key)
+  else
+    sources_cache[key] = { gen = cache_gen, result = result }
+  end
+  return result
 end
 
 -- The set of buffers currently displayed in a window. Option marks are only
