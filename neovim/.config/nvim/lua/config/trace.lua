@@ -58,6 +58,7 @@ local M = {}
 ---@field literal_element string literal_element node type
 ---@field qualified_type string qualified_type node type
 ---@field qualified_name string field name of a qualified type's name
+---@field import_spec string import_spec node type (a package import)
 ---@field field_ref table<string, true> node types that name a field
 ---@field field_ref_exclude_parent table<string, true> parents that disqualify a field ref
 ---@field composite_key_ref table<string, true> node types valid as a struct-literal key
@@ -213,6 +214,7 @@ local langs = {
     literal_element = 'literal_element', -- wraps a keyed_element key/value
     qualified_type = 'qualified_type',
     qualified_name = 'name',
+    import_spec = 'import_spec', -- a package import; operand resolving here = a package, not a value
 
     -- Field-write tracing. We use LSP references to find every use of a field,
     -- then treesitter (these node names) to keep only the writes.
@@ -795,13 +797,37 @@ local function incoming_call_sites(bufnr, pos)
   return sites
 end
 
--- Given a freshly-focused buffer and an LSP range for a call, move the cursor
--- onto the `index`-th argument (0-based). Variadic params land on the first
--- variadic argument. Returns true on success.
+-- Refine an assigned-value node to the node we should actually LAND on, so the
+-- next hop continues from the meaningful sub-node: unwrap leading unary (`&x`,
+-- `*x`) and, for a field read `a.b.c`, land on the trailing field rather than the
+-- operand `a` (the same rule value_sites applies; field_write_sites and
+-- argument_land build their landings independently and must apply it too).
+---@param cfg trace.LangSpec
+---@param value TSNode the assigned-value node
+---@return TSNode landing the node to actually land on
+local function refine_landing_node(cfg, value)
+  -- A struct-literal keyed value comes wrapped in a literal_element; unwrap to
+  -- the real expression (e.g. the selector inside `BatchSize: ing.cfg.BatchSize`).
+  if value:type() == cfg.literal_element then
+    value = value:named_child(0) or value
+  end
+  while value:type() == cfg.unary_expr do
+    local operand = value:field(cfg.unary_operand)[1]
+    if not operand then break end
+    value = operand
+  end
+  if value:type() == cfg.selector_expr then
+    return value:field(cfg.selector_field)[1] or value
+  end
+  return value
+end
+
 -- Compute the 0-based { row, col } landing for argument `index` of the call at
 -- `site` (an LSP location). Returns nil to mean "land on the call itself"
 -- (function-name case, or no matching argument). Loads the buffer but does not
--- move the cursor, so it can be used while merely building data.
+-- move the cursor, so it can be used while merely building data. The argument
+-- expression is refined (refine_landing_node) so a selector arg `cfg.Field` or
+-- `&x` lands on the field/operand, not the front of the expression.
 ---@param site trace.Site the call site
 ---@param index integer? 0-based argument index (nil = land on the call itself)
 ---@param variadic boolean? whether the parameter is variadic
@@ -818,9 +844,16 @@ local function argument_land(site, index, variadic)
   local col = byte_col(b, row, site.range.start.character, enc)
   local node = node_at(b, row, col)
   local call = node and find_ancestor(node, { [cfg.call_expr] = true })
-  if not call then return nil end
+  if not call then
+    dbg(string.format('      argument_land @%d:%d node=%s -> no call_expression ancestor',
+      row, col, node and node:type() or 'nil'))
+    return nil
+  end
   local args = call:field('arguments')[1]
-  if not args or args:type() ~= cfg.arg_list then return nil end
+  if not args or args:type() ~= cfg.arg_list then
+    dbg('      argument_land: call has no argument_list')
+    return nil
+  end
 
   local named = {}
   for child in args:iter_children() do
@@ -833,8 +866,19 @@ local function argument_land(site, index, variadic)
   if not target and variadic and #named > 0 then
     target = named[#named]
   end
-  if not target then return nil end
+  if not target then
+    dbg(string.format('      argument_land: want index %d but call has %d args (%q)',
+      index, #named, node_text(b, call):gsub('\n.*', '...')))
+    return nil
+  end
 
+  -- Land on the meaningful sub-node: for a selector arg `cfg.Field` the start of
+  -- the expression is the operand `cfg`, so refine to the trailing field (and
+  -- unwrap `&x`/`*x`), matching where value_sites/field_write_sites land.
+  target = refine_landing_node(cfg, target)
+  dbg(string.format('      argument_land: index %d of %d args -> %q in (%q)',
+    index, #named, node_text(b, target):gsub('\n.*', '...'),
+    node_text(b, call):gsub('\n.*', '...')))
   local r, c = target:start()
   return { row = r, col = c }
 end
@@ -1006,31 +1050,6 @@ local function classify_field_write(cfg, ref)
   end
 
   return nil
-end
-
--- Refine an assigned-value node to the node we should actually LAND on, so the
--- next hop continues from the meaningful sub-node: unwrap leading unary (`&x`,
--- `*x`) and, for a field read `a.b.c`, land on the trailing field rather than the
--- operand `a` (the same rule value_sites applies; field_write_sites builds its
--- landing independently and must apply it too).
----@param cfg trace.LangSpec
----@param value TSNode the assigned-value node
----@return TSNode landing the node to actually land on
-local function refine_landing_node(cfg, value)
-  -- A struct-literal keyed value comes wrapped in a literal_element; unwrap to
-  -- the real expression (e.g. the selector inside `BatchSize: ing.cfg.BatchSize`).
-  if value:type() == cfg.literal_element then
-    value = value:named_child(0) or value
-  end
-  while value:type() == cfg.unary_expr do
-    local operand = value:field(cfg.unary_operand)[1]
-    if not operand then break end
-    value = operand
-  end
-  if value:type() == cfg.selector_expr then
-    return value:field(cfg.selector_field)[1] or value
-  end
-  return value
 end
 
 -- Find every write to the field whose name is at `pos`, via LSP references +
@@ -1704,6 +1723,13 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
     local vr, vc = value:start()
     local sites = {}
 
+    -- The field node (`proj[1]` as it appears in source), used for the package
+    -- case below: for `time.Second`, value is the operand `time`, and its parent
+    -- selector's field child is `Second`.
+    local sel = value:parent()
+    local field_node = sel and sel:type() == cfg.selector_expr
+      and sel:field(cfg.selector_field)[1] or nil
+
     -- Direct writes of `.field` on this specific variable, in its scope.
     local fwrites = variable_field_writes(bufnr, vr, vc, field)
     dbg(string.format('  identifier .%s: %d in-scope field write(s)', field, #fwrites))
@@ -1737,11 +1763,44 @@ local function project_sites(cfg, bufnr, value, proj, visited, depth, budget)
         local index, variadic = nil, nil
         if dnode then index, variadic = param_under_cursor(dcfg, dnode) end
         local recv = dnode and receiver_under_cursor(dcfg, dnode)
-        dbg(string.format('    def @%d:%d node=%s bound=%s param_index=%s receiver=%s',
+        -- A package qualifier (`time` in `time.Second`): the operand's definition
+        -- lands in an import_spec, not a value. So instead of following the
+        -- package name (which would dead-end, or via gtd fan out across the whole
+        -- package), resolve the FIELD's definition directly -- gtd on `Second`
+        -- lands on its declaration in the package source.
+        local is_pkg = dnode and find_ancestor(dnode, { [dcfg.import_spec] = true }) ~= nil
+        dbg(string.format('    def @%d:%d node=%s bound=%s param_index=%s receiver=%s pkg=%s',
           dr, dc, dnode and dnode:type() or 'nil',
-          tostring(bound ~= nil and bound.value ~= nil), tostring(index), tostring(recv ~= nil)))
+          tostring(bound ~= nil and bound.value ~= nil), tostring(index),
+          tostring(recv ~= nil), tostring(is_pkg)))
 
-        if bound and bound.value then
+        if is_pkg and field_node then
+          -- Resolve `.field`'s own definition (the package-level declaration).
+          local fr, fc = field_node:start()
+          for _, fdef in ipairs(lsp_definition_at(bufnr, fr, fc)) do
+            local fb = load_buf(fdef.uri)
+            local fcfg = fb and cfg_for_buf(fb)
+            if fb and fcfg then
+              local fenc = fdef.client and fdef.client.offset_encoding or 'utf-16'
+              local fdr = fdef.range.start.line
+              local fdc = byte_col(fb, fdr, fdef.range.start.character, fenc)
+              local fdnode = node_at(fb, fdr, fdc)
+              -- The field's declaration is the origin for this package symbol;
+              -- land there and continue following any remaining projection from
+              -- its bound value (e.g. `const Second = ...`).
+              local fbound = fdnode and bound_value_for(fcfg, fdnode)
+              if fbound and fbound.value then
+                local key = string.format('pkgfield:%d:%d:%d:%s', fb, fdr, fdc, table.concat(rest, '.'))
+                if not visited[key] then
+                  visited[key] = true
+                  vim.list_extend(sites, project_sites(fcfg, fb, fbound.value, rest, visited, depth + 1, budget))
+                end
+              elseif fdnode then
+                vim.list_extend(sites, { landing_site(fb, fdnode, fdef.client) })
+              end
+            end
+          end
+        elseif bound and bound.value then
           local key = string.format('bind:%d:%d:%d:%s', b, dr, dc, table.concat(proj, '.'))
           if not visited[key] then
             visited[key] = true
@@ -2032,6 +2091,7 @@ local function sources_at(bufnr, row, col, ctx)
     -- Parameter -> the matching argument at each call site.
     local index, variadic = param_under_cursor(cfg, node)
     if index ~= nil then
+      dbg(string.format('param branch: flat index=%d variadic=%s', index, tostring(variadic)))
       local pos = enclosing_func_name_pos(cfg, node)
       if not pos then
         return { sites = {}, empty_msg = 'trace: cannot resolve enclosing function' }
