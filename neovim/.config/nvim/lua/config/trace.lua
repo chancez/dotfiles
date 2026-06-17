@@ -80,6 +80,8 @@ local M = {}
 ---@field lsp_ready_timeout integer ms to wait for an idle LSP client before tracing
 ---@field project_max_nodes integer projection fan-out cap
 ---@field project_max_depth integer projection recursion-depth cap
+---@field peek_max_sites integer max sources rendered in the peek float
+---@field peek_context integer lines of context shown before/after each peek site
 ---@field picker trace.Picker? branch-point picker (else vim.ui.select)
 
 ---A normalized "up" source: a place to jump to, plus how to render/continue it.
@@ -162,6 +164,8 @@ M.config = {
   lsp_ready_timeout = 10000, -- ms to wait for an idle LSP client before tracing
   project_max_nodes = 200,   -- projection fan-out cap
   project_max_depth = 25,    -- projection recursion-depth cap
+  peek_max_sites = 10,       -- max sources rendered in the peek float
+  peek_context = 0,          -- lines of context before/after each peek site
   picker = nil,              -- branch-point picker (else vim.ui.select)
 }
 
@@ -229,6 +233,9 @@ local langs = {
     keyed_value = 'value',
   },
 }
+
+-- Extmark namespace for highlighting the landing line in the peek float.
+local peek_ns = vim.api.nvim_create_namespace('trace_peek')
 
 ---@param bufnr integer
 ---@return trace.LangSpec? spec the lang spec for the buffer's filetype, or nil
@@ -1823,6 +1830,116 @@ local function describe_site(site)
   return string.format('%s:%d: %s', rel, line + 1, text)
 end
 
+-- Pull the source line for `site` plus `context` lines on each side from its
+-- buffer, dedented by the common leading whitespace so the block reads cleanly
+-- while keeping relative indentation. Returns the lines, the language for the
+-- fence, and the 0-based index of the target line within the returned snippet
+-- (so the caller can highlight it). With context 0 this is just the
+-- (left-trimmed) single line at index 0.
+---@param site trace.Site
+---@param context integer lines of context before/after
+---@return string[] lines the (dedented) code lines
+---@return string ft the filetype for the code fence
+---@return integer target 0-based index of the landing line within `lines`
+local function peek_snippet(site, context)
+  local bufnr = load_buf(site.uri)
+  if not bufnr then return { '' }, '', 0 end
+  local ft = vim.bo[bufnr].filetype or ''
+  local lnum = (site.land and site.land.row) or site.range.start.line -- 0-based
+  local last = vim.api.nvim_buf_line_count(bufnr) - 1
+  local first = math.max(0, lnum - context)
+  local stop = math.min(last, lnum + context)
+  local raw = vim.api.nvim_buf_get_lines(bufnr, first, stop + 1, false)
+
+  -- Common leading whitespace across non-blank lines, so we dedent the block
+  -- without flattening relative indentation.
+  local common
+  for _, l in ipairs(raw) do
+    if l:match('%S') then
+      local indent = l:match('^%s*')
+      if not common or #indent < #common then common = indent end
+    end
+  end
+  common = common or ''
+  local dedented = {}
+  for _, l in ipairs(raw) do
+    table.insert(dedented, (l:gsub('^' .. common, '', 1)))
+  end
+
+  -- open_floating_preview's markdown normalization collapses SUCCESSIVE blank
+  -- lines (it does not respect code fences), which would shift the landing line.
+  -- Pre-collapse them ourselves so normalization is a no-op and the target index
+  -- stays exact; track the landing line's new position as we drop lines.
+  local target = lnum - first
+  local out = {}
+  local prev_blank = false
+  for idx, l in ipairs(dedented) do
+    local blank = l:match('^%s*$') ~= nil
+    if blank and prev_blank then
+      if idx - 1 < target then target = target - 1 end -- a line before target dropped
+    else
+      table.insert(out, l)
+    end
+    prev_blank = blank
+  end
+  return out, ft, target
+end
+
+-- Render a sources result as markdown lines for the peek float. Each source is a
+-- bold relative `path:line` header + dim `(kind)` (plus its terminal note, if
+-- any), then the source line (with peek_context lines around it) in a fenced
+-- code block so open_floating_preview gives it real syntax highlighting. Many
+-- sources stack with `---` rules, capped at peek_max_sites with a "+N more"
+-- line. Zero sources renders the empty message.
+--
+-- Also returns the 0-based float-buffer line numbers of each landing line, so
+-- the caller can highlight them. open_floating_preview's markdown normalization
+-- keeps every line in place (it only strips CRs, collapses SUCCESSIVE blank
+-- lines, and expands `---` 1:1), so our emitted indices match the float buffer
+-- as long as we never emit two blank lines in a row -- which we do not.
+---@param result trace.SourcesResult
+---@return string[] lines markdown lines for open_floating_preview
+---@return integer[] targets 0-based float-buffer lines of each landing line
+local function peek_lines(result)
+  local sites = result.sites
+  if #sites == 0 then
+    return { result.empty_msg }, {}
+  end
+
+  local lines = {}
+  local targets = {}
+  local shown = math.min(#sites, M.config.peek_max_sites)
+  for i = 1, shown do
+    local site = sites[i]
+    local path = vim.uri_to_fname(site.uri)
+    local rel = vim.fn.fnamemodify(path, ':~:.')
+    local lnum = ((site.land and site.land.row) or site.range.start.line) + 1
+    local snippet, ft, target = peek_snippet(site, M.config.peek_context)
+
+    -- Location reads first (bold), the hop kind trails as a dim parenthetical so
+    -- it is visually distinct from the path. Terminal note (if any) appended.
+    local header = string.format('**%s:%d** (%s)', rel, lnum, site.kind or 'source')
+    if site.note then
+      header = header .. ' [' .. site.note .. ']'
+    end
+    if i > 1 then
+      table.insert(lines, '---')
+    end
+    table.insert(lines, header)
+    table.insert(lines, '```' .. ft)
+    -- The landing line sits at `target` within the snippet, which begins on the
+    -- next emitted line. Record its 0-based float-buffer position.
+    table.insert(targets, #lines + target)
+    vim.list_extend(lines, snippet)
+    table.insert(lines, '```')
+  end
+  if #sites > shown then
+    table.insert(lines, '---')
+    table.insert(lines, string.format('... (+%d more)', #sites - shown))
+  end
+  return lines, targets
+end
+
 -- The selector field path of a node, if it is (or is within) a field read like
 -- `a.b.c`: returns the innermost operand node and the list of field names in
 -- order, e.g. for `cfg.Server.Port` -> (operand `cfg`, { 'Server', 'Port' }).
@@ -2025,6 +2142,45 @@ function M.trace_up(on_done, opts)
   local pos = vim.api.nvim_win_get_cursor(0)
   local result = sources_at(bufnr, pos[1] - 1, pos[2])
   return resolve_sites(result, opts, on_done)
+end
+
+-- Peek at where the value under the cursor would trace to, WITHOUT moving. Shows
+-- the sources (same as a projection-free `gu` hop) in an LSP-hover-style float,
+-- one block per source. Gates on LSP-ready exactly like trace_up_n so the peek
+-- is trustworthy right after startup (sync-fast when already ready).
+---@param opts { project: boolean? }?
+function M.peek(opts)
+  opts = opts or {}
+  local bufnr = vim.api.nvim_get_current_buf()
+  local function show()
+    local pos = vim.api.nvim_win_get_cursor(0)
+    local result = sources_at(bufnr, pos[1] - 1, pos[2], { project = opts.project })
+    local lines, targets = peek_lines(result)
+    local fbuf = vim.lsp.util.open_floating_preview(lines, 'markdown', {
+      border = 'rounded',
+      focus_id = 'trace-peek',
+    })
+    -- Highlight each landing line so it stands out from the surrounding context
+    -- (only meaningful when peek_context > 0). line_hl_group spans the full line.
+    for _, l in ipairs(targets) do
+      vim.api.nvim_buf_set_extmark(fbuf, peek_ns, l, 0, {
+        line_hl_group = 'Visual',
+      })
+    end
+  end
+  if lsp_ready(bufnr) then
+    return show()
+  end
+  vim.api.nvim_echo({ { '[trace] waiting for LSP...' } }, false, {})
+  wait_lsp_ready(bufnr, function(ready)
+    if not ready then
+      vim.api.nvim_echo({ { '[trace] no LSP client ready after '
+      .. M.config.lsp_ready_timeout .. 'ms; aborting', 'ErrorMsg' } }, true, {})
+      return
+    end
+    vim.api.nvim_echo({ { '' } }, false, {}) -- clear the "waiting" message
+    show()
+  end)
 end
 
 -- Build a quickfix entry describing the current cursor position.

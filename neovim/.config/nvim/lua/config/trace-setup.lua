@@ -85,6 +85,8 @@ trace.config.picker = function(sites, opts, on_choice)
   }):find()
 end
 
+trace.config.peek_context = 3
+
 -- Commands ------------------------------------------------------------------
 
 -- Trace a value one hop "up" toward its origin. With a count, repeat that many
@@ -107,6 +109,12 @@ vim.api.nvim_create_user_command('TraceTree', function(cmd)
   trace.trace_tree(opts)
 end, { count = true, desc = "Build the full provenance tree into a quickfix list" })
 
+-- Peek at where the value under the cursor would trace to, in an LSP-hover-style
+-- float, without moving the cursor. Projection-free, so it mirrors a `gu` hop.
+vim.api.nvim_create_user_command('TracePeek', function()
+  trace.peek()
+end, { desc = "Peek at a value's trace sources in a float (no jump)" })
+
 -- Toggle trace debug logging (LSP timeouts/errors and projection hops, shown in
 -- :messages). With a bang, force on; otherwise toggle.
 vim.api.nvim_create_user_command('TraceDebug', function(cmd)
@@ -127,6 +135,13 @@ vim.keymap.set('n', 'gU', function()
   local count = vim.v.count > 0 and vim.v.count or 1000
   trace.trace_up_n(count, { quickfix = true })
 end, { desc = "Trace value to origin (quickfix trail)" })
+
+-- `gp`: peek at the trace sources for the value under the cursor in a float,
+-- without moving. Mirrors what a `gu` hop would find (projection-free). Press
+-- again to enter the float (LSP-hover focus behavior).
+vim.keymap.set('n', 'gp', function()
+  trace.peek()
+end, { desc = "Peek at value trace sources (no jump)" })
 
 -- `gz`: full provenance tree into a "Trace Tree" quickfix list. A count caps
 -- depth. (gt/gT are taken by tabs; gz keeps the trace family on the g-prefix.)
