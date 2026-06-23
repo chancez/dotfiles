@@ -25,10 +25,9 @@ cmd_to_clip() { print -n -- "$BUFFER" | pbcopy }
 zle -N cmd_to_clip
 bindkey '^Y' cmd_to_clip
 
-# History substring search mappings
-bindkey -M vicmd "k" history-substring-search-up
-bindkey -M vicmd "j" history-substring-search-down
-# Up arrow
-bindkey -M viins '^[[A' history-substring-search-up
-# Down arrow
-bindkey -M viins '^[[B' history-substring-search-down
+# Atuin mappings
+bindkey '^R' atuin-search
+bindkey -M vicmd "k" atuin-history-up
+bindkey -M vicmd "j" atuin-history-down
+bindkey -M viins '^[[A' atuin-history-up
+bindkey -M viins '^[[B' atuin-history-down

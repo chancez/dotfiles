@@ -18,6 +18,8 @@ python = ['3', '2.7']
 usage = "latest"
 # Prompt
 starship = "latest"
+# History
+atuin = "18.16.1"
 
 kubectl = "latest"
 helm = "prefix:3"

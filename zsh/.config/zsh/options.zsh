@@ -146,3 +146,7 @@ fi
 export VISUAL="$EDITOR"
 export GIT_EDITOR="$EDITOR"
 
+export ATUIN_NOBIND="true"
+
+export ZSH_AUTOSUGGEST_STRATEGY=(atuin)
+export ATUIN_HISTORY_SEARCH_FILTER_MODE=workspace

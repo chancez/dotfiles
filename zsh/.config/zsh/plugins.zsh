@@ -24,6 +24,7 @@ if ! zgenom saved; then
   zgenom compdef
 
   zgenom load $ZDOTDIR/plugins/ssh.zsh
+  zgenom load $ZDOTDIR/plugins/atuin-history-substring-search.zsh
 
   if (($+commands[starship])) then
     # Use sed to replace the hardcoded versioned path with the 'starship' command
@@ -34,12 +35,11 @@ if ! zgenom saved; then
   # zsh plugins
   zgenom load zdharma-continuum/fast-syntax-highlighting
   zgenom load zsh-users/zsh-autosuggestions
-  zgenom load zsh-users/zsh-history-substring-search
   zgenom load djui/alias-tips
   zgenom load so-fancy/diff-so-fancy
   zgenom load junegunn/fzf-git.sh
   zgenom ohmyzsh plugins/timer
-
+  zgenom load atuinsh/atuin
 
   # custom extensions
   (($+commands[direnv])) && zgenom eval --name direnv < <(direnv hook zsh)
@@ -49,6 +49,7 @@ if ! zgenom saved; then
   (($+commands[crc])) && zgenom eval --name crc < <(crc completion zsh)
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
   (($+commands[mise])) && zgenom eval --name mise < <(mise completion zsh)
+  (($+commands[atuin])) && zgenom eval --name atuin < <(atuin gen-completions --shell zsh)
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
   (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)
