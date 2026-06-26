@@ -113,6 +113,13 @@ return {
     cmd = 'Regedit',
   },
 
+  -- Builtin undotree
+  {
+    'nvim.undotree',
+    dir = vim.env.VIMRUNTIME .. "/pack/dist/opt/nvim.undotree",
+    cmd = 'Undotree',
+  },
+
   {
     'windwp/nvim-autopairs',
     event = "InsertEnter",
@@ -127,10 +134,10 @@ return {
       local cond = require('nvim-autopairs.conds')
       npairs.add_rules({
         Rule('```', '```', { 'AgenticInput' })
-          :with_pair(cond.not_before_char('`', 3)),
+            :with_pair(cond.not_before_char('`', 3)),
         Rule('```.*$', '```', { 'AgenticInput' })
-          :only_cr()
-          :use_regex(true),
+            :only_cr()
+            :use_regex(true),
       })
     end,
   },
