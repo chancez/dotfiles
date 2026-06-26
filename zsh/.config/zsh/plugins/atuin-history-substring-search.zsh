@@ -39,6 +39,7 @@
 
 # global configuration
 : ${ATUIN_HISTORY_SEARCH_FILTER_MODE='global'}
+: ${ATUIN_HISTORY_SEARCH_MODE:='fuzzy'}
 
 # internal variables
 typeset -g -i _atuin_history_match_index
@@ -209,7 +210,7 @@ _atuin-history-down-search() {
 
 _atuin-history-do-search() {
   if [[ $1 -ge 0 ]]; then
-    atuin search --filter-mode "$ATUIN_HISTORY_SEARCH_FILTER_MODE" --search-mode prefix \
+    atuin search --filter-mode "$ATUIN_HISTORY_SEARCH_FILTER_MODE" --search-mode "$ATUIN_HISTORY_SEARCH_MODE" \
       --limit 1 --offset $1 --format "{command}" \
       "$2"
   fi
