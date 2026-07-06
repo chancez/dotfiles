@@ -111,6 +111,11 @@ map('n', '<leader>tq', function() vim.diagnostic.setqflist() end, { desc = 'Send
 map('n', '<leader>td', ':ToggleDiagnostics<CR>', { desc = 'Toggle diagnostics', silent = true })
 map('n', '<leader>d', function() vim.diagnostic.open_float() end, { desc = 'Open diagnostics' })
 
+-- Jump to next/previous git conflict marker
+local conflict_pat = [[^\(<<<<<<<\|=======\|>>>>>>>\)]]
+map('n', ']n', function() vim.fn.search(conflict_pat, 'W') end, { desc = 'Next conflict marker' })
+map('n', '[n', function() vim.fn.search(conflict_pat, 'bW') end, { desc = 'Previous conflict marker' })
+
 map('n', '<M-/>', 'gcc', { desc = 'Toggle comment', remap = true })
 map('v', '<M-/>', 'gc', { desc = 'Toggle comment', remap = true })
 
