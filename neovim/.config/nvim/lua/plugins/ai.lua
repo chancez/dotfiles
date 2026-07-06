@@ -1,20 +1,3 @@
--- Lookup the "nice" name for the model from config options.
--- Eg: "us.anthropic.claude-opus-4-6-v1" -> "Opus"
-local function update_model_from_config(tab_page_id, config_options)
-  for _, opt in ipairs(config_options) do
-    if opt.category == "model" then
-      local model_name = opt.currentValue
-      for _, option in ipairs(opt.options or {}) do
-        if option.value == opt.currentValue then
-          model_name = option.name
-          break
-        end
-      end
-      vim.t[tab_page_id].agentic_model = model_name
-    end
-  end
-end
-
 local function jump_to_prompt(amount)
   -- Define the prefix to match lines that indicate user prompts in the AgenticChat buffer.
   local prefix = '##.* User'
@@ -142,48 +125,10 @@ return {
         todos = { buffer_name = "Tasks" },
       },
 
-      hooks = {
-        on_create_session_response = function(data)
-          -- Clear the existing usage data when a new session gets created.
-          vim.t[data.tab_page_id].agentic_usage = nil
-
-          if data.response and data.response.configOptions then
-            update_model_from_config(data.tab_page_id, data.response.configOptions)
-          end
-
-          local SessionRegistry = require("agentic.session_registry")
-          SessionRegistry.get_session_for_tab_page(data.tab_page_id, function(session)
-            session:schedule_header_refresh()
-          end)
-        end,
-
-        -- TODO: need hooks for session/set_config_option and session/set_model
-        -- so we can reset the model when it's changed mid session.
-
-        on_session_update = function(data)
-          local needs_refresh = false
-          if data.update.sessionUpdate == "usage_update" then
-            vim.t[data.tab_page_id].agentic_usage = data.update
-            needs_refresh = true
-          end
-          if data.update.sessionUpdate == "config_option_update" then
-            update_model_from_config(data.tab_page_id, data.update.configOptions)
-            needs_refresh = true
-          end
-
-          if not needs_refresh then
-            return
-          end
-
-          local SessionRegistry = require("agentic.session_registry")
-          SessionRegistry.get_session_for_tab_page(data.tab_page_id, function(session)
-            session:schedule_header_refresh()
-          end)
-        end,
-      },
+      -- hooks = {},
 
       headers = {
-        chat = function(parts)
+        chat = function(parts, session_state)
           local pieces = { parts.title }
           if parts.context ~= nil then
             table.insert(pieces, parts.context)
@@ -192,22 +137,23 @@ return {
             table.insert(pieces, parts.suffix)
           end
 
-          local model = vim.t.agentic_model
-          if model ~= nil then
+          local model = session_state:get_model_name()
+          if model then
             table.insert(pieces, "Model: " .. model)
           end
 
-          local usage = vim.t.agentic_usage
-          if usage ~= nil then
-            local used = tonumber(usage.used) or 0
-            local size = tonumber(usage.size) or 0
-            if size > 0 then
-              local pct = (used / size) * 100
-              table.insert(pieces, ("Context: %.1f%%%% (%d/%d)"):format(pct, used, size))
-              if usage.cost ~= nil then
-                table.insert(pieces, ("%.2f %s"):format(usage.cost.amount, usage.cost.currency))
-              end
-            end
+          local used = session_state:get_context_used()
+          if used then
+            local used_raw = session_state:get_context_used_raw() or 0
+            local size_raw = session_state:get_context_size_raw() or 0
+            local pct = (used_raw / size_raw) * 100
+            table.insert(pieces, string.format("%s tok (%.1f%%%%)", used, pct))
+          end
+
+          local cost = session_state:get_cost_amount()
+          if cost then
+            local currency = session_state:get_cost_currency()
+            table.insert(pieces, (currency and currency .. " " or "") .. cost)
           end
 
           return table.concat(pieces, " | ")
