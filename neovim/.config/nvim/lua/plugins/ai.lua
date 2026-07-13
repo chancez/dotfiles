@@ -137,6 +137,10 @@ return {
             table.insert(pieces, parts.suffix)
           end
 
+          if session_state == nil then
+            return table.concat(pieces, " | ")
+          end
+
           local model = session_state:get_model_name()
           if model then
             table.insert(pieces, "Model: " .. model)
