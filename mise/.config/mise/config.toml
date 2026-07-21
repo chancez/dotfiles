@@ -48,7 +48,7 @@ stylua = "latest"
 "npm:opencode-ai" = "latest"
 "aqua:openai/codex" = "latest"
 "npm:@zed-industries/codex-acp" = "latest"
-"aqua:anthropics/claude-code" = "2.1.153"
+"aqua:anthropics/claude-code" = "latest"
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
 "npm:@google/gemini-cli" = "latest"
 
