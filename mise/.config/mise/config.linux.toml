@@ -1,0 +1,11 @@
+# Linux-only config. Loaded only on Linux (via auto_env; see .miserc.toml).
+#
+# Intentionally empty for now: this migration is a pure refactor (Stow/Brewfile -> mise) and
+# does not introduce Homebrew to Linux hosts, which stay apt-managed as before. When we're
+# ready to have mise manage Linux system packages, add them here, e.g.:
+#
+#   [bootstrap.packages]
+#   "apt:build-essential" = "latest"
+#   "apt:libssl-dev" = "latest"
+#
+# Consider `[settings] system_packages.managers = ["apt"]` on hosts that must never use brew.

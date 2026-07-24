@@ -1,0 +1,5 @@
+# auto_env is an early-init setting and cannot live in config.toml. It makes mise load
+# platform-specific config siblings automatically (config.macos.toml on macOS, etc.), so
+# macOS-only [bootstrap.packages] entries stay out of the way on Linux. bootstrap runs from
+# ~/.dotfiles, so this repo-root file is picked up.
+auto_env = true

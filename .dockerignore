@@ -1,3 +1,6 @@
 # Do not invalidate the cache when we modify the Dockerfile/.dockerignore
 Dockerfile
 .dockerignore
+
+# Claude Code runtime state and git worktrees live here; never copy into the image.
+.claude

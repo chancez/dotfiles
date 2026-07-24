@@ -1,3 +1,0 @@
-# trace.nvim is a local lazy.nvim plugin (referenced by `dir`), not a stowed
-# dotfile. Keep it in the repo but out of stow's symlink tree.
-trace\.nvim

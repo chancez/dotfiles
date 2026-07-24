@@ -10,8 +10,8 @@ RUN apt update -y
 # Utilities to always install
 RUN apt install -y gpg wget curl tcpdump jq git unzip net-tools sudo coreutils file
 
-# Utilities and tools for development
-RUN apt install -y zsh stow
+# Utilities and tools for development (stow is gone: dotfiles are managed by mise now)
+RUN apt install -y zsh
 
 # Mason cannot install clangd on Linux aarch64
 RUN apt install -y clangd
@@ -38,6 +38,13 @@ WORKDIR /home/chance
 # Install mise
 RUN curl https://mise.run | sh && ~/.local/bin/mise --version
 
+# Put mise + its shims on PATH (matching how the real machine uses shims, not `mise activate`),
+# and point mise at the in-repo config for the whole build. On a fresh machine ~/.config/mise
+# does not exist yet; the dotfiles step below symlinks it into place, but until then mise needs
+# to be told where the config lives.
+ENV PATH="/home/chance/.local/bin:/home/chance/.local/share/mise/shims:${PATH}"
+ENV MISE_GLOBAL_CONFIG_FILE="/home/chance/.dotfiles/mise/.config/mise/config.toml"
+
 # Hack to make nvim mason use local clangd
 # https://github.com/mason-org/mason.nvim/issues/1578
 RUN \
@@ -50,28 +57,34 @@ RUN \
 # Trust github.com SSH host key
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-# Optimize the cache by copying mise configurations first, and installing mise
-# tools before the rest so that non-mise changes don't trigger a reinstall of
-# the mise install step
+# Cache warmer: copy only the mise config first and pre-install [tools]. This is purely a
+# build-cache optimization -- it keeps the expensive tool install in its own layer so editing
+# an unrelated dotfile doesn't trigger a full reinstall. `mise bootstrap` below is still the
+# real driver; its tools step just converges to a no-op since these are already installed.
 RUN mkdir -p /home/chance/.dotfiles
 COPY --chown=chance:chance ./mise /home/chance/.dotfiles/mise
-COPY --chown=chance:chance ./setup.sh /home/chance/.dotfiles/setup.sh
-RUN cd ~/.dotfiles && ./setup.sh
-
-# Install tools using mise
 RUN \
-  # SSH auth for cloning from github
+  # SSH auth for cloning from github (private go modules)
   --mount=type=ssh,required=true,uid=999,gid=999 \
   # https://mise.jdx.dev/getting-started.html#github-api-rate-limiting
   --mount=type=secret,id=MISE_GITHUB_TOKEN,env=MISE_GITHUB_TOKEN \
-  # Add mise to PATH for this command, as mise calls mise during install (eg: npm)
-  PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH" \
-  # Install all other tools
-  ~/.local/bin/mise install
+  mise trust "$MISE_GLOBAL_CONFIG_FILE" && mise install
 
-# Configure remaining dotfiles
+# Copy the full repo and run the whole bootstrap. This is the real machine-setup entrypoint:
+# it applies dotfiles (the GNU Stow / setup.sh replacement), system packages, macOS defaults,
+# and installs [tools] -- all in mise's defined order. Tools are already warmed above, so that
+# step is a fast no-op. On Linux, config.macos.toml is not loaded (see .miserc.toml auto_env),
+# so no brew/system packages are installed -- matching the pre-mise behavior.
 COPY --chown=chance:chance . /home/chance/.dotfiles
-RUN cd ~/.dotfiles && ./setup.sh
+RUN \
+  --mount=type=ssh,required=true,uid=999,gid=999 \
+  --mount=type=secret,id=MISE_GITHUB_TOKEN,env=MISE_GITHUB_TOKEN \
+  mise trust "$MISE_GLOBAL_CONFIG_FILE" && \
+    # Dry-run first for visibility into what bootstrap will do.
+    mise bootstrap --dry-run && \
+    mise bootstrap --yes && \
+    # Fail the build if any dotfile is out of sync.
+    mise dotfiles status --missing
 
 # Start an interactive zsh login shell to bootstrap the zsh environment (which causes zgenom to install plugins/etc)
 RUN --mount=type=ssh,required=true,uid=999 \
