@@ -29,5 +29,5 @@ if [ -z "$MSG" ]; then
 fi
 
 TITLE="ClaudeCode ($SESSION_DIR) Task Done"
-# Display macOS notification with sound using osascript
-osascript -e "display notification \"$MSG\" with title \"$TITLE\""
+# Message is piped rather than passed via -message so a leading "-" isn't parsed as a flag
+printf '%s' "$MSG" | terminal-notifier -title "$TITLE"
