@@ -20,6 +20,7 @@ vim.loader.enable()
 
 -- set options (mapleader) before loading lazy
 require 'config.options'
+require('config.title').setup()
 require 'config.usercommands'
 require 'config.autocmds'
 require 'config.mappings'

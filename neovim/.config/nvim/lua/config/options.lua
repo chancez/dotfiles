@@ -22,7 +22,6 @@ vim.opt.incsearch = true  --  Searches as you type.
 vim.opt.smartcase = true  -- if case seems to matter use it
 vim.opt.showmode = true
 vim.opt.synmaxcol = 2048
-vim.opt.title = true
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
