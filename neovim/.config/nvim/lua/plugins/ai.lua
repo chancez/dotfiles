@@ -59,7 +59,7 @@ return {
 
       acp_providers = {
         ["claude-agent-acp"] = {
-          default_mode = "acceptEdits",
+          default_mode = "auto",
         },
       },
 
