@@ -6,4 +6,8 @@
 # the argv (as $1) so restoring the session reattaches instead of creating a new
 # one, and keeps the saved path stable rather than baking in the versioned mise
 # install path that resolving `zmx` directly would produce.
+# A ZMX_SESSION in the environment makes `attach` retarget that session's
+# existing client instead of attaching this terminal, so an inherited value
+# would hijack whichever window is already showing it.
+unset ZMX_SESSION
 exec zmx attach "$1"

@@ -13,6 +13,9 @@ LSOF = '/usr/sbin/lsof'
 
 COUNTER = os.path.expanduser('~/.local/state/kitty-zmx/counter')
 
+# Trailing path component of a zmx session socket, e.g. .../zmx-501/kitty.5
+SOCKET_RE = re.compile(r'/zmx-\d+/(\S+)$')
+
 # kitty window ids get reused across restarts, so sessions are numbered from a
 # counter of our own instead.
 def next_session_name():
@@ -30,11 +33,63 @@ def next_session_name():
     return 'kitty.{}'.format(n)
 
 
-def session_of(window):
+def launched_session_of(window):
     argv = list(window.child.argv) if window is not None else []
     if len(argv) >= 2 and os.path.basename(argv[0]) == 'zmx-attach':
         return argv[1]
     return None
+
+
+# `zmx attach` from a shell that already has ZMX_SESSION set retargets the
+# session that shell's client is showing rather than attaching a new one, so a
+# window can end up displaying a session its launch argv never mentioned. Only
+# the socket the client actually holds says which one, and killing by the stale
+# argv name would destroy an unrelated session.
+def session_of(window):
+    pid = getattr(window.child, 'pid', None) if window is not None else None
+    return (live_session(pid) if pid else None) or launched_session_of(window)
+
+
+def live_session(pid):
+    peers = re.findall(r'->(0x[0-9a-f]+)', _lsof(['-p', str(pid), '-a', '-U']))
+    if not peers:
+        return None
+
+    for line in _lsof(['-U']).splitlines():
+        if any(peer in line for peer in peers):
+            match = SOCKET_RE.search(line)
+            if match:
+                return match.group(1)
+    return None
+
+
+def _lsof(args):
+    try:
+        return subprocess.run(
+            [LSOF] + args, capture_output=True, text=True, timeout=5
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return ''
+
+
+# `zmx ls` prints one space-separated key=value line per session, with the
+# current session's line prefixed by a marker, so fields are matched anywhere in
+# the line rather than by position.
+def session_fields():
+    try:
+        listing = subprocess.run(
+            [ZMX, 'ls'], capture_output=True, text=True, timeout=2
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return {}
+
+    sessions = {}
+    for line in listing.splitlines():
+        fields = dict(re.findall(r'(\w+)=(\S*)', line))
+        name = fields.get('name')
+        if name:
+            sessions[name] = fields
+    return sessions
 
 
 # zmx owns the window's pty, so the shell's cwd never reaches kitty and
