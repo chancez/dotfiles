@@ -1198,3 +1198,37 @@ checksum = "sha256:a047d55651bc3e0ca24595b25ec4cfcb10f9dca9fb56514e661269b37d4fa
 url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261333"
 provenance = "github-attestations"
+
+[[tools.zmx]]
+version = "0.7.0"
+backend = "github:neurosnap/zmx"
+
+[tools.zmx."platforms.linux-arm64"]
+checksum = "sha256:77599f66124694fae80bbb1d2fa0eafdb8c648b427a048cad90513ecf6136fc9"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254327"
+
+[tools.zmx."platforms.linux-arm64-musl"]
+checksum = "sha256:77599f66124694fae80bbb1d2fa0eafdb8c648b427a048cad90513ecf6136fc9"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254327"
+
+[tools.zmx."platforms.linux-x64"]
+checksum = "sha256:8b8783d7b120c9ffd0acf4aee37969054dc0dfef3c4f3a4728d2efd35f2e97a0"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254321"
+
+[tools.zmx."platforms.linux-x64-musl"]
+checksum = "sha256:8b8783d7b120c9ffd0acf4aee37969054dc0dfef3c4f3a4728d2efd35f2e97a0"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254321"
+
+[tools.zmx."platforms.macos-arm64"]
+checksum = "sha256:a63d6f3edd6d4b38240f8f81513e60e35a898ca520211112d7bc67f610f1f3eb"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-macos-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254323"
+
+[tools.zmx."platforms.macos-x64"]
+checksum = "sha256:66c57e7963c84881266f9f3acfdb36945c340c016a57061948517f3b303ca7d3"
+url = "https://github.com/neurosnap/zmx/releases/download/v0.7.0/zmx-0.7.0-macos-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/neurosnap/zmx/releases/assets/487254341"

@@ -63,3 +63,4 @@ aws-cli = "latest"
 # Render mermaidjs diagrams locally
 "npm:@mermaid-js/mermaid-cli" = "latest"
 kind = "latest"
+zmx = "latest"
