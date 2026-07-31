@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""Map zmx sessions to the kitty tabs/windows showing them.
+
+Read-only: runs lsof, `kitten @ ls`, and `zmx ls`. Mutates nothing.
+
+The tab number matches kitty's {sup.index}, so it lines up with the tab bar.
+`launched` is the session named in the window's launch argv; `live` is the session
+its client is actually connected to. They diverge only after a session switch,
+which is what silently causes the wrong session to be killed on close.
+"""
+
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+
+KITTEN = '/Applications/kitty.app/Contents/MacOS/kitten'
+LSOF = '/usr/sbin/lsof'
+SOCKET_RE = re.compile(r'/zmx-\d+/(\S+)$')
+
+
+def find_socket():
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        return arg if arg.startswith('unix:') else 'unix:' + arg
+    # kitty appends its pid to the listen_on socket, so the name changes on every
+    # restart; pick the most recently modified rather than hardcoding one.
+    socks = [p for p in glob.glob('/tmp/kitty-*') if re.fullmatch(r'/tmp/kitty-\d+', p)]
+    if not socks:
+        sys.exit('no /tmp/kitty-<pid> socket found; pass one as an argument')
+    socks.sort(key=os.path.getmtime, reverse=True)
+    return 'unix:' + socks[0]
+
+
+def lsof(args):
+    try:
+        return subprocess.run([LSOF] + args, capture_output=True,
+                              text=True, timeout=10).stdout
+    except Exception:
+        return ''
+
+
+def build_peer_map():
+    """Map socket device address -> session name, from one global lsof pass."""
+    peers = {}
+    for line in lsof(['-U']).splitlines():
+        m = SOCKET_RE.search(line)
+        if not m:
+            continue
+        dev = re.search(r'(0x[0-9a-f]+)', line)
+        if dev:
+            peers[dev.group(1)] = m.group(1)
+    return peers
+
+
+def live_session(pid, peer_map):
+    for p in re.findall(r'->(0x[0-9a-f]+)', lsof(['-p', str(pid), '-a', '-U'])):
+        if p in peer_map:
+            return peer_map[p]
+    return None
+
+
+def zmx_sessions():
+    out = subprocess.run(['zmx', 'ls'], capture_output=True, text=True).stdout
+    sessions = {}
+    for line in out.splitlines():
+        fields = dict(re.findall(r'(\w+)=(\S*)', line))
+        if fields.get('name'):
+            sessions[fields['name']] = fields
+    return sessions
+
+
+def main():
+    sock = find_socket()
+    out = subprocess.run([KITTEN, '@', '--to', sock, 'ls'],
+                         capture_output=True, text=True)
+    if out.returncode != 0:
+        sys.exit(f'kitten @ ls failed for {sock}: {out.stderr.strip()}')
+
+    data = json.loads(out.stdout)
+    peer_map = build_peer_map()
+    sessions = zmx_sessions()
+
+    multi_osw = len(data) > 1
+    header = f"{'tab':>4} {'win':>4} {'launched':<11} {'live':<11} {'prog':<7} title"
+    print(header)
+    print('-' * len(header))
+
+    seen = set()
+    for osw in data:
+        if multi_osw:
+            print(f"os-window {osw.get('id')}"
+                  f"{'  (active)' if osw.get('is_active') else ''}")
+        for pos, tab in enumerate(osw['tabs'], 1):
+            for wi, w in enumerate(tab['windows']):
+                cmdline = ' '.join(w.get('cmdline') or [])
+                launched = cmdline.split()[-1] if 'attach' in cmdline else '-'
+                live = live_session(w['pid'], peer_map) if w.get('pid') else None
+                if live:
+                    seen.add(live)
+                prog = sessions.get(live or '', {}).get('PROG', '-')
+
+                # Label the tab once so extra windows read as belonging to it.
+                tab_col = (f'{pos}*' if tab.get('is_active') else f'{pos}') if wi == 0 else ''
+                flag = '' if (live is None or launched == live) else '  <-- MISMATCH'
+                print(f"{tab_col:>4} {w['id']:>4} {launched:<11} {str(live):<11} "
+                      f"{prog:<7} {w.get('title', '')!r}{flag}")
+
+    orphans = sorted(n for n in sessions if n not in seen)
+    if orphans:
+        print('\nsessions with no kitty window:')
+        for n in orphans:
+            f = sessions[n]
+            print(f"  {n:<11} clients={f.get('clients')} pid={f.get('pid')} "
+                  f"PROG={f.get('PROG', '-')} start_dir={f.get('start_dir', '')}")
+
+
+if __name__ == '__main__':
+    main()
