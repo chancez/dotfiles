@@ -45,6 +45,7 @@ $S new mytest                 # launch, waits until a window actually exists
 $S ls mytest                  # window ids, pids, titles, cwd, running procs
 $S run mytest 'echo hi'       # run a shell line (escape-safe)
 $S screen mytest              # what is on screen right now
+$S shot mytest                # png of just this window (see below)
 $S rm mytest                  # tear down
 ```
 
@@ -56,6 +57,34 @@ one so it is not a surprise, and always tear it down when finished.
 - `--cmd "COMMAND"` — run something other than `/bin/sh` in the window
 - `--conf FILE` — append extra kitty.conf lines (mappings, `shell_integration`, ...)
 - `--zmx` — give the sandbox its own zmx socket dir (see below)
+
+## Testing a source build of kitty
+
+By default the sandbox runs the installed `/Applications/kitty.app`. When the
+change under test is to kitty itself, that silently tests the *released* binary
+instead of your build — a false pass that looks like a real one. Point the
+sandbox at the build:
+
+```sh
+export KITTY_SANDBOX_KITTY=~/projects/kitty/kitty/launcher/kitty
+export KITTY_SANDBOX_KITTEN=~/projects/kitty/kitty/launcher/kitten
+```
+
+Rebuild before launching, or you are testing the previous compile.
+
+Confirm the right binary really is under test rather than assuming the env vars
+took effect. Two cheap checks, either of which beats trusting the export:
+
+```sh
+ps -o command= -p $(pgrep -f "instance-group NAME" | head -1)   # shows the path
+grep -i 'unknown config key' $dir/kitty.log
+```
+
+If your change adds a config option, put it in `--conf` and grep the log: the
+installed kitty reports `Ignoring unknown config key: your_option` while a build
+that has it stays silent. That turns "is this my binary?" into an observation.
+Absence of the error is only meaningful for an option the released version does
+not know about — for anything else, use `ps`.
 
 ## Driving the sandbox
 
@@ -79,12 +108,52 @@ rendered as literal text, pipe through `od -c`, since they are invisible
 otherwise.
 
 Kitty's own screen buffer is authoritative for what was painted, so prefer
-`get-text` over a screenshot. `screencapture` needs macOS screen-recording
-permission, and granting it means restarting the terminal — real friction for the
-user, in exchange for a less precise answer than the bytes. Reach for a
-screenshot only when the question is genuinely visual (glyph rendering, colour
-appearance, layout) or when you have a result you cannot otherwise trust, and say
-why you needed it.
+`get-text` over a screenshot: bytes you can assert on beat pixels you have to
+eyeball. Reach for a screenshot when the question is genuinely visual (glyph
+rendering, colour appearance, layout, anything outside a window's text grid) or
+when you have a result you cannot otherwise trust.
+
+```sh
+$S shot mytest              # writes $dir/shot.png, prints the path
+$S shot mytest /tmp/out.png
+```
+
+`shot` captures only this sandbox's OS window, via the `platform_window_id` that
+`kitten @ ls` reports, so it does not expose the rest of the user's display and
+needs no cropping.
+
+It requires macOS screen-recording permission for the process running the script,
+which is granted per-process and needs that process restarted to take effect. An
+unpermitted capture is not an error — it silently returns a solid black png that
+looks like a rendering bug. `shot` warns when the result is entirely black;
+believe the warning rather than the image. If permission is unavailable, set the
+sandbox up in the state you want and ask the user to screenshot it, telling them
+exactly what to look for.
+
+**`get-text` does not include the tab bar.** It reads the focused *window's*
+screen; the tab bar is a separate Screen owned by the OS window, so no extent
+reaches it — `screen` on a sandbox with a visible tab bar returns just the shell
+prompt. `ls` reports tab title *strings*, not how they were rendered, which is
+exactly the part in question for wrapping, truncation, and multi-line layout. So
+neither command can see a tab bar bug, and both look like a clean pass.
+
+To inspect tab bar rendering, drive it directly under the built binary instead:
+
+```sh
+./kitty/launcher/kitty +launch script.py
+```
+
+In that script patch `viewport_for_window`, `cell_size_for_window`,
+`set_tab_bar_render_data` and `get_boss`, build a `TabBar`, call `layout()` and
+`update(...)`, then read cells back with `str(screen.line(i))` for text or
+`screen.line(i).as_ansi()` for colors and where a background span ends. Use
+`kitty.config.load_config` to exercise real config-file parsing. This also covers
+the horizontal tab bar and anything else drawn by kitty rather than by a program
+inside a window.
+
+Split the work by what each method can actually see: headless inspection for
+layout and content, `shot` for how the bar looks once painted, and the sandbox for
+live-window behavior (clicks, resizes, focus, tab creation).
 
 Anything `kitten @` can do works against the sandbox socket:
 

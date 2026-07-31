@@ -12,17 +12,21 @@
 #   kitty-sandbox.sh text NAME 'literal text to type'
 #   kitty-sandbox.sh run NAME 'shell line'      # escape-safe, see below
 #   kitty-sandbox.sh screen NAME [--all]
+#   kitty-sandbox.sh shot NAME [OUT.png]        # capture just this window
 #   kitty-sandbox.sh sock NAME
 #   kitty-sandbox.sh rm NAME
 #   kitty-sandbox.sh rm-all
 
 set -eu
 
-KITTY=/Applications/kitty.app/Contents/MacOS/kitty
-KITTEN=/Applications/kitty.app/Contents/MacOS/kitten
+# Overridable so a source build can be tested instead of the installed app.
+KITTY=${KITTY_SANDBOX_KITTY:-/Applications/kitty.app/Contents/MacOS/kitty}
+KITTEN=${KITTY_SANDBOX_KITTEN:-/Applications/kitty.app/Contents/MacOS/kitten}
 ROOT=${KITTY_SANDBOX_ROOT:-${TMPDIR:-/tmp}/kitty-sandbox}
 
-usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+# Print the leading comment block, stopping at the first non-comment line, so
+# adding usage lines above does not require adjusting a hardcoded range.
+usage() { sed -n '2,${/^#/!q;s/^# \{0,1\}//;p;}' "$0"; exit 1; }
 
 [ $# -ge 1 ] || usage
 sub=$1; shift
@@ -157,10 +161,51 @@ screen)
   "$KITTEN" @ --to "unix:$sock" get-text --extent "$extent"
   ;;
 
+shot)
+  # Captures just this sandbox's OS window, not the whole display, by asking
+  # kitty for its platform_window_id. Needs macOS screen-recording permission
+  # for the process running this script; without it the png is solid black.
+  need_running
+  out=${1:-$dir/shot.png}
+  wid=$("$KITTEN" @ --to "unix:$sock" ls 2>/dev/null | python3 -c '
+import json, sys
+data = json.load(sys.stdin)
+for osw in data:
+    wid = osw.get("platform_window_id")
+    if wid:
+        print(wid); break
+')
+  [ -n "$wid" ] || { echo "no platform_window_id for '$name'" >&2; exit 1; }
+  screencapture -x -o -l "$wid" "$out"
+  # Without permission the capture comes back uniformly black, which reads as a
+  # rendering bug rather than a permission problem. Check decoded pixels: png
+  # bytes are useless here because even an all-black image compresses to varied
+  # bytes, and sips reports metadata for every format, so scan a tiny BMP's
+  # pixel array instead.
+  python3 - "$out" <<'PY' >&2 || true
+import struct, subprocess, sys, tempfile, os
+src = sys.argv[1]
+tmp = os.path.join(tempfile.gettempdir(), 'kitty-sandbox-probe.bmp')
+subprocess.run(['sips', '-s', 'format', 'bmp', '--resampleHeightWidth', '8', '8',
+                src, '--out', tmp], capture_output=True)
+try:
+    d = open(tmp, 'rb').read()
+    off = struct.unpack('<I', d[10:14])[0]
+    if not any(d[off:]):
+        print(f'warning: {src} is entirely black -- grant screen-recording '
+              'permission to the process running this script', file=sys.stderr)
+finally:
+    if os.path.exists(tmp):
+        os.remove(tmp)
+PY
+  echo "$out"
+  ;;
+
 rm)
   # Matching on --instance-group is what keeps this from touching the real
-  # kitty, which never carries that flag.
-  pkill -f "instance-group $name" 2>/dev/null || true
+  # kitty, which never carries that flag. The trailing $ anchors the name so
+  # `rm w1` cannot also kill a sandbox named w10.
+  pkill -f "instance-group $name\$" 2>/dev/null || true
   sleep 1
   # Kill sessions before removing the directory: zmx resolves a session by its
   # socket path, so deleting the directory first leaves the daemons running with
