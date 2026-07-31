@@ -5,7 +5,11 @@ _zmx_session_update_cwd() {
     return 0
   fi
 
-  zmx set $ZMX_SESSION CWD="${PWD//\//-}"
+  SANITIZED_PWD="${PWD//\//-}"
+  # Handle tilde too
+  SANITIZED_PWD="${SANITIZED_PWD/#$HOME/~}"
+
+  zmx set $ZMX_SESSION "CWD=$SANITIZED_PWD"
 }
 
 _zmx_session_update_prog() {
