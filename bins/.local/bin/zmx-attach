@@ -1,0 +1,9 @@
+#!/bin/sh
+# Attach to a zmx session, creating it if needed.
+#
+# kitty's save_as_session records a window's launch argv, not the process
+# actually running in it. Going through this wrapper keeps the session name in
+# the argv (as $1) so restoring the session reattaches instead of creating a new
+# one, and keeps the saved path stable rather than baking in the versioned mise
+# install path that resolving `zmx` directly would produce.
+exec zmx attach "$1"
