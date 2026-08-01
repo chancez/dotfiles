@@ -118,3 +118,4 @@ autoload run-help
 
 # Expand the next word when running commands via watch (eg: watch k == watch kubectl)
 alias watch='watch '
+alias zml=zmx-map
