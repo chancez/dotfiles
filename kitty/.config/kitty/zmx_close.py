@@ -54,12 +54,10 @@ def confirm_message(described):
     return '\n'.join(lines)
 
 
-# Closing the window only detaches, leaving the session running, so closing on
-# purpose has to kill the session explicitly. This deliberately isn't a
-# `watcher`/on_close hook: on_close also fires for every window when kitty itself
-# is quitting (with no preceding on_quit on SIGTERM), so a watcher can't tell
-# "user closed this window" from "kitty is shutting down" and would kill every
-# session exactly when they need to survive.
+# Stopping the sessions is the zmx_reap.py watcher's job, since it sees every way a
+# window can close rather than only the keys mapped to this kitten. What this adds
+# is the chance to say no beforehand: by the time a watcher runs the window is
+# already going away, so there is nothing left to cancel.
 @result_handler(no_ui=True)
 def handle_result(args, answer, target_window_id, boss):
     window = boss.window_id_map.get(target_window_id)
