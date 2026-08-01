@@ -10,9 +10,26 @@ ARGS=(-title "$TITLE")
 [ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
 
 # Hooks inherit these from kitty, even when Claude runs headless inside neovim.
-# Window id must be numeric since it is interpolated into the -execute shell command.
 KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
-if [ -n "$KITTY_LISTEN_ON" ] && [[ "$KITTY_WINDOW_ID" =~ ^[0-9]+$ ]] && [ -x "$KITTY_BIN" ]; then
+
+# A notification can be clicked long after it was posted, so the target has to be
+# resolved then rather than now. KITTY_WINDOW_ID and KITTY_LISTEN_ON both go stale
+# the moment kitty restarts: window ids are reassigned, and the socket carries
+# kitty's pid. The zmx session name is the one identifier that survives, because the
+# session outlives kitty and a restored window reattaches to the same one. So match
+# on the session and discover the socket at click time.
+#
+# The match is a regex, so it is anchored and dots are escaped: unanchored,
+# kitty.7 would also match kitty.71 and focus an unrelated window.
+if [ -n "$ZMX_SESSION" ] && [ -x "$KITTY_BIN" ]; then
+  session_re=${ZMX_SESSION//./\\.}
+  ARGS+=(
+    -activate net.kovidgoyal.kitty
+    -execute "$(printf 'for s in /tmp/kitty-[0-9]*; do %q @ --to "unix:$s" focus-window --match %q && break; done' \
+      "$KITTY_BIN" "cmdline:^${session_re}\$")"
+  )
+elif [ -n "$KITTY_LISTEN_ON" ] && [[ "$KITTY_WINDOW_ID" =~ ^[0-9]+$ ]] && [ -x "$KITTY_BIN" ]; then
+  # No zmx session: fall back to the window id, which is correct until kitty restarts.
   ARGS+=(
     -activate net.kovidgoyal.kitty
     -execute "$(printf '%q @ --to %q focus-window --match id:%s' \
