@@ -136,3 +136,4 @@ ci-state.json
 .worktrees
 .worktree
 .scratch
+mise.local.toml
