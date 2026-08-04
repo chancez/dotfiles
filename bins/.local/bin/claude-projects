@@ -1,0 +1,436 @@
+#!/usr/bin/env python3
+"""Migrate Claude Code session history from a worktree into its main repo dir.
+
+Dry run by default: it prints what it would do and exits. Pass --apply to act.
+
+Claude Code files all per-project state under ~/.claude/projects/<slug>, where the
+slug is the session's starting directory with every character outside [A-Za-z0-9-]
+replaced by '-'. Work done in a git worktree therefore lands in a slug unrelated to
+the main checkout's, and deleting the worktree strands that history. `migrate` folds
+a worktree's sessions back into the repo's own slug so the history outlives the
+worktree.
+
+The source directory does not need to still exist; the common case is retiring a
+worktree you already removed. Everything is resolved from ~/.claude state.
+
+Every occurrence of the worktree's absolute path is rewritten, not just the
+top-level `cwd`. The path also appears in Read/Edit arguments, bash commands,
+captured output and @-mention uris, and a resumed session will try to act on those
+paths. Leaving them pointing at a deleted worktree makes them unresolvable;
+re-rooting them at the repo makes them valid, just stale in the same way any
+resumed session's recorded file contents are stale.
+
+Two other textual forms are deliberately left alone, and the absolute-path rewrite
+does not match either: relative mentions like `.worktrees/foo` are prose about
+which branch work happened on, and `/private/tmp/claude-501/<encoded-slug>/...`
+names background-task output files in temp dirs that no longer exist.
+"""
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+REAL_ROOT = Path.home() / '.claude'
+UUID_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+
+
+def encode(path):
+    """Slug for a project path. Lossy: '/', '.' and '_' all collapse to '-'."""
+    return re.sub(r'[^A-Za-z0-9-]', '-', path)
+
+
+def root_dir():
+    return Path(os.environ.get('CLAUDE_PROJECTS_HOME', str(REAL_ROOT)))
+
+
+def dir_size(path):
+    return sum(f.stat().st_size for f in path.rglob('*') if f.is_file())
+
+
+def read_cwds(slug_dir):
+    """Every distinct top-level cwd in a slug's transcripts, with line counts."""
+    counts = {}
+    for f in slug_dir.glob('*.jsonl'):
+        try:
+            with f.open() as fh:
+                for line in fh:
+                    try:
+                        cwd = json.loads(line).get('cwd')
+                    except (json.JSONDecodeError, AttributeError):
+                        continue
+                    if cwd:
+                        counts[cwd] = counts.get(cwd, 0) + 1
+        except OSError:
+            continue
+    return counts
+
+
+def slug_path(slug_dir):
+    """The project path a slug represents.
+
+    Chosen by forward-encoding each candidate cwd and keeping the one that
+    reproduces the slug name, because the encoding cannot be inverted. A session
+    that creates a worktree and cd's into it has several cwds and Claude Code names
+    the slug for the deeper one, so picking the first or shortest cwd is wrong.
+    """
+    counts = read_cwds(slug_dir)
+    exact = [c for c in counts if encode(c) == slug_dir.name]
+    if exact:
+        return max(exact, key=lambda c: (counts[c], len(c)))
+    if counts:
+        return max(counts, key=lambda c: counts[c])
+    return None
+
+
+def worktree_parent(path):
+    """The main repo a path is a worktree of, or None.
+
+    Asks git when the directory still exists, since that is authoritative. When it
+    is gone (the usual case for a retired worktree) fall back to stripping a
+    worktree container segment. Plain path nesting is deliberately not enough: a
+    session started in $HOME would otherwise make every project look like a
+    worktree of it.
+    """
+    if os.path.isdir(path):
+        try:
+            out = subprocess.run(['git', '-C', path, 'rev-parse',
+                                  '--path-format=absolute', '--git-common-dir', '--show-toplevel'],
+                                 capture_output=True, text=True, timeout=10)
+            if out.returncode == 0:
+                lines = out.stdout.split()
+                if len(lines) == 2:
+                    common, top = lines
+                    main = str(Path(common).parent)
+                    if os.path.realpath(main) != os.path.realpath(top):
+                        return main
+                    return None
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    parts = Path(path).parts
+    for i in range(len(parts) - 2, 0, -1):
+        if parts[i].strip('.') == 'worktrees':
+            return str(Path(*parts[:i]))
+    return None
+
+
+def live_cwds(root):
+    """cwds of sessions whose recorded pid is still running."""
+    live = {}
+    sess_dir = root / 'sessions'
+    if not sess_dir.is_dir():
+        return live
+    for f in sess_dir.glob('*.json'):
+        try:
+            data = json.loads(f.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        cwd, pid = data.get('cwd'), data.get('pid')
+        if not cwd or not pid:
+            continue
+        try:
+            os.kill(int(pid), 0)
+        except (OSError, ValueError):
+            continue
+        live[cwd] = pid
+    return live
+
+
+def rewrite_file(path, src, dst, target=None, apply=False):
+    """Re-root every occurrence of src at dst in one transcript.
+
+    Works on each line's raw JSON text rather than walking parsed fields, because
+    the path turns up at many nesting depths (input.file_path, toolUseResult.stdout,
+    attachment.files[].uri, prose inside message content) and any field-by-field
+    list would silently miss the next one Claude Code adds. Replacing inside the
+    encoded JSON text is safe: escaping is identical on both sides, since neither
+    path contains a character JSON escapes.
+
+    Returns (cwd_lines, other_hits): how many lines had their top-level cwd
+    re-rooted, and how many additional occurrences were rewritten elsewhere.
+    """
+    target = target or path
+    cwd_lines = other_hits = 0
+    # Only match at a path boundary, so a sibling directory that merely starts with
+    # the same characters (timescape3-backup, timescape33, timescape3.old) is left
+    # alone. Anything continuing the name is a different directory.
+    pat = re.compile(re.escape(src) + r'(?![A-Za-z0-9_.-])')
+    out = []
+    with path.open() as fh:
+        for line in fh:
+            new, n = pat.subn(dst, line)
+            if not n:
+                out.append(line)
+                continue
+            try:
+                before = json.loads(line).get('cwd')
+            except (json.JSONDecodeError, AttributeError):
+                before = None
+            # A rewritten line must still be valid JSON; if it somehow is not, keep
+            # the original rather than corrupt a transcript.
+            if line.lstrip().startswith('{'):
+                try:
+                    json.loads(new)
+                except json.JSONDecodeError:
+                    out.append(line)
+                    continue
+            if isinstance(before, str) and (before == src or before.startswith(src + '/')):
+                cwd_lines += 1
+                other_hits += n - 1
+            else:
+                other_hits += n
+            out.append(new)
+    if apply:
+        # Carry the original timestamps over. The rewrite writes a brand-new file,
+        # which would otherwise be stamped "now" and make every migrated session
+        # look equally recent - the resume picker orders by mtime, so all 48 would
+        # collapse to the same position and lose their real chronology.
+        st = path.stat()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=str(target.parent), suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w') as fh:
+                fh.writelines(out)
+            os.utime(tmp, (st.st_atime, st.st_mtime))
+            os.replace(tmp, target)
+        except BaseException:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+            raise
+    return cwd_lines, other_hits
+
+
+def cmd_list(args):
+    root = root_dir()
+    projects = root / 'projects'
+    if not projects.is_dir():
+        sys.exit(f'no projects dir: {projects}')
+
+    rows = []
+    for d in sorted(projects.iterdir()):
+        if not d.is_dir():
+            continue
+        path = slug_path(d)
+        rows.append({
+            'slug': d.name,
+            'path': path,
+            'sessions': len(list(d.glob('*.jsonl'))),
+            'size': dir_size(d),
+            'memory': len(list((d / 'memory').glob('*.md'))) if (d / 'memory').is_dir() else 0,
+        })
+
+    known = {r['path'] for r in rows if r['path']}
+    for r in rows:
+        r['parent'] = None
+        if not r['path']:
+            continue
+        parent = worktree_parent(r['path'])
+        if parent and parent in known and parent != r['path']:
+            r['parent'] = parent
+
+    if not rows:
+        print('no projects found')
+        return
+
+    width = max(len(r['path'] or r['slug']) for r in rows)
+    for r in sorted(rows, key=lambda r: (r['parent'] or r['path'] or r['slug'],
+                                         bool(r['parent']), r['path'] or '')):
+        label = r['path'] or f"?? {r['slug']}"
+        mem = f"memory={r['memory']}" if r['memory'] else 'no memory'
+        verb = 'tree  ' if r['parent'] else 'repo  '
+        size = f"{r['size'] / 1e6:.1f}M"
+        print(f"{verb}{label:<{width}}  {r['sessions']:>3} sessions  {size:>7}  {mem}")
+
+    children = [r for r in rows if r['parent']]
+    if children:
+        print()
+        for r in children:
+            print(f"migrate candidate: {r['path']}\n"
+                  f"               -> {r['parent']}")
+        print(f"\n{len(children)} slug(s) could be migrated into a parent project")
+
+
+def cmd_migrate(args):
+    root = root_dir()
+    projects = root / 'projects'
+    if not projects.is_dir():
+        sys.exit(f'no projects dir: {projects}')
+
+    if args.apply and root.resolve() == REAL_ROOT.resolve() and not args.i_know:
+        sys.exit('refusing to --apply against the real ~/.claude without --i-know')
+
+    dst = str(Path(args.dest).expanduser())
+    dst_dir = projects / encode(dst)
+    srcs = []
+    for raw in args.sources:
+        src = str(Path(raw).expanduser())
+        if src == dst:
+            sys.exit(f'source and destination are the same: {src}')
+        srcs.append(src)
+
+    if not dst_dir.is_dir():
+        sys.exit(f'no slug dir for destination {dst}\n  expected: {dst_dir}')
+
+    # A running session appends to its own transcript; moving the file out from
+    # under it loses whatever it writes next. A dry run only reports, so it warns
+    # instead of refusing - otherwise you could never preview a busy worktree.
+    live = live_cwds(root)
+    current = os.environ.get('CLAUDE_SESSION_ID')
+    blockers = []
+    for src in srcs:
+        for cwd, pid in sorted(live.items()):
+            if cwd == src or cwd.startswith(src + '/'):
+                blockers.append(f'a live session (pid {pid}) is in {cwd}')
+        if current and (projects / encode(src) / f'{current}.jsonl').exists():
+            blockers.append(f'this session ({current[:8]}) lives in {src}')
+    if blockers:
+        if args.apply:
+            sys.exit('refusing to migrate:\n  ' + '\n  '.join(blockers)
+                     + '\n  quit those sessions first')
+        for b in blockers:
+            print(f'WARN  {b}')
+        print('WARN  --apply would refuse until those sessions exit')
+
+    todo = []
+    for src in srcs:
+        src_dir = projects / encode(src)
+        if not src_dir.is_dir():
+            print(f'skip  {src}\n      already migrated (no slug dir)')
+            continue
+        if not list(src_dir.glob('*.jsonl')) and not list((src_dir / 'memory').glob('*.md')):
+            print(f'skip  {src}\n      nothing left to migrate in {src_dir.name}/')
+            continue
+        todo.append((src, src_dir))
+
+    if not todo:
+        print('\nnothing to do')
+        return
+
+    moved_prefixes = []
+    total_files = 0
+    for src, src_dir in todo:
+        print(f'\nmigrate {src}\n     -> {dst}')
+        files = sorted(src_dir.glob('*.jsonl'))
+        for f in files:
+            target = dst_dir / f.name
+            if target.exists():
+                sys.exit(f'refusing to overwrite existing transcript: {target}')
+            cwd_lines, other = rewrite_file(f, src, dst, target=target, apply=args.apply)
+            note = f'{cwd_lines} cwd lines'
+            if other:
+                note += f', {other} other path refs'
+            print(f'  move  {f.name}  ({note})')
+            if args.apply:
+                f.unlink()
+            total_files += 1
+
+            sub = src_dir / f.stem
+            if sub.is_dir():
+                nested = sorted(sub.rglob('*.jsonl'))
+                print(f'  move  {f.stem}/  ({len(nested)} nested transcripts)')
+                if args.apply:
+                    shutil.move(str(sub), str(dst_dir / f.stem))
+                    for n in sorted((dst_dir / f.stem).rglob('*.jsonl')):
+                        rewrite_file(n, src, dst, apply=True)
+
+        mem = src_dir / 'memory'
+        if mem.is_dir():
+            tag = Path(src).name
+            for m in sorted(mem.glob('*.md')):
+                target = dst_dir / 'memory' / m.name
+                if target.exists():
+                    # Both copies are real memories; keeping the destination and
+                    # dropping the source would lose notes, and overwriting would
+                    # lose the other set. Park it under a tagged name so the source
+                    # slug can still be retired and the merge stays a human choice.
+                    target = target.with_name(f'{m.stem}.from-{tag}{m.suffix}')
+                    if target.exists():
+                        sys.exit(f'refusing to overwrite existing memory: {target}')
+                    print(f'  move  memory/{m.name}  -> memory/{target.name} (name taken)')
+                else:
+                    print(f'  move  memory/{m.name}')
+                if args.apply:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(m), str(target))
+
+        moved_prefixes.append(src)
+
+        if args.apply:
+            if mem.is_dir() and not any(mem.iterdir()):
+                mem.rmdir()
+            leftover = sorted(p.name for p in src_dir.iterdir())
+            if leftover:
+                print(f'  keep  {src_dir.name}/  not removed, still holds: {", ".join(leftover[:5])}')
+            else:
+                src_dir.rmdir()
+                print(f'  rmdir {src_dir.name}/')
+
+    hist = root / 'history.jsonl'
+    hist_changed = 0
+    if hist.exists():
+        out = []
+        for line in hist.read_text().splitlines(keepends=True):
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                out.append(line)
+                continue
+            proj = data.get('project') if isinstance(data, dict) else None
+            hit = next((s for s in moved_prefixes
+                        if isinstance(proj, str) and (proj == s or proj.startswith(s + '/'))), None)
+            if hit:
+                data['project'] = dst + proj[len(hit):]
+                out.append(json.dumps(data, ensure_ascii=False) + '\n')
+                hist_changed += 1
+            else:
+                out.append(line)
+        print(f'\n  {"update" if args.apply else "would update"} history.jsonl  '
+              f'({hist_changed} entries)')
+        if args.apply and hist_changed:
+            backup = hist.with_suffix(f'.jsonl.backup.{os.getpid()}')
+            shutil.copy2(hist, backup)
+            print(f'  backup {backup.name}')
+            fd, tmp = tempfile.mkstemp(dir=str(hist.parent), suffix='.tmp')
+            with os.fdopen(fd, 'w') as fh:
+                fh.writelines(out)
+            os.replace(tmp, hist)
+
+    if not args.apply:
+        print(f'\n{total_files} transcript(s) would move; re-run with --apply')
+        return
+
+    print(f'\nmigrated {total_files} transcript(s) into {dst}')
+    print('note  ~/.claude.json is unchanged; worktree paths are normally absent '
+          'from its "projects" map')
+    print('note  the git worktree itself was not touched')
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest='cmd', required=True)
+
+    p_list = sub.add_parser('list', help='show every project slug and its true path')
+    p_list.set_defaults(func=cmd_list)
+
+    p_mig = sub.add_parser('migrate', help='fold worktree slugs into a parent project')
+    p_mig.add_argument('sources', nargs='+', help='worktree paths to migrate from')
+    p_mig.add_argument('dest', help='project path to migrate into')
+    p_mig.add_argument('--apply', action='store_true',
+                       help='actually move things (default is a dry run)')
+    p_mig.add_argument('--i-know', action='store_true',
+                       help='permit --apply against the real ~/.claude')
+    p_mig.set_defaults(func=cmd_migrate)
+
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
