@@ -131,6 +131,7 @@
 "brew:stern" = "latest"
 "brew:syft" = "latest"
 "brew:tcpdump" = "latest"
+"brew:terminal-notifier" = "latest"  # used by the claude notify hooks
 "brew:terraform-docs" = "latest"
 "brew:tmux" = "latest"
 "brew:tree" = "latest"
