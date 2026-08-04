@@ -470,9 +470,41 @@ url = "https://dl.google.com/go/go1.26.5.darwin-amd64.tar.gz"
 checksum = "sha256:97e6b2a833b6d89f9ff17d25419ac0a7e3b482a044e9ab18cdef834bd834fd38"
 url = "https://dl.google.com/go/go1.26.5.windows-amd64.zip"
 
+[[tools."go:github.com/google/gops"]]
+version = "0.3.29"
+backend = "go:github.com/google/gops"
+
+[[tools."go:github.com/grpc-ecosystem/grpc-health-probe"]]
+version = "0.4.53"
+backend = "go:github.com/grpc-ecosystem/grpc-health-probe"
+
+[[tools."go:github.com/jstemmer/go-junit-report"]]
+version = "1.0.0"
+backend = "go:github.com/jstemmer/go-junit-report"
+
+[[tools."go:github.com/rhysd/actionlint/cmd/actionlint"]]
+version = "1.7.12"
+backend = "go:github.com/rhysd/actionlint/cmd/actionlint"
+
+[[tools."go:github.com/spf13/cobra-cli"]]
+version = "1.3.0"
+backend = "go:github.com/spf13/cobra-cli"
+
+[[tools."go:golang.org/x/perf/cmd/benchstat"]]
+version = "0.0.0-20260709024250-82a0b07e230d"
+backend = "go:golang.org/x/perf/cmd/benchstat"
+
+[[tools."go:golang.org/x/tools/cmd/goimports"]]
+version = "0.48.0"
+backend = "go:golang.org/x/tools/cmd/goimports"
+
 [[tools."go:gotest.tools/gotestsum"]]
 version = "1.13.0"
 backend = "go:gotest.tools/gotestsum"
+
+[[tools."go:mvdan.cc/gofumpt"]]
+version = "0.11.0"
+backend = "go:mvdan.cc/gofumpt"
 
 [[tools.golangci-lint]]
 version = "2.12.2"
