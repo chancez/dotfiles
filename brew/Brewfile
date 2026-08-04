@@ -1,21 +1,56 @@
-# Residual Brewfile: only the things mise's built-in Homebrew support (bootstrap.packages)
-# cannot do. Everything else moved to mise's [bootstrap.packages] / [tools] in
-# mise/.config/mise/config.toml. Apply with: brew bundle --file=~/.dotfiles/brew/Brewfile
+# Homebrew-managed packages: the things mise's built-in Homebrew support
+# ([bootstrap.packages] in mise/.config/mise/config.macos.toml) cannot handle.
+# Apply with: brew bundle --file=~/.dotfiles/brew/Brewfile
 #
-# Why each entry is here:
+# ALL casks live here, not in mise. mise cannot adopt a cask that Homebrew already owns
+# ("Homebrew owns this cask; remove it with Homebrew before installing it with mise") and
+# implements neither cask import nor prune. Formulae are fine because mise reads Homebrew's
+# INSTALL_RECEIPT.json and treats brew-installed kegs as installed, but casks have no such
+# adoption path. Taking them over would mean uninstalling and reinstalling 1Password, kitty,
+# fonts, etc. -- real risk for no benefit, so Homebrew keeps owning casks.
+#
+# TODO: switch to mise-managed casks. Needs either upstream support for adopting an existing
+# Homebrew cask (e.g. `packages import` covering casks), or a deliberate per-cask
+# `brew uninstall --cask` + `mise bootstrap packages apply` migration. Revisit as mise's cask
+# support widens; note the pkg/privileged installers below (gcloud-cli, osquery, codeql,
+# wireshark-app, session-manager-plugin, ...) may never be supported.
+#
+# The two formulae here are special cases:
 # - ollama: needs `brew services` (restart_service), which mise-brew does not implement.
 # - parallel: needs `link: false` to avoid clobbering moreutils' parallel; mise-brew has
 #   no link control.
-# - The casks below are pkg-based / privileged / SDK installers that mise's narrow cask
-#   support (app-bundle/binary/simple-pkg only) cannot install. gcloud-cli in particular
-#   is referenced by its Caskroom path in zsh/.config/zsh/paths.zsh.
 
 # Create, run, and share large language models (LLMs)
 brew "ollama", restart_service: :changed
 # Shell command parallelization utility
 brew "parallel", link: false
 
+# Password manager that keeps all passwords secure behind one password
+cask "1password"
+# Command-line interface for 1Password
+cask "1password-cli"
+# Tool to customise input devices and automate computer systems
+cask "bettertouchtool"
+# GPU-based terminal emulator
+cask "kitty"
+# Open-source cross-platform alternative to AirDrop
+cask "localsend"
+# Team communication and collaboration software
+cask "slack"
+# Multimedia player
+cask "vlc"
+# Video communication and virtual meeting platform
+cask "zoom"
+
+# Fonts
+cask "font-fira-code-nerd-font"
+cask "font-inconsolata-for-powerline"
+cask "font-inconsolata-nerd-font"
+cask "font-jetbrains-mono"
+cask "font-jetbrains-mono-nerd-font"
+
 # Set of tools to manage resources and applications hosted on Google Cloud
+# (also referenced by its Caskroom path in zsh/.config/zsh/paths.zsh)
 cask "gcloud-cli"
 # Plugin for AWS CLI to start and end sessions that connect to managed instances
 cask "session-manager-plugin"

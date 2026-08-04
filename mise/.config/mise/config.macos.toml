@@ -149,21 +149,6 @@
 "brew:mas" = "latest"
 "brew:pinentry-mac" = "latest"
 
-# Casks
-"brew-cask:1password" = "latest"
-"brew-cask:1password-cli" = "latest"
-"brew-cask:bettertouchtool" = "latest"
-"brew-cask:font-fira-code-nerd-font" = "latest"
-"brew-cask:font-inconsolata-for-powerline" = "latest"
-"brew-cask:font-inconsolata-nerd-font" = "latest"
-"brew-cask:font-jetbrains-mono" = "latest"
-"brew-cask:font-jetbrains-mono-nerd-font" = "latest"
-"brew-cask:kitty" = "latest"
-"brew-cask:localsend" = "latest"
-"brew-cask:slack" = "latest"
-"brew-cask:vlc" = "latest"
-"brew-cask:zoom" = "latest"
-
 # Mac App Store (requires being signed into the App Store)
 "mas:1569813296" = "latest"  # 1Password for Safari
 "mas:1440147259" = "latest"  # AdGuard for Safari
