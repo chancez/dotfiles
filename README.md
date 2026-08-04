@@ -26,10 +26,18 @@ used.
 ```sh
 git clone git@github.com:chancez/dotfiles.git ~/.dotfiles
 
-# On a fresh machine ~/.config/mise/config.toml doesn't exist yet, so point mise at the
-# in-repo config for the first run. The dotfiles step symlinks it into place; later runs
-# don't need the env var.
-export MISE_GLOBAL_CONFIG_FILE="$HOME/.dotfiles/mise/.config/mise/config.toml"
+# On a fresh machine ~/.config/mise/ doesn't exist yet. Link the config into mise's standard
+# global location so it (and its platform siblings) are found. The dotfiles step converges
+# these same links later, so this is idempotent.
+#
+# Don't use MISE_GLOBAL_CONFIG_FILE here: pointing mise at the config file directly disables
+# discovery of config.macos.toml / config.linux.toml, so the platform split would be skipped.
+mkdir -p ~/.config/mise
+ln -sf ~/.dotfiles/mise/.config/mise/config.toml       ~/.config/mise/config.toml
+ln -sf ~/.dotfiles/mise/.config/mise/config.macos.toml ~/.config/mise/config.macos.toml
+ln -sf ~/.dotfiles/mise/.config/mise/config.linux.toml ~/.config/mise/config.linux.toml
+
+cd ~/.dotfiles
 mise trust
 mise bootstrap --yes   # packages -> dotfiles -> macOS defaults -> installs [tools]
 ```

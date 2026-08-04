@@ -79,26 +79,19 @@
 "brew:imagemagick" = "latest"
 "brew:jsonnet-bundler" = "latest"
 "brew:jump" = "latest"
-"brew:k3d" = "latest"
-"brew:k9s" = "latest"
 "brew:krb5" = "latest"
 "brew:krew" = "latest"
 "brew:kube-ps1" = "latest"
-"brew:kube-score" = "latest"
 "brew:kubecolor" = "latest"
 "brew:kubeconform" = "latest"
 "brew:kubent" = "latest"
-"brew:kubescape" = "latest"
-"brew:kubeseal" = "latest"
 "brew:kustomize" = "latest"
 "brew:libvirt" = "latest"
 "brew:llvm" = "latest"
-"brew:logcli" = "latest"
 "brew:markdown" = "latest"
 "brew:openjdk" = "latest"
 "brew:maven" = "latest"
 "brew:meson" = "latest"
-"brew:minikube" = "latest"
 "brew:minio-mc" = "latest"
 "brew:mkcert" = "latest"
 "brew:mongosh" = "latest"
@@ -137,10 +130,8 @@
 "brew:ssldump" = "latest"
 "brew:stern" = "latest"
 "brew:syft" = "latest"
-"brew:tanka" = "latest"
 "brew:tcpdump" = "latest"
 "brew:terraform-docs" = "latest"
-"brew:tilt" = "latest"
 "brew:tmux" = "latest"
 "brew:tree" = "latest"
 "brew:trivy" = "latest"
@@ -181,3 +172,56 @@
 "mas:409201541" = "latest"  # Pages
 "mas:1475387142" = "latest"  # Tailscale
 "mas:1463298887" = "latest"  # Userscripts
+
+[bootstrap.macos.defaults."com.apple.finder"]
+_FXShowPosixPathInTitle = true
+ShowExternalHardDrivesOnDesktop = true
+ShowMountedServersOnDesktop = true
+ShowRemovableMediaOnDesktop = true
+AppleShowAllFiles = true
+ShowStatusBar = true
+ShowPathbar = true
+FXDefaultSearchScope = "SCcf"
+FXPreferredViewStyle = "Nlsv"
+FXRemoveOldTrashItems = true
+FXEnableExtensionChangeWarning = false
+
+[bootstrap.macos.defaults.NSGlobalDomain]
+AppleShowAllExtensions = true
+AppleEnableSwipeNavigateWithScrolls = 1
+"com.apple.trackpad.scaling" = 0.875
+"com.apple.swipescrolldirection" = false
+NSNavPanelExpandedStateForSaveMode = true
+NSNavPanelExpandedStateForSaveMode2 = true
+NSDocumentSaveNewDocumentsToCloud = false
+NSAutomaticDashSubstitutionEnabled = false
+NSAutomaticPeriodSubstitutionEnabled = false
+NSAutomaticQuoteSubstitutionEnabled = false
+
+[bootstrap.macos.defaults."com.apple.LaunchServices"]
+LSQuarantine = false
+
+[bootstrap.macos.defaults."com.apple.AppleMultitouchTrackpad"]
+TrackpadFourFingerHorizSwipeGesture = 2
+
+[bootstrap.macos.defaults."com.apple.desktopservices"]
+DSDontWriteNetworkStores = true
+DSDontWriteUSBStores = true
+
+[bootstrap.macos.defaults."com.apple.NetworkBrowser"]
+BrowseAllInterfaces = true
+
+[bootstrap.macos.defaults."com.apple.dock"]
+autohide = true
+largesize = 30
+tilesize = 40
+magnification = 1
+mru-spaces = false
+wvous-br-corner = 13
+
+[bootstrap.macos.defaults."com.apple.spaces"]
+spans-displays = false
+
+# Imperative bits that don't fit `defaults write`, plus a killall to apply changes.
+[bootstrap.hooks.post-defaults]
+run = "bash ~/.dotfiles/macos-defaults-extras.sh"

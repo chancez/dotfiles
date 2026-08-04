@@ -31,6 +31,7 @@ terraform = "latest"
 
 golangci-lint = "latest"
 "go:gotest.tools/gotestsum" = "latest"
+"go:golang.org/x/perf/cmd/benchstat" = "latest"
 stylua = "latest"
 
 # Decode and validate JWTs locally
@@ -66,86 +67,13 @@ aws-cli = "latest"
 kind = "latest"
 zmx = "latest"
 
-# Go/Rust/Node CLI tools migrated from the Brewfile's go/cargo/npm bundle entries.
-# 75 Go tools migrated from the Brewfile's `go` bundle entries (installed via the go: backend).
 "go:github.com/rhysd/actionlint/cmd/actionlint" = "latest"
-"go:github.com/google/addlicense" = "latest"
-"go:github.com/air-verse/air" = "latest"
-"go:github.com/chancez/ar-go" = "latest"
-"go:github.com/klauspost/asmfmt/cmd/asmfmt" = "latest"
-"go:github.com/isovalent/athena/cmd/athena" = "latest"
-"go:golang.org/x/perf/cmd/benchstat" = "latest"
-"go:github.com/unknwon/bra" = "latest"
-"go:github.com/cloudflare/cfssl/cmd/cfssljson" = "latest"
-"go:go.opentelemetry.io/build-tools/checkdoc" = "latest"
-"go:k8s.io/code-generator/cmd/client-gen" = "latest"
 "go:github.com/spf13/cobra-cli" = "latest"
-"go:github.com/Mirantis/cri-dockerd" = "latest"
-"go:go.opentelemetry.io/build-tools/crosslink" = "latest"
-"go:k8s.io/code-generator/cmd/deepcopy-gen" = "latest"
-"go:k8s.io/code-generator/cmd/defaulter-gen" = "latest"
-"go:golang.org/x/tools/cmd/digraph" = "latest"
-"go:github.com/go-delve/delve/cmd/dlv" = "latest"
-"go:github.com/kisielk/errcheck" = "latest"
-"go:github.com/davidrjenni/reftools/cmd/fillstruct" = "latest"
-"go:github.com/tcnksm/ghr" = "latest"
-"go:github.com/onsi/ginkgo/v2/ginkgo" = "latest"
-"go:golang.org/x/review/git-codereview" = "latest"
-"go:github.com/badjware/gitforgefs" = "latest"
-"go:golang.org/x/tools/cmd/go-contrib-init" = "latest"
 "go:github.com/jstemmer/go-junit-report" = "latest"
-"go:github.com/google/go-licenses" = "latest"
-"go:github.com/chancez/go-to-protobuf" = "latest"
-"go:github.com/loov/goda" = "latest"
-"go:github.com/rogpeppe/godef" = "latest"
-"go:github.com/Bhupesh-V/godeping" = "latest"
-"go:github.com/NonLogicalDev/gofancyimports/cmd/gofancyimports" = "latest"
 "go:mvdan.cc/gofumpt" = "latest"
 "go:golang.org/x/tools/cmd/goimports" = "latest"
-"go:sigs.k8s.io/kube-api-linter/cmd/golangci-lint-kube-api-linter" = "latest"
-"go:golang.org/x/lint/golint" = "latest"
-"go:github.com/fatih/gomodifytags" = "latest"
-"go:golang.org/x/tools/gopls" = "latest"
 "go:github.com/google/gops" = "latest"
-"go:github.com/jstemmer/gotags" = "latest"
-"go:golang.org/x/vuln/cmd/govulncheck" = "latest"
 "go:github.com/grpc-ecosystem/grpc-health-probe" = "latest"
-"go:golang.org/x/tools/cmd/guru" = "latest"
-"go:github.com/cilium/hubble/enterprise/hubble" = "latest"
-"go:github.com/koron/iferr" = "latest"
-"go:github.com/pavius/impi/cmd/impi" = "latest"
-"go:github.com/josharian/impl" = "latest"
-"go:github.com/nikolaydubina/import-graph" = "latest"
-"go:k8s.io/code-generator/cmd/informer-gen" = "latest"
-"go:github.com/isovalent/glibsm/go/iso" = "latest"
-"go:go.opentelemetry.io/build-tools/issuegenerator" = "latest"
-"go:github.com/nikolaydubina/jsonl-graph" = "latest"
-"go:github.com/aws/karpenter/tools/karpenter-convert/cmd/karpenter-convert" = "latest"
-"go:honnef.co/go/tools/cmd/keyify" = "latest"
-"go:github.com/cilium/linters" = "latest"
-"go:k8s.io/code-generator/cmd/lister-gen" = "latest"
-"go:github.com/magefile/mage" = "latest"
-"go:github.com/client9/misspell/cmd/misspell" = "latest"
-"go:github.com/marwan-at-work/mod/cmd/mod" = "latest"
-"go:github.com/fatih/motion" = "latest"
-"go:go.opentelemetry.io/build-tools/multimod" = "latest"
-"go:github.com/rancher-sandbox/rancher-desktop/src/go/nerdctl-stub" = "latest"
-"go:github.com/deepmap/oapi-codegen/cmd/oapi-codegen" = "latest"
-"go:github.com/catilac/plistwatch" = "latest"
-"go:github.com/grafana/plugin-validator/pkg/cmd/plugincheck" = "latest"
-"go:github.com/jcchavezs/porto/cmd/porto" = "latest"
-"go:github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc" = "latest"
-"go:google.golang.org/protobuf/cmd/protoc-gen-go" = "latest"
-"go:google.golang.org/grpc/cmd/protoc-gen-go-grpc" = "latest"
-"go:github.com/mitchellh/protoc-gen-go-json" = "latest"
-"go:github.com/mgechev/revive" = "latest"
-"go:honnef.co/go/tools/cmd/staticcheck" = "latest"
-"go:github.com/go-swagger/go-swagger/cmd/swagger" = "latest"
-"go:github.com/google/wire/cmd/wire" = "latest"
-"go:github.com/rancher-sandbox/rancher-desktop/src/go/wsl-helper" = "latest"
-
-"cargo:cross" = "latest"
-"npm:corepack" = "latest"
 
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into
@@ -197,55 +125,3 @@ zshrc        = false
 bashrc       = false
 bash_profile = false
 fish         = false
-[bootstrap.macos.defaults."com.apple.finder"]
-_FXShowPosixPathInTitle = true
-ShowExternalHardDrivesOnDesktop = true
-ShowMountedServersOnDesktop = true
-ShowRemovableMediaOnDesktop = true
-AppleShowAllFiles = true
-ShowStatusBar = true
-ShowPathbar = true
-FXDefaultSearchScope = "SCcf"
-FXPreferredViewStyle = "Nlsv"
-FXRemoveOldTrashItems = true
-FXEnableExtensionChangeWarning = false
-
-[bootstrap.macos.defaults.NSGlobalDomain]
-AppleShowAllExtensions = true
-AppleEnableSwipeNavigateWithScrolls = 1
-"com.apple.trackpad.scaling" = 0.875
-"com.apple.swipescrolldirection" = false
-NSNavPanelExpandedStateForSaveMode = true
-NSNavPanelExpandedStateForSaveMode2 = true
-NSDocumentSaveNewDocumentsToCloud = false
-NSAutomaticDashSubstitutionEnabled = false
-NSAutomaticPeriodSubstitutionEnabled = false
-NSAutomaticQuoteSubstitutionEnabled = false
-
-[bootstrap.macos.defaults."com.apple.LaunchServices"]
-LSQuarantine = false
-
-[bootstrap.macos.defaults."com.apple.AppleMultitouchTrackpad"]
-TrackpadFourFingerHorizSwipeGesture = 2
-
-[bootstrap.macos.defaults."com.apple.desktopservices"]
-DSDontWriteNetworkStores = true
-DSDontWriteUSBStores = true
-
-[bootstrap.macos.defaults."com.apple.NetworkBrowser"]
-BrowseAllInterfaces = true
-
-[bootstrap.macos.defaults."com.apple.dock"]
-autohide = true
-largesize = 30
-tilesize = 40
-magnification = 1
-mru-spaces = false
-wvous-br-corner = 13
-
-[bootstrap.macos.defaults."com.apple.spaces"]
-spans-displays = false
-
-# Imperative bits that don't fit `defaults write`, plus a killall to apply changes.
-[bootstrap.hooks.post-defaults]
-run = "bash ~/.dotfiles/macos-defaults-extras.sh"

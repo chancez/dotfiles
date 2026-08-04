@@ -38,12 +38,8 @@ WORKDIR /home/chance
 # Install mise
 RUN curl https://mise.run | sh && ~/.local/bin/mise --version
 
-# Put mise + its shims on PATH (matching how the real machine uses shims, not `mise activate`),
-# and point mise at the in-repo config for the whole build. On a fresh machine ~/.config/mise
-# does not exist yet; the dotfiles step below symlinks it into place, but until then mise needs
-# to be told where the config lives.
+# Put mise + its shims on PATH (matching how the real machine uses shims, not `mise activate`).
 ENV PATH="/home/chance/.local/bin:/home/chance/.local/share/mise/shims:${PATH}"
-ENV MISE_GLOBAL_CONFIG_FILE="/home/chance/.dotfiles/mise/.config/mise/config.toml"
 
 # Hack to make nvim mason use local clangd
 # https://github.com/mason-org/mason.nvim/issues/1578
@@ -63,12 +59,23 @@ RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 # real driver; its tools step just converges to a no-op since these are already installed.
 RUN mkdir -p /home/chance/.dotfiles
 COPY --chown=chance:chance ./mise /home/chance/.dotfiles/mise
+
+# Link the config into mise's standard global location. Do NOT use MISE_GLOBAL_CONFIG_FILE:
+# pointing at the config directly disables discovery of its platform siblings, so
+# config.macos.toml / config.linux.toml (see .miserc.toml auto_env) would never load. The
+# dotfiles step below converges these same links, so this is idempotent.
+RUN mkdir -p ~/.config/mise && \
+    ln -sf ~/.dotfiles/mise/.config/mise/config.toml       ~/.config/mise/config.toml && \
+    ln -sf ~/.dotfiles/mise/.config/mise/config.linux.toml ~/.config/mise/config.linux.toml && \
+    ln -sf ~/.dotfiles/mise/.config/mise/config.macos.toml ~/.config/mise/config.macos.toml && \
+    mise trust ~/.config/mise/config.toml
+
 RUN \
   # SSH auth for cloning from github (private go modules)
   --mount=type=ssh,required=true,uid=999,gid=999 \
   # https://mise.jdx.dev/getting-started.html#github-api-rate-limiting
   --mount=type=secret,id=MISE_GITHUB_TOKEN,env=MISE_GITHUB_TOKEN \
-  mise trust "$MISE_GLOBAL_CONFIG_FILE" && mise install
+  mise install
 
 # Copy the full repo and run the whole bootstrap. This is the real machine-setup entrypoint:
 # it applies dotfiles (the GNU Stow / setup.sh replacement), system packages, macOS defaults,
@@ -79,7 +86,7 @@ COPY --chown=chance:chance . /home/chance/.dotfiles
 RUN \
   --mount=type=ssh,required=true,uid=999,gid=999 \
   --mount=type=secret,id=MISE_GITHUB_TOKEN,env=MISE_GITHUB_TOKEN \
-  mise trust "$MISE_GLOBAL_CONFIG_FILE" && \
+  cd ~/.dotfiles && mise trust && \
     # Dry-run first for visibility into what bootstrap will do.
     mise bootstrap --dry-run && \
     mise bootstrap --yes && \
