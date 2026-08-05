@@ -49,14 +49,41 @@ $S shot mytest                # png of just this window (see below)
 $S rm mytest                  # tear down
 ```
 
-A new sandbox window appears on the user's display. Mention that you are opening
-one so it is not a surprise, and always tear it down when finished.
-
 `new` accepts:
 
 - `--cmd "COMMAND"` — run something other than `/bin/sh` in the window
 - `--conf FILE` — append extra kitty.conf lines (mappings, `shell_integration`, ...)
 - `--zmx` — give the sandbox its own zmx socket dir (see below)
+- `--visible` - start on screen with focus (rarely what you want, see below)
+
+## Sandboxes start hidden
+
+`new` passes `--start-as=hidden` and sets `macos_hide_from_tasks yes`, so the
+sandbox takes no focus, never covers the user's work, and adds no Dock icon or
+cmd-tab entry. Everything except pixels works while hidden: `run`, `text`, `ls`,
+`screen`, and any `kitten @` command.
+
+This is not a cosmetic nicety. A focused sandbox **steals the user's keystrokes**.
+While testing this, a visible sandbox captured two characters the user was typing
+into another app, and their shell then reported `command not found` for the
+mangled line. A hidden sandbox in the same test received nothing. So a visible
+sandbox both interrupts the user and silently corrupts your own test input, which
+looks like a terminal bug rather than what it is.
+
+`--visible` exists for the case where a test genuinely depends on the window
+being on screen and focused: real focus-follows behavior, `focus_follows_mouse`,
+window-level rendering the compositor skips when hidden. Prefer hidden and reach
+for it only with a reason, since anything the user types goes into your window.
+
+To hand a sandbox over for a human look, show it deliberately:
+
+```sh
+$S show mytest                # reveal and focus (takes focus on purpose)
+$S hide mytest                # send it back to the background
+```
+
+Say what you are doing when you `show` one, since it interrupts them. A hidden
+sandbox needs no such warning.
 
 ## Testing a source build of kitty
 
@@ -121,6 +148,13 @@ $S shot mytest /tmp/out.png
 `shot` captures only this sandbox's OS window, via the `platform_window_id` that
 `kitten @ ls` reports, so it does not expose the rest of the user's display and
 needs no cropping.
+
+Because a hidden window is not composited, `shot` briefly shows the window, waits
+a frame for it to paint, captures, hides it again, and returns focus to whatever
+app had it. That flash is the only time a sandbox takes focus. Capturing without
+showing produces a png with the titlebar drawn and the entire text grid black,
+which is indistinguishable from a permissions failure, so do not try to skip it.
+Prefer `screen`/`get-text` when you only need the text: it needs no window at all.
 
 It requires macOS screen-recording permission for the process running the script,
 which is granted per-process and needs that process restarted to take effect. An
@@ -252,6 +286,11 @@ and look for child processes. When in doubt, leave it and say so.
 `$S rm NAME` is safe because it matches on `--instance-group NAME`, which the
 user's real kitty never carries. Never `pkill -f kitty` or similar broad
 patterns.
+
+That match is `$`-anchored, so `--instance-group` has to stay the **last**
+argument in the kitty command line. If you add a flag after it, `rm` silently
+matches nothing, reports success, and leaks a kitty process. Verify with
+`pgrep -f "instance-group NAME\$"` after changing the launch line.
 
 Use `rm NAME` rather than `rm-all` unless you are certain nothing else is running:
 other agents may have sandboxes of their own, and `rm-all` will take theirs down

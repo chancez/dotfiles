@@ -7,15 +7,22 @@
 # --instance-group argument at all.
 #
 # Usage:
-#   kitty-sandbox.sh new NAME [--cmd "COMMAND"] [--conf EXTRA_CONF_FILE] [--zmx]
+#   kitty-sandbox.sh new NAME [--cmd "COMMAND"] [--conf EXTRA_CONF_FILE] [--zmx] [--visible]
 #   kitty-sandbox.sh ls NAME
 #   kitty-sandbox.sh text NAME 'literal text to type'
 #   kitty-sandbox.sh run NAME 'shell line'      # escape-safe, see below
 #   kitty-sandbox.sh screen NAME [--all]
 #   kitty-sandbox.sh shot NAME [OUT.png]        # capture just this window
+#   kitty-sandbox.sh show NAME                  # reveal + focus, to hand to the user
+#   kitty-sandbox.sh hide NAME                  # send back to the background
 #   kitty-sandbox.sh sock NAME
 #   kitty-sandbox.sh rm NAME
 #   kitty-sandbox.sh rm-all
+#
+# Sandboxes start hidden so they never steal focus or cover the user's work.
+# They stay fully drivable while hidden (text/run/ls/screen all work). Only
+# pixels need a real window, so `shot` shows the window for the capture and
+# hides it again. Use `show` when handing a sandbox to the user to look at.
 
 set -eu
 
@@ -50,11 +57,13 @@ new)
   cmd=/bin/sh
   extra_conf=
   use_zmx=0
+  visible=0
   while [ $# -gt 0 ]; do
     case "$1" in
       --cmd) cmd=$2; shift 2 ;;
       --conf) extra_conf=$2; shift 2 ;;
       --zmx) use_zmx=1; shift ;;
+      --visible) visible=1; shift ;;
       *) echo "unknown flag: $1" >&2; exit 1 ;;
     esac
   done
@@ -65,6 +74,11 @@ new)
     # The sandbox must never inherit the real config: a stray `map` or startup
     # session there would change what is being tested.
     echo "confirm_os_window_close 0"
+    # Register as a UIElement rather than a Foreground app so a background
+    # sandbox stays out of the Dock and the cmd-tab switcher. Without this a
+    # hidden sandbox still adds an icon and a switcher entry, so cmd-tabbing
+    # while one is running lands on an invisible window.
+    [ "$visible" -eq 0 ] && echo "macos_hide_from_tasks yes"
     [ -n "$extra_conf" ] && cat "$extra_conf"
   } > "$dir/kitty.conf"
 
@@ -83,10 +97,19 @@ new)
     set -- "$@" "ZMX_DIR=$dir/zmx"
   fi
 
+  # --start-as=hidden keeps the sandbox from stealing focus and from opening in
+  # front of the user's work.
+  start_as=--start-as=hidden
+  [ "$visible" -eq 1 ] && start_as=--start-as=normal
+
+  # Ordering matters: --instance-group must stay the LAST argument, because `rm`
+  # matches it with a `$`-anchored pattern. Adding any flag after it silently
+  # breaks teardown and leaks kitty processes.
   "$@" "$KITTY" \
     --config "$dir/kitty.conf" \
     --listen-on "unix:$sock" \
     --session "$dir/startup.session" \
+    "$start_as" \
     --instance-group "$name" \
     > "$dir/kitty.log" 2>&1 &
 
@@ -115,6 +138,19 @@ new)
 
 sock)
   echo "unix:$sock"
+  ;;
+
+show)
+  # Reveal the window and bring it forward. This deliberately takes focus: it is
+  # for handing the sandbox to the user, which is the one case where interrupting
+  # them is the point.
+  need_running
+  "$KITTEN" @ --to "unix:$sock" resize-os-window --action=show
+  ;;
+
+hide)
+  need_running
+  "$KITTEN" @ --to "unix:$sock" resize-os-window --action=hide
   ;;
 
 ls)
@@ -167,6 +203,16 @@ shot)
   # for the process running this script; without it the png is solid black.
   need_running
   out=${1:-$dir/shot.png}
+  # A hidden window is not composited, so capturing it yields a black grid with
+  # only the titlebar drawn -- indistinguishable from a missing-permission
+  # capture or a real rendering bug. So show it, capture, hide it again, and give
+  # focus back to whatever had it. This is the one operation that must briefly
+  # take focus; everything else stays in the background.
+  front_before=$(lsappinfo info -only pid "$(lsappinfo front)" 2>/dev/null | sed 's/.*=//' | tr -d '"')
+  "$KITTEN" @ --to "unix:$sock" resize-os-window --action=show >/dev/null 2>&1 || true
+  # Give the compositor a frame to actually paint before screencapture reads it,
+  # otherwise the capture races the show and comes back black anyway.
+  sleep 0.8
   wid=$("$KITTEN" @ --to "unix:$sock" ls 2>/dev/null | python3 -c '
 import json, sys
 data = json.load(sys.stdin)
@@ -175,8 +221,25 @@ for osw in data:
     if wid:
         print(wid); break
 ')
-  [ -n "$wid" ] || { echo "no platform_window_id for '$name'" >&2; exit 1; }
+  # Re-hide and restore focus even on the error paths below, or a failed shot
+  # leaves a visible sandbox sitting on top of the user's work.
+  restore_focus() {
+    [ "${visible_mode:-0}" -eq 1 ] && return 0
+    "$KITTEN" @ --to "unix:$sock" resize-os-window --action=hide >/dev/null 2>&1 || true
+    case "$front_before" in
+      ''|*[!0-9]*) return 0 ;;
+    esac
+    osascript -e "tell application \"System Events\" to set frontmost of \
+      (first process whose unix id is $front_before) to true" >/dev/null 2>&1 || true
+  }
+  # A sandbox created with --visible has no hidden state to return to, so leave
+  # it alone rather than hiding a window the user asked to see.
+  visible_mode=0
+  grep -q '^macos_hide_from_tasks yes$' "$dir/kitty.conf" || visible_mode=1
+
+  [ -n "$wid" ] || { restore_focus; echo "no platform_window_id for '$name'" >&2; exit 1; }
   screencapture -x -o -l "$wid" "$out"
+  restore_focus
   # Without permission the capture comes back uniformly black, which reads as a
   # rendering bug rather than a permission problem. Check decoded pixels: png
   # bytes are useless here because even an all-black image compresses to varied
