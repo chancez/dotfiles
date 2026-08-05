@@ -9,6 +9,20 @@ SOUND="$3"
 ARGS=(-title "$TITLE")
 [ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
 
+# terminal-notifier is a GUI app: it runs NSApplicationMain and blocks in its event
+# loop waiting on a Mach reply from usernoted. That bootstrap port only resolves
+# inside the Aqua session, so from anywhere else the connection is invalid and the
+# process parks forever rather than exiting. A hook that never returns burns the
+# full 600s command-hook timeout and shows up as a Stop hook stuck at 0 of 2.
+#
+# Both of the ways Claude runs here land outside Aqua: over ssh the shell is in the
+# System domain, and a kitty window reattached to a launchd-parented zmx server
+# inherits no GUI session either. Neither is detectable from SSH_TTY alone, so ask
+# launchd directly. It answers in ~4ms.
+if [ "$(launchctl managername 2>/dev/null)" != "Aqua" ]; then
+  exit 0
+fi
+
 # Hooks inherit these from kitty, even when Claude runs headless inside neovim.
 KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
 
