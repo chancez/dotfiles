@@ -206,6 +206,37 @@ local ignored_filetypes = {
   'neotest-output-panel',
 }
 
+-- Buffers using a URI scheme other than file:// don't exist on disk, so
+-- language servers reject requests for them. gopls answers with
+-- "JSON RPC parse error: DocumentURI scheme is not 'file'", which surfaces as
+-- errors from anything that makes automatic requests: lsp_signature.nvim, the
+-- builtin folding_range provider, and so on.
+--
+-- Neovim's LSP autostart already skips buffers with a non-empty 'buftype', but
+-- these buffers keep buftype="" so plugins can treat them like real files.
+-- octo:// review diffs (the RIGHT side, the LEFT one already gets nofile from
+-- octo) and fugitive:// blobs both do this.
+--
+-- Set buftype=nofile so that guard catches them. Detaching in LspAttach
+-- instead is racy: the client attaches first, so requests already in flight
+-- (folding_range) still error out.
+--
+-- Schemes some servers do understand, such as jdt:// from nvim-jdtls, would
+-- need an exception here.
+local lsp_uri_scheme_allowlist = {
+  file = true,
+}
+
+vim.api.nvim_create_autocmd({ 'BufNew', 'BufNewFile', 'BufReadPost', 'BufFilePost' }, {
+  desc = 'Keep language servers off buffers that are not real files',
+  callback = function(ev)
+    local scheme = vim.api.nvim_buf_get_name(ev.buf):match('^([%w+.%-]+)://')
+    if scheme and not lsp_uri_scheme_allowlist[scheme] and vim.bo[ev.buf].buftype == '' then
+      vim.bo[ev.buf].buftype = 'nofile'
+    end
+  end,
+})
+
 M.setup = function()
   -- Suppress No code actions available message
   -- https://github.com/neovim/neovim/issues/17758#issuecomment-1704694075
