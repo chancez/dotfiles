@@ -133,6 +133,52 @@ vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
   end,
 })
 
+-- octo:// buffers are URIs, not files, so editorconfig has no business
+-- configuring them. It matches on the path anyway and sets 'fileencoding',
+-- which marks the buffer modified. That breaks session restore: the session
+-- file does `enew` + `file octo://...` + `balt octo://...`, and balt aborts
+-- with E37 (no write since last change) on a modified buffer.
+--
+-- Registered here rather than in the octo spec because octo is lazy loaded on
+-- BufReadCmd and is not loaded yet while the session is being restored.
+vim.api.nvim_create_autocmd({ 'BufFilePost' }, {
+  pattern = 'octo://*',
+  desc = 'Keep editorconfig from marking octo:// buffers as modified',
+  callback = function(ev)
+    -- Opt out of editorconfig for this buffer. This is enough on its own when
+    -- this runs before editorconfig's own BufFilePost hook.
+    vim.b[ev.buf].editorconfig = false
+    -- If editorconfig already ran and dirtied the buffer, undo that. Only do it
+    -- while the buffer is still empty so a `:file octo://...` on a buffer with
+    -- real unsaved edits does not lose its modified flag.
+    local lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
+    if #lines <= 1 and (lines[1] or '') == '' then
+      vim.bo[ev.buf].modified = false
+    end
+  end,
+})
+
+-- A restored octo:// buffer is empty: the session file recreates it with
+-- `enew` + `file octo://...`, which never fires BufReadCmd, so octo never gets
+-- a chance to fetch and render it. Re-edit them so they load their contents.
+-- Deferred because octo itself lazy loads on BufReadCmd, which has not
+-- happened yet while the session is being sourced.
+vim.api.nvim_create_autocmd({ 'SessionLoadPost' }, {
+  desc = 'Populate octo:// buffers restored from a session',
+  callback = function()
+    vim.schedule(function()
+      for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        local name = vim.api.nvim_buf_get_name(bufnr)
+        if name:match('^octo://') and vim.api.nvim_buf_line_count(bufnr) <= 1 then
+          vim.api.nvim_buf_call(bufnr, function()
+            pcall(vim.cmd.edit)
+          end)
+        end
+      end
+    end)
+  end,
+})
+
 -- Automatically open help as a vertical split
 vim.api.nvim_create_autocmd({ 'FileType' }, {
   pattern = 'help',
