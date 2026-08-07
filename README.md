@@ -42,13 +42,13 @@ mise trust
 mise bootstrap --yes   # packages -> dotfiles -> macOS defaults -> installs [tools]
 ```
 
-Preview first with `mise bootstrap --dry-run`. Individual steps:
+Preview first with `mise bootstrap plan`. Individual steps:
 
 ```sh
-mise dotfiles apply                  # symlink dotfiles (the old `stow` step)
-mise dotfiles status --missing       # verify everything is linked
-mise bootstrap packages apply        # install brew/cask/mas system packages (macOS)
-mise install                         # install [tools]
+mise bootstrap dotfiles status          # verify everything is linked
+mise bootstrap dotfiles apply           # symlink dotfiles (the old `stow` step)
+mise bootstrap packages apply           # install brew/cask/mas system packages (macOS)
+mise install                            # install [tools]
 ```
 
 ## Residual Homebrew
