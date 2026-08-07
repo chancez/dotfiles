@@ -15,6 +15,33 @@ return {
   },
   lazy = false,
   version = '1.*',
+  init = function()
+    -- When auto_insert-ing a completion whose text ends in a trigger character
+    -- (eg a directory like `/tmp/foo/` in cmdline path completion), blink treats
+    -- the resulting cursor movement as an "ignored" event and reuses the old
+    -- context, so the sources are never asked for completions inside the new
+    -- directory. Detect that case and force a fresh trigger_character context.
+    vim.api.nvim_create_autocmd('User', {
+      pattern = 'BlinkCmpListSelect',
+      callback = function(event)
+        local item = event.data.item
+        if item == nil then return end
+
+        -- Only relevant when the selection actually inserted text (auto_insert)
+        local list = require('blink.cmp.completion.list')
+        if list.preview_undo == nil then return end
+
+        local text = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
+        local char = text:sub(-1)
+
+        local trigger = require('blink.cmp.completion.trigger')
+        if not trigger.is_trigger_character(char) then return end
+
+        trigger.context = nil
+        trigger.show({ trigger_kind = 'trigger_character', trigger_character = char })
+      end,
+    })
+  end,
   ---@module 'blink.cmp'
   ---@type blink.cmp.Config
   opts = {
