@@ -482,6 +482,10 @@ backend = "go:github.com/grpc-ecosystem/grpc-health-probe"
 version = "1.0.0"
 backend = "go:github.com/jstemmer/go-junit-report"
 
+[[tools."go:github.com/pradipta/wallfacer"]]
+version = "1.2.3"
+backend = "go:github.com/pradipta/wallfacer"
+
 [[tools."go:github.com/rhysd/actionlint/cmd/actionlint"]]
 version = "1.7.12"
 backend = "go:github.com/rhysd/actionlint/cmd/actionlint"
