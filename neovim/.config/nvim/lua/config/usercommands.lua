@@ -107,6 +107,10 @@ vim.api.nvim_create_user_command('WipeSession', function()
   vim.cmd(':silent tabonly')
   -- Close all buffers
   vim.cmd(':silent %bd')
+  vim.cmd(':silent AutoSession delete')
+  -- Deleting the current session disables auto-session, so re-enable it after
+  -- deleting the session
+  vim.cmd(':silent AutoSession enable')
 end, { desc = "Close all open tabs and buffers and delete the current session." })
 
 -- Add a helper to run MasonInstall for all the lsps configured
