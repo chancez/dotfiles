@@ -52,12 +52,20 @@ return {
       mappings = {
         review_diff = {
           toggle_viewed = { lhs = "<c-space>", desc = "toggle viewer viewed state" },
+          mark_viewed_and_next = { lhs = "<localleader>n", desc = "mark viewed and go to next unviewed file" },
         },
         file_panel = {
           toggle_viewed = { lhs = "<c-space>", desc = "toggle viewer viewed state" },
+          mark_viewed_and_next = { lhs = "<localleader>n", desc = "mark viewed and go to next unviewed file" },
         },
       },
     },
+    config = function(_, opts)
+      -- mark_viewed_and_next is ours, not octo's. Register it before setup so
+      -- octo resolves the action name when it applies the review mappings.
+      require("plugins.helpers.octo").register_mappings()
+      require("octo").setup(opts)
+    end,
     keys = {
       {
         "<leader>oi",
