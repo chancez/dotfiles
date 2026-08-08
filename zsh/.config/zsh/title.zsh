@@ -77,10 +77,14 @@ add-zsh-hook precmd _title_precmd
 add-zsh-hook preexec _title_preexec
 
 # The title only exists as an escape sequence the shell emitted, so anything
-# that discards it needs the shell to say it again. Reattaching a zmx session is
-# the case that matters: no new shell runs, so precmd never fires and the window
+# that discards it needs the shell to say it again. Reattaching a session is the
+# case that matters: no new shell runs, so precmd never fires and the window
 # keeps the process name kitty falls back to. zsh runs this between commands
 # only, so a foreground program's own title is left alone.
+#
+# cm re-emits OSC 2 as part of the screen it restores, so this is now a backstop
+# rather than the only mechanism. Kept because it costs nothing and covers a
+# session whose title changed while no client was attached.
 TRAPWINCH() {
   _title_precmd
 }

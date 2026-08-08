@@ -57,12 +57,14 @@ new)
   cmd=/bin/sh
   extra_conf=
   use_zmx=0
+  use_cm=0
   visible=0
   while [ $# -gt 0 ]; do
     case "$1" in
       --cmd) cmd=$2; shift 2 ;;
       --conf) extra_conf=$2; shift 2 ;;
       --zmx) use_zmx=1; shift ;;
+      --cm) use_cm=1; shift ;;
       --visible) visible=1; shift ;;
       *) echo "unknown flag: $1" >&2; exit 1 ;;
     esac
@@ -95,6 +97,15 @@ new)
   if [ "$use_zmx" -eq 1 ]; then
     mkdir -p "$dir/zmx"
     set -- "$@" "ZMX_DIR=$dir/zmx"
+  fi
+  # Same hazard as zmx, different variables. env -i drops CM_RUNTIME_DIR and
+  # CM_STATE_DIR, so a sandbox testing cm would otherwise put its sessions in the
+  # user's real runtime dir, which is where their live sessions are. Both are
+  # needed: the runtime dir holds the sockets and the state dir the database, and
+  # setting only one leaves sessions half-shared.
+  if [ "$use_cm" -eq 1 ]; then
+    mkdir -p "$dir/cm/r" "$dir/cm/s"
+    set -- "$@" "CM_RUNTIME_DIR=$dir/cm/r" "CM_STATE_DIR=$dir/cm/s" "CM_CONFIG="
   fi
 
   # --start-as=hidden keeps the sandbox from stealing focus and from opening in
@@ -133,6 +144,7 @@ new)
   echo "socket=unix:$sock"
   echo "dir=$dir"
   [ "$use_zmx" -eq 1 ] && echo "zmx_dir=$dir/zmx"
+  [ "$use_cm" -eq 1 ] && echo "cm_runtime_dir=$dir/cm/r cm_state_dir=$dir/cm/s"
   exit 0
   ;;
 
@@ -278,6 +290,15 @@ rm)
       [ -S "$s" ] || continue
       ZMX_DIR="$dir/zmx" zmx kill "$(basename "$s")" --force >/dev/null 2>&1 || true
     done
+    sleep 1
+  fi
+  # Same for cm, and for a sharper reason: cm keeps its database in the state dir, so removing the
+  # directory under a running server leaves it alive with its store deleted. That looks exactly like
+  # "the sessions did not survive", which is the behaviour a cm test is usually checking, so skipping
+  # this produces a convincing false failure rather than a leak.
+  if [ -d "$dir/cm" ]; then
+    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG= cm kill --all >/dev/null 2>&1 || true
+    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG= cm server stop >/dev/null 2>&1 || true
     sleep 1
   fi
   rm -rf "$dir"

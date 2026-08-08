@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""Report, and optionally kill, cm sessions that no terminal is showing.
+
+Dry run by default: it prints what it would do and exits. Pass --kill to act.
+
+A session is only a candidate when nothing is attached to it AND it is not running a command AND its
+shell has no child processes. All three matter: a detached session can still be holding a build, an ssh
+connection, or an editor with unsaved work, and killing it takes the work with it. `clients=0` alone
+means "nobody is looking at it right now", which is not the same as abandoned.
+
+Simpler than its zmx predecessor in two ways, because cm answers questions zmx could not.
+
+zmx needed lsof to find which session each kitty window was showing, since `zmx attach` can retarget an
+existing client and a window could end up displaying a session its launch argv never mentioned. cm never
+retargets, so the argv is authoritative and the window list is read straight from kitty.
+
+zmx also had to search every socket directory it could find, because a process started without TMPDIR
+set lands in a different one and its orphans are invisible to `zmx ls` run from a normal shell. cm
+resolves its runtime directory the same way for every process, with CM_RUNTIME_DIR as the single
+override, so there is one place to look.
+"""
+
+import argparse
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+
+KITTEN = '/Applications/kitty.app/Contents/MacOS/kitten'
+CM = os.path.expanduser('~/.local/bin/cm')
+DEFAULT_PATTERN = r'^kitty\.\d+$'
+
+
+def run(cmd, **kw):
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=15, **kw).stdout
+    except Exception:
+        return ''
+
+
+def sessions():
+    """Every session cm knows, as a list of dicts."""
+    out = run([CM, 'list', '--json'])
+    if not out:
+        return []
+    try:
+        return json.loads(out)
+    except json.JSONDecodeError:
+        return []
+
+
+def windowed_sessions():
+    """Session names currently displayed by a kitty window, across all instances.
+
+    Read from each window's launch argv, which is authoritative under cm: a window shows the session it
+    was launched with, because cm has no notion of retargeting a client to a different session.
+    """
+    shown = set()
+    for sock in glob.glob('/tmp/kitty-*'):
+        if not re.fullmatch(r'/tmp/kitty-\d+', sock):
+            continue
+        out = run([KITTEN, '@', '--to', 'unix:' + sock, 'ls'])
+        if not out:
+            continue
+        try:
+            data = json.loads(out)
+        except json.JSONDecodeError:
+            continue
+        for osw in data:
+            for tab in osw['tabs']:
+                for w in tab['windows']:
+                    argv = w.get('cmdline') or w.get('argv') or []
+                    if len(argv) >= 2 and os.path.basename(argv[0]) == 'cm-attach':
+                        shown.add(argv[1])
+    return shown
+
+
+def children_of(pid):
+    out = run(['pgrep', '-P', str(pid)]).split()
+    procs = []
+    for c in out:
+        cmd = run(['ps', '-o', 'command=', '-p', c]).strip()
+        if cmd:
+            procs.append((c, cmd))
+    return procs
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--kill', action='store_true',
+                    help='actually kill the reapable sessions (default is a dry run)')
+    ap.add_argument('--pattern', default=DEFAULT_PATTERN,
+                    help=f'only consider sessions matching this regex (default {DEFAULT_PATTERN})')
+    ap.add_argument('--all-names', action='store_true',
+                    help='consider every session, not just ones matching --pattern')
+    args = ap.parse_args()
+
+    pattern = None if args.all_names else re.compile(args.pattern)
+
+    all_sessions = sessions()
+    if not all_sessions:
+        print('no cm sessions found')
+        return
+
+    shown = windowed_sessions()
+
+    reapable, kept = [], []
+    for s in sorted(all_sessions, key=lambda s: s['name']):
+        name = s['name']
+        if pattern and not pattern.match(name):
+            kept.append((name, 'name does not match pattern'))
+            continue
+        if s.get('state') != 'running':
+            # Already finished. Left alone rather than reaped, since the record is what `cm list` shows
+            # and cm expires it on its own schedule.
+            kept.append((name, 'state={}'.format(s.get('state'))))
+            continue
+        if name in shown:
+            kept.append((name, 'has a kitty window'))
+            continue
+        if s.get('clients', 0):
+            kept.append((name, 'clients={}'.format(s['clients'])))
+            continue
+        if s.get('busy'):
+            # cm reports this from OSC 133, so it covers any shell with kitty's shell integration rather
+            # than only one configured to maintain a label.
+            kept.append((name, 'running: {}'.format(s.get('command') or 'a command')))
+            continue
+        pid = s.get('shell_pid')
+        kids = children_of(pid) if pid else []
+        if kids:
+            # A second check beyond busy, and worth keeping: a background job survives its shell
+            # returning to a prompt, so the session reports idle while real work continues.
+            kept.append((name, 'child process: ' + kids[0][1][:60]))
+            continue
+        reapable.append(s)
+
+    for name, why in kept:
+        print(f'keep  {name:<12} {why}')
+
+    if not reapable:
+        print('\nnothing to reap')
+        return
+
+    print()
+    for s in reapable:
+        print('reap  {:<12} pid={} cwd={}'.format(
+            s['name'], s.get('shell_pid'), s.get('cwd', '')))
+
+    if not args.kill:
+        print(f'\n{len(reapable)} session(s) would be killed; re-run with --kill')
+        return
+
+    print()
+    for s in reapable:
+        run([CM, 'kill', s['name'], '--force'])
+        print('killed {}'.format(s['name']))
+
+
+if __name__ == '__main__':
+    main()

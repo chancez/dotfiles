@@ -54,6 +54,7 @@ $S rm mytest                  # tear down
 - `--cmd "COMMAND"` — run something other than `/bin/sh` in the window
 - `--conf FILE` — append extra kitty.conf lines (mappings, `shell_integration`, ...)
 - `--zmx` — give the sandbox its own zmx socket dir (see below)
+- `--cm` — give the sandbox its own cm runtime and state dirs (see below)
 - `--visible` - start on screen with focus (rarely what you want, see below)
 
 ## Sandboxes start hidden
@@ -254,6 +255,25 @@ That structure also tells the user something they can act on, rather than a bare
 yes or no.
 
 ## Isolating multiplexer state
+
+For cm, use `--cm`. It sets `CM_RUNTIME_DIR`, `CM_STATE_DIR`, and an empty `CM_CONFIG`, so sandbox
+sessions and their database are separate from the user's, and the sandbox does not read their config
+file. All three matter: setting only the runtime dir leaves the sandbox sharing the real database.
+
+Two traps specific to cm, both of which produce a convincing false result rather than an error:
+
+- `env -i` strips `CM_RUNTIME_DIR`, so a sandbox without `--cm` puts its sessions in the user's *real*
+  runtime dir, alongside their live ones. This is the same hazard as the zmx case below.
+- `$S rm` removes the sandbox directory, which for cm contains the database. Tearing down a sandbox
+  while testing "do sessions survive kitty quitting?" therefore destroys the store and the sessions
+  appear not to have survived. To test the quit path, kill only the kitty process
+  (`pkill -f "instance-group NAME\$"`) and leave the directory alone.
+
+Anything driving `cm` from outside the sandbox needs the same two variables, or it inspects a different
+installation. A wrapper script that exports them and then execs `cm-attach` is the reliable way to
+reattach from a second sandbox, since `--cmd` inherits the stripped environment.
+
+
 
 For zmx, always use `--zmx`. It sets `ZMX_DIR`, which is priority 1 in zmx's
 socket-dir resolution, so sandbox sessions live in their own directory and cannot

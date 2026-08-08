@@ -20,7 +20,6 @@ source "$ZDOTDIR/kube.zsh"
 source "$ZDOTDIR/bindings.zsh"
 source "$ZDOTDIR/title.zsh"
 source "$ZDOTDIR/kitty.zsh"
-source "$ZDOTDIR/zmx.zsh"
 
 # Allow per-machine overrides and customizations
 if [ -f "$HOME/.zshrc.local" ]; then

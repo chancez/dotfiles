@@ -65,6 +65,7 @@ aws-cli = "latest"
 # Render mermaidjs diagrams locally
 "npm:@mermaid-js/mermaid-cli" = "latest"
 kind = "latest"
+# zmx is kept installed alongside cm during the trial, so a session can be moved back if needed.
 zmx = "latest"
 
 "go:github.com/rhysd/actionlint/cmd/actionlint" = "latest"
