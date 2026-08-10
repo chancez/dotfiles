@@ -1,5 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "defaultMode": "auto"
+  },
   "hooks": {
     "Notification": [
       {
@@ -25,9 +32,6 @@
       }
     ]
   },
-  "permissions": {
-    "defaultMode": "auto"
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/statusline.sh"
@@ -36,16 +40,21 @@
     "gopls-lsp@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "pua@pua-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "pua-skills": {
+      "source": {
+        "source": "github",
+        "repo": "tanweai/pua"
+      }
+    }
   },
   "editorMode": "vim",
   "deny": [
     "Read(./.env)",
     "Read(./.env.*)",
     "Read(./secrets/**)"
-  ],
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  }
+  ]
 }
