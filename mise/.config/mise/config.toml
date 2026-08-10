@@ -92,6 +92,7 @@ zmx = "latest"
 "~/.config/opencode" = { source = "~/.dotfiles/opencode/.config/opencode", mode = "symlink-each" }
 "~/.config/.copilot" = { source = "~/.dotfiles/copilot/.config/.copilot",  mode = "symlink-each" }
 "~/.config/mise"     = { source = "~/.dotfiles/mise/.config/mise",         mode = "symlink-each" }  # links config.toml/mise.lock; leaves conf.d/work.toml alone
+"~/.config/cm"       = { source = "~/.dotfiles/cm/.config/cm",             mode = "symlink-each" }
 "~/.git-template"    = { source = "~/.dotfiles/git/.git-template",         mode = "symlink-each" }
 "~/.ssh"             = { source = "~/.dotfiles/ssh/.ssh",                   mode = "symlink-each" }  # links only config; leaves keys/known_hosts
 "~/.lima"            = { source = "~/.dotfiles/lima/.lima",                 mode = "symlink-each" }
