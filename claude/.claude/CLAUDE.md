@@ -6,6 +6,9 @@
   Substitutions: em/en dash -> comma or separate sentence or `-`; arrow -> `->`;
   curly quotes -> `"` and `'`; ellipsis -> `...`. No decorative unicode (bullet symbols, etc).
 - Prefer plain sentences over clauses joined by dashes or arrows.
+- Do not refer to Chance by name in code comments, commit messages, or PR text. Use "I" instead of "Chance" or "ChanceZ".
+- Avoid pronouns in commit messages and PR text. Use "I" instead of "we" or "us". Use "you" only when addressing the reader directly.
+- Rephrase direct statements: Focus sentences on evidence and core arguments.
 
 ## Code
 
