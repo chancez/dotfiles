@@ -65,10 +65,32 @@ def sessions():
 # showing a session its argv never mentioned, and killing by the argv name would destroy an unrelated
 # session. cm never retargets -- it only ever exports CM_SESSION and never reads it -- so the name the
 # window was launched with is the name it is showing.
+#
+# Both spellings are accepted, and the second is not hypothetical. Windows launched through cm_launch.py
+# run the cm-attach wrapper, so their argv is ('cm-attach', NAME). But kitty reports argv as the *running*
+# process, and a window can be running `cm attach NAME` directly -- every live window on this machine did,
+# which made this return None for all of them.
+#
+# The consequence was silent and is the reason to be lenient here: cm_reap.py returns early on None, so
+# closing a window killed nothing and the session sat as exited until cm's own five-minute sweep collected
+# it. Nothing logged, nothing failed, sessions just accumulated. The wrapper is an implementation detail of
+# how a window was launched; the reaper only needs the name.
 def session_of(window):
     argv = list(window.child.argv) if window is not None else []
-    if len(argv) >= 2 and os.path.basename(argv[0]) == 'cm-attach':
+    if not argv:
+        return None
+
+    prog = os.path.basename(argv[0])
+    # The wrapper: cm-attach NAME.
+    if prog == 'cm-attach' and len(argv) >= 2:
         return argv[1]
+    # cm itself: cm attach NAME. Guarded on the subcommand so `cm list` in a window is not mistaken for a
+    # session, and the name is taken as the first argument that is not a flag, so `cm attach --own NAME`
+    # works too.
+    if prog == 'cm' and len(argv) >= 3 and argv[1] in ('attach', 'a'):
+        for arg in argv[2:]:
+            if not arg.startswith('-'):
+                return arg
     return None
 
 
