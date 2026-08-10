@@ -25,6 +25,9 @@
       }
     ]
   },
+  "permissions": {
+    "defaultMode": "auto"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/statusline.sh"
