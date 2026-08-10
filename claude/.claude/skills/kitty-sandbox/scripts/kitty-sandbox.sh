@@ -105,7 +105,7 @@ new)
   # setting only one leaves sessions half-shared.
   if [ "$use_cm" -eq 1 ]; then
     mkdir -p "$dir/cm/r" "$dir/cm/s"
-    set -- "$@" "CM_RUNTIME_DIR=$dir/cm/r" "CM_STATE_DIR=$dir/cm/s" "CM_CONFIG="
+    set -- "$@" "CM_RUNTIME_DIR=$dir/cm/r" "CM_STATE_DIR=$dir/cm/s" "CM_CONFIG=$dir/cm/absent.toml"
   fi
 
   # --start-as=hidden keeps the sandbox from stealing focus and from opening in
@@ -297,8 +297,8 @@ rm)
   # "the sessions did not survive", which is the behaviour a cm test is usually checking, so skipping
   # this produces a convincing false failure rather than a leak.
   if [ -d "$dir/cm" ]; then
-    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG= cm kill --all >/dev/null 2>&1 || true
-    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG= cm server stop >/dev/null 2>&1 || true
+    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG="$dir/cm/absent.toml" cm kill --all >/dev/null 2>&1 || true
+    CM_RUNTIME_DIR="$dir/cm/r" CM_STATE_DIR="$dir/cm/s" CM_CONFIG="$dir/cm/absent.toml" cm server stop >/dev/null 2>&1 || true
     sleep 1
   fi
   rm -rf "$dir"

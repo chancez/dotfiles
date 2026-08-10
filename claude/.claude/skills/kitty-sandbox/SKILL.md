@@ -256,14 +256,32 @@ yes or no.
 
 ## Isolating multiplexer state
 
-For cm, use `--cm`. It sets `CM_RUNTIME_DIR`, `CM_STATE_DIR`, and an empty `CM_CONFIG`, so sandbox
-sessions and their database are separate from the user's, and the sandbox does not read their config
-file. All three matter: setting only the runtime dir leaves the sandbox sharing the real database.
+For cm, use `--cm`. It sets `CM_RUNTIME_DIR`, `CM_STATE_DIR`, and `CM_CONFIG`, so sandbox sessions and
+their database are separate from the user's, and the sandbox does not read their config file. All
+three matter: setting only the runtime dir leaves the sandbox sharing the real database.
 
-Two traps specific to cm, both of which produce a convincing false result rather than an error:
+`CM_CONFIG` points at a file inside the sandbox that does not exist, and that is deliberate. An
+*empty* `CM_CONFIG` means **unset** to cm, so it falls through to `XDG_CONFIG_HOME` and then to the
+real config file. This script did exactly that until it was caught: sandboxes looked isolated while
+reading the developer's `detach_key = ctrl-o`, and nothing failed, because nothing asserted on it.
+
+Verify rather than assume, since the failure is silent:
+
+```sh
+$S text NAME 'cm config | grep detach_key
+'
+# ctrl-\  = isolated (the default)
+# ctrl-o  = reading the real config file
+```
+
+Three traps specific to cm, all of which produce a convincing false result rather than an error:
 
 - `env -i` strips `CM_RUNTIME_DIR`, so a sandbox without `--cm` puts its sessions in the user's *real*
   runtime dir, alongside their live ones. This is the same hazard as the zmx case below.
+- `CM_SESSION` is inherited by anything launched inside a sandbox window, so a bare `cm attach` there
+  retargets the session that launched it rather than creating one. The symptom is `clients=2` and
+  `state=running(cm)` on a session you expected to be fresh. Unset it in the wrapper script that
+  `--cmd` runs.
 - `$S rm` removes the sandbox directory, which for cm contains the database. Tearing down a sandbox
   while testing "do sessions survive kitty quitting?" therefore destroys the store and the sessions
   appear not to have survived. To test the quit path, kill only the kitty process
