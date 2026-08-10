@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Create a worktree in <repo>/.worktrees, named after the branch's last path
+# segment. `git wtc pr/chancez/topic main` creates .worktrees/topic on a new
+# branch pr/chancez/topic based on main.
+#
+# New branches are created with --no-track so the upstream isn't the base ref:
+# push.autoSetupRemote then sets the upstream to the branch's own name on first
+# push, and `git status`/`git pull` don't compare against the base branch.
+#
+# git's progress goes to stderr and only the worktree path is printed to stdout,
+# so `cd "$(git wtc pr/chancez/topic)"` works.
+
+usage() {
+  cat >&2 <<'EOF'
+usage: git wtc <branch> [<base_ref>]
+
+Creates <repo>/.worktrees/<last segment of branch> for <branch>.
+
+  <branch>    branch to create and check out. If it already exists, it is
+              checked out instead of created, and <base_ref> must be omitted.
+  <base_ref>  what to base the new branch on. Defaults to HEAD.
+EOF
+}
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  usage
+  exit 1
+fi
+
+case "$1" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+esac
+
+branch="$1"
+base="${2:-}"
+
+name="${branch##*/}"
+if [ -z "$name" ]; then
+  echo "git wtc: '$branch' has no final path segment to name the worktree after" >&2
+  exit 1
+fi
+
+# The main worktree's root, so this works the same when run from inside another
+# worktree. In a bare repo the common dir is the repo itself.
+common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
+if [ "$(git rev-parse --is-bare-repository)" = "true" ]; then
+  root="$common_dir"
+else
+  root="$(dirname "$common_dir")"
+fi
+
+path="$root/.worktrees/$name"
+
+if git show-ref --verify --quiet "refs/heads/$branch"; then
+  if [ -n "$base" ]; then
+    echo "git wtc: branch '$branch' already exists, refusing to ignore base ref '$base'" >&2
+    exit 1
+  fi
+  git worktree add "$path" "$branch" >&2
+else
+  git worktree add --no-track -b "$branch" "$path" "${base:-HEAD}" >&2
+fi
+
+printf '%s\n' "$path"
