@@ -31,6 +31,7 @@
 - Summary is a high-level overview, scaled to the size of the change. The commit messages
   carry the detail and can be reviewed independently.
 - Do not list every change.
+- Do not open a PR unless explicitly told to.
 
 ## Reviewing PRs
 
