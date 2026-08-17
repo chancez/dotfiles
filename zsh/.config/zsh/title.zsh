@@ -33,8 +33,22 @@ _title_git_branch() {
   branch=$(command git rev-parse --short HEAD 2>/dev/null) && print -r -- $branch
 }
 
+# Written to /dev/tty rather than stdout, which is load-bearing rather than style.
+#
+# A title is a message to the terminal, so stdout is the wrong channel the moment stdout is
+# something other than the terminal. TRAPWINCH below can fire while a command substitution is
+# capturing, and then the escape sequence lands in the captured text instead of on screen. That
+# broke `eval "$(...)"` callers with errors naming the title itself:
+#
+#   (eval):1: command not found: ^[]2
+#   (eval):1: bad pattern: (pr/chancez/integrate_dex)^G
+#
+# eval split the OSC 2 payload at its own ';', so the branch name in the title became a command.
+# /dev/tty makes that impossible for every path here, not just the one that was caught.
+# 2>/dev/null because a shell with no controlling terminal has no title to set, and losing the
+# title there beats an error on every prompt.
 _title_set() {
-  print -rn -- $'\e]2;'"${(V)1}"$'\a'
+  print -rn -- $'\e]2;'"${(V)1}"$'\a' > /dev/tty 2>/dev/null
 }
 
 _title_location() {
@@ -85,6 +99,20 @@ add-zsh-hook preexec _title_preexec
 # cm re-emits OSC 2 as part of the screen it restores, so this is now a backstop
 # rather than the only mechanism. Kept because it costs nothing and covers a
 # session whose title changed while no client was attached.
+#
+# Guarded to the top-level shell. A trap is inherited by subshells, so without this every command
+# substitution running when the window resized would fork a child that also rebuilt the title,
+# which means two `git` calls per capture and, before _title_set wrote to /dev/tty, the sequence
+# landing in the captured output.
+#
+# The guard is an `if` rather than the shorter `(( ZSH_SUBSHELL == 0 )) || return`, and that is the
+# whole point of writing it out. A nonzero return from TRAPWINCH makes zsh abandon the command
+# substitution it interrupted, so the caller silently captures the empty string. Measured all three
+# forms: `|| return` and `|| return 1` both yield captured='', `|| return 0` and this `if` both
+# yield the real output. An empty capture is worse than the bug being fixed, because it has no
+# error message at all.
 TRAPWINCH() {
-  _title_precmd
+  if (( ZSH_SUBSHELL == 0 )); then
+    _title_precmd
+  fi
 }
