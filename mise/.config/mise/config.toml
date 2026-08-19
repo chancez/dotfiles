@@ -28,6 +28,7 @@ helm = "prefix:3"
 "aqua:neovim/neovim" = "prefix:0.12"
 uv = "latest"
 terraform = "latest"
+"github:chancez/cm" = "latest"
 
 golangci-lint = "latest"
 "go:gotest.tools/gotestsum" = "latest"
