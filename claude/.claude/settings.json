@@ -42,7 +42,8 @@
     "skill-creator@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
     "pua@pua-skills": true,
-    "cm@cm": true
+    "cm@cm": true,
+    "mattpocock-skills@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "pua-skills": {
