@@ -97,11 +97,20 @@ zmx = "latest"
 "~/.git-template"    = { source = "~/.dotfiles/git/.git-template",         mode = "symlink-each" }
 "~/.ssh"             = { source = "~/.dotfiles/ssh/.ssh",                   mode = "symlink-each" }  # links only config; leaves keys/known_hosts
 "~/.lima"            = { source = "~/.dotfiles/lima/.lima",                 mode = "symlink-each" }
-"~/.serena"          = { source = "~/.dotfiles/serena/.serena",            mode = "symlink-each" }
-"~/.agents"          = { source = "~/.dotfiles/agents/.agents",            mode = "symlink-each" }  # links only scripts/ + skills/, preserves runtime state
-"~/.claude"          = { source = "~/.dotfiles/claude/.claude",            mode = "symlink-each" }  # links only scripts/ + skills/, preserves runtime state
-"~/.claude/skills"   = { source = "~/.dotfiles/agents/.agents/skills",     mode = "symlink-each" }  # Skills are shared between agents and claude, so they can be updated in one place.
 "~/.local/bin"       = { source = "~/.dotfiles/bins/.local/bin",           mode = "symlink-each" }
+
+"~/.serena"             = { source = "~/.dotfiles/serena/.serena",            mode = "symlink-each" }
+"~/.agents"             = { source = "~/.dotfiles/agents/.agents",            mode = "symlink-each" }
+"~/.claude"             = { source = "~/.dotfiles/claude/.claude",            mode = "symlink-each" }
+"~/.codex"              = { source = "~/.dotfiles/codex/.codex",              mode = "symlink-each" }
+"~/.pi"                 = { source = "~/.dotfiles/pi/.pi",                    mode = "symlink-each" }
+
+"~/.claude/skills"      = { source = "~/.dotfiles/agents/.agents/skills",     mode = "symlink-each" }  # Share skills
+"~/.codex/skills"       = { source = "~/.dotfiles/agents/.agents/skills",     mode = "symlink-each" }  # Share skills
+
+"~/.claude/CLAUDE.md"   = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Reuse AGENTS.md
+"~/.codex/AGENTS.md"    = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
+"~/.pi/agent/AGENTS.md" = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
 
 # Single files at ~/.config/ root and $HOME
 "~/.config/starship.toml"     = { source = "~/.dotfiles/starship/.config/starship.toml", mode = "symlink" }
