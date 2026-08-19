@@ -53,6 +53,7 @@ stylua = "latest"
 "aqua:anthropics/claude-code" = "latest"
 "npm:@agentclientprotocol/claude-agent-acp" = "latest"
 "npm:@google/gemini-cli" = "latest"
+"npm:@earendil-works/pi-coding-agent" = "latest"
 
 # General purpose CLI tools
 ripgrep = "latest"
