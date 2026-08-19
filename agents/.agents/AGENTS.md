@@ -25,6 +25,11 @@
   tests so history stays bisectable.
 - Commit periodically to save progress even when the work is incomplete. Squash fixups into
   the right commit once we stop iterating.
+- Do not push branches unless explicitly told to or only push when you've been
+  asked to open a PR.
+- To rebase, `git fetch` the configured remote and rebase onto `$REMOTE/$BASE_BRANCH`.
+  Do not check out the base branch and `git pull` it: this avoids having to leave the current branch.
+- If the local `$BASE_BRANCH` is ahead of the remote, rebase against `$BASE_BRANCH` instead.
 
 ## Writing PRs
 
