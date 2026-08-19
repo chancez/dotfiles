@@ -30,11 +30,10 @@ fi
 
 # Set the list of directories that Zsh searches for programs.
 path=(
-  $mise_path
   $HOME/.local/bin
-  $HOME/.local/custom_bins
   $HOME/.krew/bin
   $HOME/.cargo/bin
+  $mise_path
   "/Applications/Android Studio.app/Contents/MacOS"
   $GOBIN
   $brew_paths
