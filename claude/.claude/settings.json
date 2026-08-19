@@ -41,13 +41,20 @@
     "context7@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
-    "pua@pua-skills": true
+    "pua@pua-skills": true,
+    "cm@cm": true
   },
   "extraKnownMarketplaces": {
     "pua-skills": {
       "source": {
         "source": "github",
         "repo": "tanweai/pua"
+      }
+    },
+    "cm": {
+      "source": {
+        "source": "github",
+        "repo": "chancez/cm"
       }
     }
   },
