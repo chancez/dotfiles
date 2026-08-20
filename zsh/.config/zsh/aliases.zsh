@@ -112,8 +112,11 @@ confirm() {
     esac
 }
 
-# Fix run-help for zsh
-unalias run-help
+# Fix run-help for zsh. zsh aliases it to `man` by default; drop that so the autoloaded
+# function is used instead. -m treats the argument as a pattern, which unlike plain `unalias`
+# stays quiet when there is nothing to remove: Debian's /etc/zsh/zshrc already unaliases it,
+# so this errored on Linux.
+unalias -m run-help
 autoload run-help
 
 # Expand the next word when running commands via watch (eg: watch k == watch kubectl)
