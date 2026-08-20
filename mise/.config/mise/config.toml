@@ -130,6 +130,11 @@ zmx = "latest"
 "~/.tmux.conf"                = { source = "~/.dotfiles/tmux/.tmux.conf",                 mode = "symlink" }
 "~/.vimrc"                    = { source = "~/.dotfiles/vim/.vimrc",                      mode = "symlink" }
 "~/.zshenv"                   = { source = "~/.dotfiles/zsh/.zshenv",                     mode = "symlink" }
+# Also link .zshenv into $ZDOTDIR. Once ZDOTDIR is exported, zsh reads $ZDOTDIR/.zshenv and
+# never looks at ~/.zshenv, so a nested or re-exec'd shell would skip it entirely and lose
+# both the $PATH ordering and NO_GLOBAL_RCS. ~/.zshenv is still needed to bootstrap the very
+# first shell, which is what sets ZDOTDIR in the first place.
+"~/.config/zsh/.zshenv"       = { source = "~/.dotfiles/zsh/.zshenv",                     mode = "symlink" }
 "~/.inputrc"                  = { source = "~/.dotfiles/zsh/.inputrc",                    mode = "symlink" }
 
 # Shell activation is intentionally omitted: shims are on $PATH via zsh/.config/zsh/paths.zsh
