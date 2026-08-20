@@ -103,7 +103,8 @@ zmx = "latest"
 "~/.serena"             = { source = "~/.dotfiles/serena/.serena",            mode = "symlink-each" }
 "~/.agents"             = { source = "~/.dotfiles/agents/.agents",            mode = "symlink-each" }
 "~/.claude"             = { source = "~/.dotfiles/claude/.claude",            mode = "symlink-each" }
-"~/.codex"              = { source = "~/.dotfiles/codex/.codex",              mode = "symlink-each" }
+# No codex configs yet
+# "~/.codex"              = { source = "~/.dotfiles/codex/.codex",              mode = "symlink-each" }
 "~/.pi"                 = { source = "~/.dotfiles/pi/.pi",                    mode = "symlink-each" }
 
 "~/.claude/skills"      = { source = "~/.dotfiles/agents/.agents/skills",     mode = "symlink-each" }  # Share skills
