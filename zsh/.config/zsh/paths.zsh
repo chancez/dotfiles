@@ -3,6 +3,12 @@
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path manpath infopath
 
+# Force PATH into the environment. Assigning to `path` only marks PATH exported if it was
+# already exported, which is not true when zsh starts from an environment with no PATH at
+# all (`env -i zsh`, some launchd/cron jobs). Without this, child processes fall back to
+# zsh's built-in default instead of inheriting this PATH.
+typeset -gx PATH
+
 # Set the the list of directories that cd searches.
 cdpath=(
   $cdpath
@@ -13,12 +19,12 @@ cdpath=(
 )
 
 # Add mise shims to $PATH instead of using mise activate/mise hook-env, as it interfers with kitten ssh
-local mise_path=()
+mise_path=()
 if [[ -d "$HOME/.local/share/mise/shims" ]]; then
   mise_path=("$HOME/.local/share/mise/shims")
 fi
 
-local brew_paths=()
+brew_paths=()
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   brew_paths=(
     $HOMEBREW_PREFIX/opt/openssl@3/bin
@@ -56,3 +62,5 @@ infopath=()
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   infopath=($HOMEBREW_PREFIX/share/info $manpath)
 fi
+
+unset mise_path brew_paths
