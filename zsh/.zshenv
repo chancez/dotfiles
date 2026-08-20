@@ -1,5 +1,19 @@
 #!/usr/bin/env zsh
 
+# Don't run /etc/zprofile and /etc/zshrc. The one that matters is /etc/zprofile: it calls
+# path_helper, which reorders $PATH to put the system directories first, undoing the ordering
+# in paths.zsh. It also runs only for login shells and only after this file, so honoring it
+# would mean setting $PATH in two places. paths.zsh reads the same /etc/paths inputs itself.
+#
+# What /etc/zshrc contributed is reproduced instead: `disable log` here, COMBINING_CHARS in
+# .zshrc since it only affects line editing. Its default key bindings are not carried over,
+# the plugins in plugins.zsh rebind those anyway (verified identical before and after).
+unsetopt GLOBAL_RCS
+
+# zsh's `log` builtin shadows /usr/bin/log, and it takes entirely different arguments, so
+# `log show ...` fails. This has to be here rather than .zshrc to also cover scripts.
+disable log
+
 # XDG
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
@@ -47,6 +61,11 @@ export RIPGREP_CONFIG_PATH=$HOME/.ripgreprc
 export GOPATH="$HOME/go"
 export GOBIN="$GOPATH/bin"
 export GOTOOLCHAIN=local
+
+# Set $PATH here rather than in .zshrc so non-interactive shells get it too: anything that
+# runs `zsh -c ...` (editor subprocesses, agent tool calls, git hooks, cron) reads only
+# .zshenv. This has to come after HOMEBREW_PREFIX and GOBIN above, which it consumes.
+source "$ZDOTDIR/paths.zsh"
 
 if [ -f "$HOME/.dircolors" ]; then
   eval "$(dircolors -b "$HOME/.dircolors")"

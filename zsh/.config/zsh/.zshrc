@@ -3,8 +3,8 @@
 # profile startup
 zmodload zsh/zprof
 
-# Configure fpath and PATH before loading plugins
-source "$ZDOTDIR/paths.zsh"
+# $PATH and $fpath are configured in .zshenv, so they are already set by the time plugins
+# load here.
 
 # Set options before loading plugins since some plugins require specific options to be set
 source "$ZDOTDIR/options.zsh"

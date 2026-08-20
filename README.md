@@ -21,6 +21,20 @@ mise manage Linux packages later, populate `config.linux.toml` with `apt:` entri
 Shims are put on `$PATH` directly (via `zsh/.config/zsh/paths.zsh`); `mise activate` is not
 used.
 
+`paths.zsh` is sourced once, from `.zshenv`, so every shell gets the same `$PATH`, including
+non-interactive ones (`zsh -c ...`, git hooks, editor and agent subprocesses).
+
+To make that work on macOS, `.zshenv` sets `NO_GLOBAL_RCS`. Otherwise `/etc/zprofile` runs
+`path_helper` for login shells only, and only after `.zshenv`, hoisting the system
+directories back to the front of `$PATH`. Instead `paths.zsh` reads the same inputs
+`path_helper` does, `/etc/paths` plus `/etc/paths.d/*` (and the `manpaths` equivalents), in a
+few lines of zsh, so `/etc/paths.d` drop-ins keep working with no subprocess. Login and
+non-interactive shells then end up with an identical `$PATH`.
+
+Skipping the global rc files also skips `/etc/zshrc`, so what it contributed lives here now:
+`disable log` in `.zshenv`, since zsh's `log` builtin shadows `/usr/bin/log` in scripts too,
+and `COMBINING_CHARS` in `options.zsh`, since it only affects line editing.
+
 ## Setup
 
 ```sh

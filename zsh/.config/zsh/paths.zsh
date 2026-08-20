@@ -34,6 +34,32 @@ if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   )
 fi
 
+# Read the system path files the way /usr/libexec/path_helper does: the base file first, then
+# each drop-in under its .d directory. /etc/zprofile would normally run path_helper for us,
+# but only for login shells and only after .zshenv, where it would reorder $PATH and put the
+# system directories ahead of Homebrew and mise. .zshenv sets NO_GLOBAL_RCS to skip it, so
+# gather the same inputs here and position them deliberately below.
+#
+# Parsing in-shell rather than shelling out keeps /etc/paths.d drop-ins working, which is the
+# one thing path_helper is genuinely needed for, and avoids a fork in .zshenv that every
+# `zsh -c` would pay for. Results go in $reply rather than being printed, so there is no
+# command substitution either. Verified to produce output identical to `path_helper -s` for
+# both PATH and MANPATH.
+read_path_files() {
+  local file line
+  reply=()
+  for file in "$1" "$1".d/*(N); do
+    [[ -r $file ]] || continue
+    while IFS= read -r line || [[ -n $line ]]; do
+      [[ -n $line ]] && reply+=("$line")
+    done < $file
+  done
+}
+
+reply=()
+read_path_files /etc/paths;    system_paths=($reply)
+read_path_files /etc/manpaths; system_manpaths=($reply)
+
 # Set the list of directories that Zsh searches for programs.
 path=(
   $HOME/.local/bin
@@ -46,6 +72,7 @@ path=(
   /snap/bin
   /usr/local/{bin,sbin}
   /usr/local/opt/curl/bin
+  $system_paths
   $path
 )
 
@@ -57,10 +84,12 @@ fi
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   manpath=($HOMEBREW_PREFIX/share/man $manpath)
 fi
+manpath+=($system_manpaths)
 
 infopath=()
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   infopath=($HOMEBREW_PREFIX/share/info $manpath)
 fi
 
-unset mise_path brew_paths
+unset mise_path brew_paths system_paths system_manpaths reply
+unfunction read_path_files

@@ -3,6 +3,10 @@
 # General
 setopt INTERACTIVE_COMMENTS   # Enable comments in interactive shell.
 unsetopt NOCLOBBER            # Disable warning when using > and >>
+setopt COMBINING_CHARS        # Assume the terminal renders combining characters in place.
+                              # From /etc/zshrc, which .zshenv skips via NO_GLOBAL_RCS. It
+                              # only affects display width and [[:WORD:]], so it belongs
+                              # with the other interactive options rather than in .zshenv.
 
 # History
 
