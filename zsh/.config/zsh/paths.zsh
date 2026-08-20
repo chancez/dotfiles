@@ -37,7 +37,7 @@ fi
 # Read the system path files the way /usr/libexec/path_helper does: the base file first, then
 # each drop-in under its .d directory. /etc/zprofile would normally run path_helper for us,
 # but only for login shells and only after .zshenv, where it would reorder $PATH and put the
-# system directories ahead of Homebrew and mise. .zshenv sets NO_GLOBAL_RCS to skip it, so
+# system directories ahead of Homebrew and mise. .zshenv unsets GLOBAL_RCS to skip it, so
 # gather the same inputs here and position them deliberately below.
 #
 # Parsing in-shell rather than shelling out keeps /etc/paths.d drop-ins working, which is the
@@ -56,9 +56,14 @@ read_path_files() {
   done
 }
 
-reply=()
-read_path_files /etc/paths;    system_paths=($reply)
-read_path_files /etc/manpaths; system_manpaths=($reply)
+# Scoped to darwin because these files are Apple's, and it is macOS where skipping
+# /etc/zprofile means nothing else reads them. The file tests above already make this a no-op
+# elsewhere, but the guard keeps the intent obvious.
+system_paths=() system_manpaths=()
+if [[ "$OSTYPE" == darwin* ]]; then
+  read_path_files /etc/paths;    system_paths=($reply)
+  read_path_files /etc/manpaths; system_manpaths=($reply)
+fi
 
 # Set the list of directories that Zsh searches for programs.
 path=(

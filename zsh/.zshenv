@@ -1,18 +1,30 @@
 #!/usr/bin/env zsh
 
-# Don't run /etc/zprofile and /etc/zshrc. The one that matters is /etc/zprofile: it calls
-# path_helper, which reorders $PATH to put the system directories first, undoing the ordering
-# in paths.zsh. It also runs only for login shells and only after this file, so honoring it
-# would mean setting $PATH in two places. paths.zsh reads the same /etc/paths inputs itself.
-#
-# What /etc/zshrc contributed is reproduced instead: `disable log` here, COMBINING_CHARS in
-# .zshrc since it only affects line editing. Its default key bindings are not carried over,
-# the plugins in plugins.zsh rebind those anyway (verified identical before and after).
-unsetopt GLOBAL_RCS
+# macOS-only shell setup. Both of these exist to work around files that only Apple ships, so
+# they are scoped to darwin rather than applied everywhere.
+if [[ "$OSTYPE" == darwin* ]]; then
+  # Don't run /etc/zprofile and /etc/zshrc. The one that matters is /etc/zprofile: it calls
+  # path_helper, which reorders $PATH to put the system directories first, undoing the
+  # ordering in paths.zsh. It also runs only for login shells and only after this file, so
+  # honoring it would mean setting $PATH in two places. paths.zsh reads the same /etc/paths
+  # inputs itself.
+  #
+  # What /etc/zshrc contributed is reproduced instead: `disable log` below, and
+  # COMBINING_CHARS in options.zsh since that only affects line editing. Its default key
+  # bindings are not carried over, the plugins in plugins.zsh rebind those anyway (verified
+  # identical before and after).
+  #
+  # On Debian and Ubuntu the equivalent files live in /etc/zsh/ and are harmless: zprofile is
+  # comment-only, there is no path_helper, and zshenv runs before this file so GLOBAL_RCS
+  # cannot suppress it anyway. Their zshrc runs a global compinit that zgenom already
+  # replaces, so nothing is lost by leaving the global files enabled there.
+  unsetopt GLOBAL_RCS
 
-# zsh's `log` builtin shadows /usr/bin/log, and it takes entirely different arguments, so
-# `log show ...` fails. This has to be here rather than .zshrc to also cover scripts.
-disable log
+  # zsh's `log` builtin shadows /usr/bin/log, and it takes entirely different arguments, so
+  # `log show ...` fails. This has to be here rather than .zshrc to also cover scripts.
+  # Linux has no /usr/bin/log, so disabling the builtin there would only remove a feature.
+  disable log
+fi
 
 # XDG
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
