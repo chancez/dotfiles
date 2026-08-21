@@ -50,7 +50,7 @@ if ! zgenom saved; then
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
   (($+commands[mise])) && zgenom eval --name mise < <(mise completion zsh)
   (($+commands[atuin])) && zgenom eval --name atuin < <(atuin gen-completions --shell zsh)
-  (($+commands[cm])) && zgenom eval --name cm < <(cm completions zsh)
+  (($+commands[cm])) && zgenom eval --name cm < <(cm shell-init zsh)
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
   (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)
