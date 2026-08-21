@@ -1,3 +1,5 @@
 # cm configuration. See https://github.com/chancez/cm/blob/main/docs/config.md
 
 detach_key = "ctrl-\\"
+
+scrollback_lines = 10000
