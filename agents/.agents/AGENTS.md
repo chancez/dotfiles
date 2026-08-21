@@ -20,7 +20,9 @@
 
 ## Git
 
-- Branch names: `pr/chancez/<CHANGE_NAME>`.
+- Branch names: `pr/chancez/<topic>`.
+- Git worktrees should be created in the `.worktrees` directory within the repository being modified.
+- Git worktrees should should be named after the `<topic>` in the branch name, e.g. `.worktrees/<topic>`.
 - Commit in small logical units, one concern per commit. Every commit must build and pass
   tests so history stays bisectable.
 - Commit periodically to save progress even when the work is incomplete. Squash fixups into
