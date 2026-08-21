@@ -1,25 +1,7 @@
 #!/bin/sh
 # Attach to a cm session, creating it if needed.
 #
-# kitty's save_as_session records a window's launch argv, not the process actually running in it. Going
-# through this wrapper keeps the session name in the argv (as $1) so restoring the session reattaches
-# instead of creating a new one, and keeps the saved path stable rather than baking in a versioned
-# install path that resolving `cm` directly would produce.
-#
-# No `unset CM_SESSION` here, unlike the zmx version. zmx treats that variable as a request to retarget
-# an existing client, so an inherited value would hijack whichever window is already showing that
-# session; cm only ever exports CM_SESSION and never reads it, so attaching from inside a session
-# creates a nested one, which is what asking for it should do.
-#
-# No SIGWINCH nudge either. That existed because zmx delivers no signal on a same-size reattach and runs
-# no new shell, so a restored window kept kitty's fallback title until something was typed. cm re-emits
-# OSC 2 as part of the screen it restores, and nudges the pty itself when a client attaches at the size
-# the session already has.
-# Deliberately not --own.
-#
-# --own ends the session when its client disconnects without detaching, which sounds right for a
-# per-window session and is wrong here: quitting kitty disconnects every client, so it would destroy
-# every session rather than leave them to be restored, which is the entire point of this setup. The
-# cm_reap.py watcher handles the deliberate-close case instead, because it can tell a closed window from
-# kitty going away and --own cannot.
+# Exists for kitty's save_as_session, which records a window's launch argv with argv[0] resolved to an
+# absolute path. Launching `cm` directly would freeze wherever cm resolved to at save time into the
+# session file; this wrapper's path is recorded instead, and it looks cm up again on every restore.
 exec cm attach "$1"

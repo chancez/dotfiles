@@ -102,8 +102,9 @@ def session_of(window):
     if prog == 'cm-attach' and len(argv) >= 2:
         return argv[1]
     # cm itself: cm attach NAME. Guarded on the subcommand so `cm list` in a window is not mistaken for a
-    # session, and the name is taken as the first argument that is not a flag, so `cm attach --own NAME`
-    # works too.
+    # session, and the name is taken as the first argument that is not a flag, so a boolean flag before it
+    # is skipped (`cm attach --persist NAME`). A flag whose value is separated by a space rather than an
+    # `=` would be read as the name, but nothing here launches one that way.
     if prog == 'cm' and len(argv) >= 3 and argv[1] in ('attach', 'a'):
         for arg in argv[2:]:
             if not arg.startswith('-'):
