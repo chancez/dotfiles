@@ -37,7 +37,7 @@
     "command": "~/.claude/scripts/statusline.sh"
   },
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": false,
     "context7@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
