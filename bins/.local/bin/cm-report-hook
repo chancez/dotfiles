@@ -1,0 +1,35 @@
+#!/bin/sh
+# Report a state to cm from a program's hook.
+#
+# Usage: cm-report-hook <state> [detail]
+#
+#   cm-report-hook busy "running tests"
+#   cm-report-hook blocked "needs approval"
+#   cm-report-hook idle
+#
+# Deliberately generic. This knows nothing about any particular program, and exists only so a hook
+# configuration can name one script rather than repeat the same invocation and the same guards.
+#
+# Any program that can run a command on a state change can use it: a coding agent's hooks, a CI script, a
+# long-running build. cm makes no distinction.
+set -eu
+
+state="${1:-}"
+detail="${2:-}"
+
+[ -n "$state" ] || { echo "usage: $(basename "$0") <state> [detail]" >&2; exit 2; }
+
+# Nothing to report to when not inside a cm session, which is the normal case for a hook that also runs
+# outside one. Silent success rather than an error: the hook did its job, there was simply no session.
+[ -n "${CM_SESSION:-}" ] || exit 0
+
+# Resolved by name rather than by absolute path, so this works wherever cm is installed. A hook that cannot
+# find cm is not an error worth failing the program over.
+command -v cm >/dev/null 2>&1 || exit 0
+
+# Best effort, and quiet. A hook usually runs in the middle of something the user cares about more than
+# state reporting, so a failure here must not interrupt it or print into their terminal.
+#
+# --source names the reporter, which is what makes several reporters distinguishable in `cm list`.
+cm report --state "$state" --detail "$detail" \
+  --source "${CM_REPORT_SOURCE:-hook}" >/dev/null 2>&1 || true

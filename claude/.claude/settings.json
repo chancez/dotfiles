@@ -16,6 +16,11 @@
             "type": "command",
             "command": "~/.claude/scripts/notify-notification.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "cm-report-hook blocked \"$(jq -r .message)\"",
+            "timeout": 10
           }
         ]
       }
@@ -26,6 +31,11 @@
           {
             "type": "command",
             "command": "~/.claude/scripts/notify-end.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "cm-report-hook idle",
             "timeout": 10
           }
         ]
