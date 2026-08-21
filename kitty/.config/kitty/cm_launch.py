@@ -3,14 +3,31 @@ import json
 import os
 import subprocess
 
+from kitty.fast_data_types import get_options
 from kittens.tui.handler import result_handler
 
-# kitty inherits a minimal PATH when started from the Dock, so binaries invoked from a kitten have to
-# be resolved by absolute path.
-CM_ATTACH = os.path.expanduser('~/.local/bin/cm-attach')
-CM = os.path.expanduser('~/.local/bin/cm')
+# Names, not paths: where cm lives differs per host, since it can be installed under ~/.local/bin or as
+# a mise shim.
+CM_ATTACH = 'cm-attach'
+CM = 'cm'
 
 COUNTER = os.path.expanduser('~/.local/state/kitty-cm/counter')
+
+
+# The environment `env` in kitty.conf builds, which is where PATH is set for this setup.
+#
+# Needed because kitty's own environment does not have it. A kitty started from the Dock or Spotlight
+# is a child of launchd and inherits launchd's PATH, and `env` applies to the processes kitty launches
+# rather than to kitty itself, so a kitten -- which runs inside the kitty process -- still sees
+# /usr/bin:/bin:/usr/sbin:/sbin and cannot find cm on it.
+#
+# Passing this to subprocess means PATH is configured in one place and read from it here, instead of
+# each caller hardcoding an install path. Windows opened by `launch` need nothing: kitty already
+# applies these variables to them.
+def cm_env():
+    env = dict(os.environ)
+    env.update(get_options().env)
+    return env
 
 
 # Names are allocated here rather than by cm, even though cm can allocate them.
@@ -42,7 +59,7 @@ def cm_json(args):
     """Run a cm command that emits JSON and return the parsed value, or None."""
     try:
         out = subprocess.run(
-            [CM] + args, capture_output=True, text=True, timeout=5
+            [CM] + args, capture_output=True, text=True, timeout=5, env=cm_env()
         ).stdout
     except (OSError, subprocess.SubprocessError):
         return None
@@ -67,9 +84,9 @@ def sessions():
 # window was launched with is the name it is showing.
 #
 # Both spellings are accepted, and the second is not hypothetical. Windows launched through cm_launch.py
-# run the cm-attach wrapper, so their argv is ('cm-attach', NAME). But kitty reports argv as the *running*
-# process, and a window can be running `cm attach NAME` directly -- every live window on this machine did,
-# which made this return None for all of them.
+# run the cm-attach wrapper, so their argv is ('cm-attach', NAME), but a window started by hand can be
+# running `cm attach NAME` directly -- every live window on this machine was, which made this return None
+# for all of them.
 #
 # The consequence was silent and is the reason to be lenient here: cm_reap.py returns early on None, so
 # closing a window killed nothing and the session sat as exited until cm's own five-minute sweep collected

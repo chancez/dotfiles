@@ -2,7 +2,7 @@ import subprocess
 
 from kittens.tui.handler import result_handler
 
-from cm_launch import CM, session_of, sessions
+from cm_launch import CM, cm_env, session_of, sessions
 
 
 def main(args):
@@ -22,7 +22,7 @@ def kill_sessions(names):
         try:
             subprocess.run(
                 [CM, 'kill', name, '--force'],
-                capture_output=True, text=True, timeout=5,
+                capture_output=True, text=True, timeout=5, env=cm_env(),
             )
         except (OSError, subprocess.SubprocessError):
             pass

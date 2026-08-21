@@ -7,7 +7,7 @@ import time
 # directory is not on the import path and a plain `from cm_launch import ...` fails at load time.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cm_launch import CM, session_of  # noqa: E402
+from cm_launch import CM, cm_env, session_of  # noqa: E402
 
 # Where this watcher records what it did, since a watcher has nowhere else to report.
 #
@@ -63,7 +63,7 @@ def on_close(boss, window, data):
     try:
         r = subprocess.run(
             [CM, 'kill', name, '--force'],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True, text=True, timeout=5, env=cm_env(),
         )
         if r.returncode != 0:
             _log('kill %s failed: %s' % (name, (r.stderr or '').strip()))
