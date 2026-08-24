@@ -1,13 +1,18 @@
 #!/bin/bash
-# Send a macOS notification that focuses the originating kitty window when clicked.
-# Usage: send-notification.sh TITLE MESSAGE [SOUND]
+# Send a macOS notification that says which session it came from, and focuses that
+# session's kitty window when clicked.
+#
+# Usage: send-notification.sh EVENT MESSAGE [CWD] [SOUND]
+#
+#   EVENT    short description of what happened ("Permission needed", "Task done")
+#   MESSAGE  notification body
+#   CWD      session's working directory, for the repo/worktree line. Defaults to $PWD
+#   SOUND    terminal-notifier sound name
 
-TITLE="$1"
+EVENT="$1"
 MSG="$2"
-SOUND="$3"
-
-ARGS=(-title "$TITLE")
-[ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
+CWD="${3:-$PWD}"
+SOUND="$4"
 
 # terminal-notifier is a GUI app: it runs NSApplicationMain and blocks in its event
 # loop waiting on a Mach reply from usernoted. That bootstrap port only resolves
@@ -16,34 +21,92 @@ ARGS=(-title "$TITLE")
 # full 600s command-hook timeout and shows up as a Stop hook stuck at 0 of 2.
 #
 # Both of the ways Claude runs here land outside Aqua: over ssh the shell is in the
-# System domain, and a kitty window reattached to a launchd-parented zmx server
+# System domain, and a kitty window reattached to a launchd-parented cm server
 # inherits no GUI session either. Neither is detectable from SSH_TTY alone, so ask
-# launchd directly. It answers in ~4ms.
+# launchd directly. It answers in ~4ms. Checked before anything else so a headless
+# run pays none of the cost below.
 if [ "$(launchctl managername 2>/dev/null)" != "Aqua" ]; then
   exit 0
 fi
 
+# Where the session is working, as a human would name it. A repo name alone does not
+# distinguish the several sessions usually open on the same repo, so worktrees are
+# named after the worktree and everything else after the branch. Both layouts in use
+# here are handled: .worktrees/ for hand-made ones and .claude/worktrees/ for the
+# ones Claude creates.
+location() {
+  local dir="$1" top repo wt="" branch
+  [ -d "$dir" ] || dir="$PWD"
+  top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || top="$dir"
+  case "$top" in
+  */.claude/worktrees/*)
+    repo=${top%%/.claude/worktrees/*}
+    wt=${top##*/.claude/worktrees/}
+    ;;
+  */.worktrees/*)
+    repo=${top%%/.worktrees/*}
+    wt=${top##*/.worktrees/}
+    ;;
+  *)
+    repo=$top
+    ;;
+  esac
+  repo=${repo##*/}
+
+  if [ -n "$wt" ]; then
+    printf '%s@%s' "$repo" "$wt"
+    return
+  fi
+  branch=$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null) || branch=""
+  if [ -n "$branch" ]; then
+    printf '%s (%s)' "$repo" "$branch"
+  else
+    printf '%s' "$repo"
+  fi
+}
+
+# The cm session name leads the title: it is what you type to reach the session, and
+# it is the only identifier that stays stable while the window it is shown in does
+# not. cm exports CM_SESSION and never reads it, so this is the session the hook
+# really ran in.
+if [ -n "$CM_SESSION" ]; then
+  TITLE="$CM_SESSION: $EVENT"
+else
+  TITLE="Claude: $EVENT"
+fi
+
+ARGS=(-title "$TITLE" -subtitle "$(location "$CWD")")
+[ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
+
 # Hooks inherit these from kitty, even when Claude runs headless inside neovim.
 KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
+CM_BIN=$(command -v cm 2>/dev/null)
 
-# A notification can be clicked long after it was posted, so the target has to be
-# resolved then rather than now. KITTY_WINDOW_ID and KITTY_LISTEN_ON both go stale
-# the moment kitty restarts: window ids are reassigned, and the socket carries
-# kitty's pid. The zmx session name is the one identifier that survives, because the
-# session outlives kitty and a restored window reattaches to the same one. So match
-# on the session and discover the socket at click time.
+# A notification can be clicked long after it was posted, so the target window has to
+# be resolved then rather than now.
 #
-# The match is a regex, so it is anchored and dots are escaped: unanchored,
-# kitty.7 would also match kitty.71 and focus an unrelated window.
-if [ -n "$ZMX_SESSION" ] && [ -x "$KITTY_BIN" ]; then
-  session_re=${ZMX_SESSION//./\\.}
+# The inherited KITTY_WINDOW_ID and KITTY_LISTEN_ON cannot do it. cm sessions outlive
+# kitty: quit and reopen, and the restored window reattaches the same session while
+# kitty hands out a fresh socket path and reassigns window ids. A shell that started
+# before that restart keeps the old values, so the socket is gone and the id now
+# belongs to somebody else's window. Focusing the wrong session is worse than not
+# focusing at all, and that is what this used to do.
+#
+# cm tracks what its session's current client reported, so ask cm at click time. This
+# is also why the previous ZMX_SESSION lookup never ran: zmx became cm, so the
+# variable was never set and every click fell through to the stale id.
+if [ -n "$CM_SESSION" ] && [ -n "$CM_BIN" ] && [ -x "$KITTY_BIN" ]; then
+  # The single quotes are the point: KITTY_LISTEN_ON and KITTY_WINDOW_ID have to reach
+  # the click-time shell unexpanded, so it reads what the eval above just set.
+  # shellcheck disable=SC2016
   ARGS+=(
     -activate net.kovidgoyal.kitty
-    -execute "$(printf 'for s in /tmp/kitty-[0-9]*; do %q @ --to "unix:$s" focus-window --match %q && break; done' \
-      "$KITTY_BIN" "cmdline:^${session_re}\$")"
+    -execute "$(printf 'eval "$(%q get-env %q --format=posix)" && exec %q @ --to "$KITTY_LISTEN_ON" focus-window --match "id:$KITTY_WINDOW_ID"' \
+      "$CM_BIN" "$CM_SESSION" "$KITTY_BIN")"
   )
 elif [ -n "$KITTY_LISTEN_ON" ] && [[ "$KITTY_WINDOW_ID" =~ ^[0-9]+$ ]] && [ -x "$KITTY_BIN" ]; then
-  # No zmx session: fall back to the window id, which is correct until kitty restarts.
+  # Not in a cm session, so nothing reattaches this window and the inherited values
+  # describe it correctly for as long as it exists.
   ARGS+=(
     -activate net.kovidgoyal.kitty
     -execute "$(printf '%q @ --to %q focus-window --match id:%s' \
