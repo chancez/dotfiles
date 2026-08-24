@@ -9,6 +9,8 @@
 - Do not refer to Chance by name in code comments, commit messages, or PR text. Use "I" instead of "Chance" or "ChanceZ".
 - Avoid pronouns in commit messages and PR text. Use "I" instead of "we" or "us". Use "you" only when addressing the reader directly.
 - Rephrase direct statements: Focus sentences on evidence and core arguments.
+- When writing something intended for human consumption, (comment, commit message, reply to prompt) use as few words as possible. Pick every word meticulously to reduce the volume to a strict minimum. Be down to the point. Less is more.
+- Avoid superlatives and praise. Stop telling me I am absolutely right. Give me the cold hard truth.
 
 ## Code
 
@@ -17,6 +19,11 @@
   helper or a temp variable plus `&`.
 - Go: when writing tests that deal with concurrency and/or require specific
   timing, use the `testing/synctest` package.
+
+### Go
+
+- Never define multiple types in a single type declaration`type (...`)`.
+- Generally struct fields should always be on separate lines, even if they fit on one line.
 
 ## Git
 
