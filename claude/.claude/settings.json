@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agora guard --ask",
+            "command": "agora guard",
             "timeout": 5
           }
         ]
