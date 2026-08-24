@@ -59,6 +59,9 @@
 - Point at existing patterns or helpers in the project they could reuse, or suggest a helper
   when logic should be shared.
 - A bug fix needs a regression test. Confirm the test fails without their fix and passes with it.
+- When writing feedback on a PR, consider whether or not a suggestion or code
+  snippet can be provided as part of the feedback. If so, provide it in the
+  comment to make it easier for the author to implement the change.
 
 ## Coordinating with other agents
 
