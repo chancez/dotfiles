@@ -91,6 +91,12 @@
             "type": "command",
             "command": "cm-report-hook idle",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "agora doorbell --wait 30m",
+            "asyncRewake": true,
+            "timeout": 1800
           }
         ]
       }
