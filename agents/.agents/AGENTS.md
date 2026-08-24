@@ -59,3 +59,15 @@
 - Point at existing patterns or helpers in the project they could reuse, or suggest a helper
   when logic should be shared.
 - A bug fix needs a regression test. Confirm the test fails without their fix and passes with it.
+
+## Coordinating with other agents
+
+Coordinate through agora, a shared channel of threads, in any repository. The agora skill has the protocol.
+
+- Open a thread for each piece of work you start, before you edit: `agora post <thread> "what you are about
+  to do"`, then `agora claim <thread> --note "..."`. Work you pick up later in the session gets its own
+  thread.
+- Read what is waiting first: `agora threads --unread`, then `agora read --thread NAME --advance` for one
+  that concerns your work and `agora ack NAME` for one that does not.
+- Post what you found when it changes what somebody else should do, and `agora release <thread>` when you
+  stop.
