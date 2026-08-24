@@ -65,22 +65,33 @@ location() {
   fi
 }
 
+# Hooks inherit these from kitty, even when Claude runs headless inside neovim.
+KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
+CM_BIN=$(command -v cm 2>/dev/null)
+
 # The cm session name leads the title: it is what you type to reach the session, and
 # it is the only identifier that stays stable while the window it is shown in does
 # not. cm exports CM_SESSION and never reads it, so this is the session the hook
 # really ran in.
-if [ -n "$CM_SESSION" ]; then
-  TITLE="$CM_SESSION: $EVENT"
+#
+# CM_SESSION sometimes holds the session id rather than a name, which is what a
+# session gets when it was created without one. An id like @fqwk9zdt says nothing at
+# a glance, so trade a `cm info` call for the name. Guarded on the @ prefix so the
+# usual case pays nothing.
+SESSION="$CM_SESSION"
+if [ -n "$CM_BIN" ] && [ "${SESSION#@}" != "$SESSION" ]; then
+  SESSION=$("$CM_BIN" info "$SESSION" --json 2>/dev/null | jq -r '.name // empty') || SESSION=""
+  SESSION=${SESSION:-$CM_SESSION}
+fi
+
+if [ -n "$SESSION" ]; then
+  TITLE="$SESSION: $EVENT"
 else
   TITLE="Claude: $EVENT"
 fi
 
 ARGS=(-title "$TITLE" -subtitle "$(location "$CWD")")
 [ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
-
-# Hooks inherit these from kitty, even when Claude runs headless inside neovim.
-KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
-CM_BIN=$(command -v cm 2>/dev/null)
 
 # A notification can be clicked long after it was posted, so the target window has to
 # be resolved then rather than now.
