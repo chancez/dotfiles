@@ -266,6 +266,9 @@ For cm, use `--cm`. It sets `CM_RUNTIME_DIR`, `CM_STATE_DIR`, and `CM_CONFIG`, s
 their database are separate from the user's, and the sandbox does not read their config file. All
 three matter: setting only the runtime dir leaves the sandbox sharing the real database.
 
+The helper defaults its root to `/tmp/kitty-sandbox`, not macOS `TMPDIR`, because cm's Unix socket path is
+limited to 104 bytes. Keep an overridden `KITTY_SANDBOX_ROOT` short when using `--cm`.
+
 `CM_CONFIG` points at a file inside the sandbox that does not exist, and that is deliberate. An
 *empty* `CM_CONFIG` means **unset** to cm, so it falls through to `XDG_CONFIG_HOME` and then to the
 real config file. This script did exactly that until it was caught: sandboxes looked isolated while

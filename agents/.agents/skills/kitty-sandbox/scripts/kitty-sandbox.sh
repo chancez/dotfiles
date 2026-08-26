@@ -29,7 +29,9 @@ set -eu
 # Overridable so a source build can be tested instead of the installed app.
 KITTY=${KITTY_SANDBOX_KITTY:-/Applications/kitty.app/Contents/MacOS/kitty}
 KITTEN=${KITTY_SANDBOX_KITTEN:-/Applications/kitty.app/Contents/MacOS/kitten}
-ROOT=${KITTY_SANDBOX_ROOT:-${TMPDIR:-/tmp}/kitty-sandbox}
+# cm's Unix sockets have a 104-byte cap on macOS. TMPDIR commonly expands to a much longer
+# per-user path, so using it here makes a --cm sandbox fail only once cm starts its server.
+ROOT=${KITTY_SANDBOX_ROOT:-/tmp/kitty-sandbox}
 
 # Print the leading comment block, stopping at the first non-comment line, so
 # adding usage lines above does not require adjusting a hardcoded range.
