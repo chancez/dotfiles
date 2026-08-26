@@ -1,7 +1,14 @@
 ---
 name: kitty-sandbox
-description: Launch and drive a throwaway kitty terminal instance to test terminal behavior end to end - prompts, window/tab titles, shell hooks, kitty.conf changes, kittens, keybindings, multiplexer sessions (zmx/tmux), escape sequences, and shell integration. Use this whenever verifying a change that only manifests in a real terminal, and especially before running any command that could attach to, retitle, resize, or kill a session in the user's live terminal. Triggers on "test this in kitty", "does my prompt/title work", "try this kitty config", "verify the shell hook fires", "check the tab title", "test the kitten", "reproduce it in a terminal", or any terminal/pty behavior that cannot be judged by reading code.
-allowed-tools: Bash, Read, Write, Edit
+description: >-
+  Launch and drive a throwaway kitty terminal instance to test terminal behavior end to end:
+  prompts, window and tab titles, shell hooks, kitty.conf changes, kittens, keybindings,
+  multiplexer sessions, escape sequences, and shell integration. Use when a change only
+  manifests in a real terminal, especially before a command could attach to, retitle, resize,
+  or kill a session in the user's live terminal. Trigger on "test this in kitty", "does my
+  prompt/title work", "try this kitty config", "verify the shell hook fires", "check the tab
+  title", "test the kitten", "reproduce it in a terminal", or terminal and pty behavior that
+  cannot be judged by reading code.
 ---
 
 # Kitty sandbox
@@ -17,18 +24,17 @@ The helper script does the boilerplate:
 scripts/kitty-sandbox.sh
 ```
 
-Run it from anywhere. `${CLAUDE_SKILL_DIR}/scripts/kitty-sandbox.sh` resolves it
-when the skill is active.
+Run it from anywhere. Use the script bundled alongside this `SKILL.md`.
 
 ## The one rule that matters
 
-**Never run terminal-mutating commands in the user's live terminal.** Your Bash
-tool runs *inside* their session and inherits its environment. A command that
+**Never run terminal-mutating commands in the user's live terminal.** A shell
+command can run *inside* their session and inherit its environment. A command that
 looks harmless can retarget, retitle, or kill the window they are working in.
 
 The failure mode is not theoretical. `zmx attach NAME` from a shell that already
 has `ZMX_SESSION` set does not create a new session, it *retargets the existing
-client*, like `tmux switch-client`. Running it from a Bash tool call yanks the
+client*, like `tmux switch-client`. Running it from a shell tool call yanks the
 user's window onto another session so they cannot type. If their setup also kills
 a session when its window closes, closing that stuck window can destroy the
 wrong session and lose real work.
@@ -39,7 +45,7 @@ sandbox. Read-only inspection of the user's terminal is fine.
 ## Workflow
 
 ```sh
-S=${CLAUDE_SKILL_DIR}/scripts/kitty-sandbox.sh
+S=/path/to/this-skill/scripts/kitty-sandbox.sh
 
 $S new mytest                 # launch, waits until a window actually exists
 $S ls mytest                  # window ids, pids, titles, cwd, running procs
