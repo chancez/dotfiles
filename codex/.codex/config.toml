@@ -1,0 +1,35 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+[[hooks.SessionStart]]
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora inject"
+additionalContextLimit = 4000
+
+[[hooks.UserPromptSubmit]]
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora inject"
+additionalContextLimit = 4000
+
+[[hooks.PostToolUse]]
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora inject --limit 3"
+
+[[hooks.PreToolUse]]
+matcher = "apply_patch|Edit|Write"
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora guard"
+timeout = 5
+
+[[hooks.Stop]]
+[[hooks.Stop.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora doorbell"
+
+[[hooks.SessionEnd]]
+[[hooks.SessionEnd.hooks]]
+type = "command"
+command = "AGORA_AGENT=codex agora leave --force"
+timeout = 3
