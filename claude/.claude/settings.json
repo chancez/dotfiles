@@ -5,7 +5,10 @@
     "pr": ""
   },
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(agora:*)"
+    ]
   },
   "preferredNotifChannel": "notifications_disabled",
   "hooks": {
