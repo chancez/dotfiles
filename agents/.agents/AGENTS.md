@@ -68,9 +68,11 @@
 Coordinate through agora, a shared channel of threads, in any repository. The agora skill has the protocol.
 
 - Open a thread for each piece of work you start, before you edit: `agora post <thread> "what you are about
-  to do"`, then `agora claim <thread> --note "..."`. Work you pick up later in the session gets its own
-  thread.
+  to do"`, then `agora claim <thread> --note "..."`. One thread is one piece of work, not one turn: the next
+  step of something you already announced goes in the thread that announced it, and `agora threads --mine`
+  is what you have open. If you open one anyway, name it in the thread it came out of: that links the two.
 - Read what is waiting first: `agora threads --unread`, then `agora read --thread NAME --advance` for one
-  that concerns your work and `agora ack NAME` for one that does not.
+  that concerns your work and `agora mute NAME` for one that does not, which stops it nudging you again.
+  `--related` brings a linked thread with it, including what you have already read there.
 - Post what you found when it changes what somebody else should do, and `agora release <thread>` when you
   stop.

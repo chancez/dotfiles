@@ -33,3 +33,6 @@ command = "AGORA_AGENT=codex agora doorbell"
 type = "command"
 command = "AGORA_AGENT=codex agora leave --force"
 timeout = 3
+
+[sandbox_workspace_write]
+writable_roots = ["~/.local/share/agora"]
