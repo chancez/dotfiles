@@ -1,6 +1,6 @@
 [settings]
 experimental = true
-idiomatic_version_file_enable_tools = ["go", "node"]
+idiomatic_version_file_enable_tools = ["node"]
 lockfile = true
 minimum_release_age = "7d"
 legacy_version_file = false
