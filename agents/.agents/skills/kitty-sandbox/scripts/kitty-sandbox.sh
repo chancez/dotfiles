@@ -78,11 +78,26 @@ new)
     # The sandbox must never inherit the real config: a stray `map` or startup
     # session there would change what is being tested.
     echo "confirm_os_window_close 0"
+    # Not inheriting the real config also means not inheriting its
+    # `enable_audio_bell no`, so a sandbox falls back to kitty's default and
+    # beeps out loud. A hidden window the user cannot see making a noise they
+    # cannot attribute is worse than the noise: any BEL a test produces (a shell
+    # error, readline completion, a truncated OSC sequence) reads as coming from
+    # their own terminal. Silence every channel a bell can reach, not just the
+    # sound: window_alert_on_bell raises a macOS notification and bell_on_tab
+    # marks the tab bar, which also corrupts a tab-title assertion.
+    echo "enable_audio_bell no"
+    echo "window_alert_on_bell no"
+    echo "bell_on_tab no"
+    echo "command_on_bell none"
     # Register as a UIElement rather than a Foreground app so a background
     # sandbox stays out of the Dock and the cmd-tab switcher. Without this a
     # hidden sandbox still adds an icon and a switcher entry, so cmd-tabbing
     # while one is running lands on an invisible window.
     [ "$visible" -eq 0 ] && echo "macos_hide_from_tasks yes"
+    # extra_conf stays last on purpose: kitty takes the final value for a scalar
+    # option, so a test whose subject is one of the defaults above can turn it
+    # back on via --conf.
     [ -n "$extra_conf" ] && cat "$extra_conf"
   } > "$dir/kitty.conf"
 

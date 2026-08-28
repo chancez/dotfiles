@@ -92,6 +92,29 @@ $S hide mytest                # send it back to the background
 Say what you are doing when you `show` one, since it interrupts them. A hidden
 sandbox needs no such warning.
 
+## Sandboxes are silent
+
+Hidden is not the same as unnoticeable. Not inheriting the real config also means
+not inheriting its `enable_audio_bell no`, and kitty's default is `yes`, so a
+sandbox used to beep out loud from a window with no icon and no visible presence.
+Any BEL a test produces rings it: a shell error, readline completion, a truncated
+OSC sequence. `new` now writes `enable_audio_bell no`, `window_alert_on_bell no`,
+`bell_on_tab no`, and `command_on_bell none`.
+
+Suppressing the tab marker matters for correctness too, not just quiet: a bell
+would otherwise prefix the tab title and break a tab-title assertion.
+
+If the bell itself is the subject of a test, put it back with `--conf`, which is
+appended last and wins. Assert on it with `command_on_bell` writing a file rather
+than on the tab title: `ls` reports title strings, not tab-bar rendering, so a
+bell marker is invisible to it and a test that watches for one passes either way.
+
+```sh
+printf 'command_on_bell /usr/bin/touch /tmp/bell-fired\n' > /tmp/probe.conf
+$S new bp --conf /tmp/probe.conf && $S run bp 'printf "\a"'
+ls /tmp/bell-fired            # exists = the BEL reached kitty's bell handler
+```
+
 ## Testing a source build of kitty
 
 By default the sandbox runs the installed `/Applications/kitty.app`. When the
