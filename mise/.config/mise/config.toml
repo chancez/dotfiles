@@ -107,8 +107,13 @@ yazi = "latest"
 "~/.codex"              = { source = "~/.dotfiles/codex/.codex",              mode = "symlink-each" }
 "~/.pi"                 = { source = "~/.dotfiles/pi/.pi",                    mode = "symlink-each" }
 
-"~/.claude/skills/*"      = { source = "~/.dotfiles/agents/.agents/skills",     mode = "symlink" }  # Share skills
+"~/.claude/skills/*"    = { source = "~/.dotfiles/agents/.agents/skills/*",   mode = "symlink" }  # Share skills
 "~/.codex/skills/*"     = { source = "~/.dotfiles/agents/.agents/skills/*",   mode = "symlink" }  # Share skills without replacing unmanaged entries
+
+# Agora skills linked to the local checkout
+"~/.claude/skills/agora"    = { source = "~/projects/agora/skills/agora",     mode = "symlink" }
+"~/.codex/skills/agora"     = { source = "~/projects/agora/skills/agora",     mode = "symlink" }
+"~/.agents/skills/agora"    = { source = "~/projects/agora/skills/agora",     mode = "symlink" }
 
 "~/.claude/CLAUDE.md"   = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Reuse AGENTS.md
 "~/.codex/AGENTS.md"    = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
