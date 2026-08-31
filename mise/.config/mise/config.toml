@@ -32,7 +32,7 @@ terraform = "latest"
 
 golangci-lint = "latest"
 "go:gotest.tools/gotestsum" = "latest"
-"go:golang.org/x/perf/cmd/benchstat" = "latest"
+"go:golang.org/x/perf/cmd/benchstat" = "v0.0.0-20260825160852-19be9d8e6c70"
 stylua = "latest"
 
 # Decode and validate JWTs locally
