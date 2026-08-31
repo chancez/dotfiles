@@ -54,7 +54,9 @@ if ! zgenom saved; then
   (($+commands[direnv])) && zgenom eval --name direnv < <(direnv hook zsh)
   (($+commands[jump])) && zgenom eval --name jump < <(jump shell)
   (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
-  (($+commands[cm])) && zgenom eval --name cm < <(cm shell-init zsh)
+  # --no-completions leaves out the half that _cm generates on demand, so what is snapshotted
+  # here is only cm_report and the hooks.
+  (($+commands[cm])) && zgenom eval --name cm < <(cm shell-init zsh --no-completions)
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
   (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)

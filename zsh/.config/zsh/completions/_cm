@@ -1,0 +1,3 @@
+#compdef cm
+# vim: set filetype=zsh :
+zsh-load-completion cm cm completions zsh
