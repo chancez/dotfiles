@@ -24,4 +24,6 @@ require('config.title').setup()
 require 'config.usercommands'
 require 'config.autocmds'
 require 'config.mappings'
+-- Before lazy, so a plugin's own config can register a scroll hook.
+require('config.scroll').setup()
 require 'config.lazy'
