@@ -5,12 +5,11 @@
     "pr": ""
   },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Bash(agora:*)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
-  "preferredNotifChannel": "notifications_disabled",
   "hooks": {
     "SessionStart": [
       {
@@ -56,7 +55,6 @@
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
-        "if": "Edit(**/*.go)",
         "hooks": [
           {
             "type": "command",
@@ -99,8 +97,8 @@
           {
             "type": "command",
             "command": "agora doorbell --wait 30m",
-            "asyncRewake": true,
-            "timeout": 1800
+            "timeout": 1800,
+            "asyncRewake": true
           }
         ]
       }
@@ -127,9 +125,11 @@
     }
   },
   "editorMode": "vim",
+  "preferredNotifChannel": "notifications_disabled",
   "deny": [
     "Read(./.env)",
     "Read(./.env.*)",
     "Read(./secrets/**)"
-  ]
+  ],
+  "tui": "fullscreen"
 }
