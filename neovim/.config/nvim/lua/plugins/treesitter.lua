@@ -204,7 +204,61 @@ return {
           "section",
         },
       },
-    }
+    },
+    config = function(_, opts)
+      require('treesitter-context').setup(opts)
+
+      -- Hide the context floats while the wheel is turning.
+      --
+      -- nvim will not scroll a window that has a float over it, so while the context shows,
+      -- every wheel event repaints the whole window instead of shifting it: measured at 23923
+      -- bytes per 3-line scroll against 1721 with the floats gone. A float that never updates
+      -- costs the same, so this is nvim's redraw rather than anything the plugin does.
+      --
+      -- Hiding on the key rather than on WinScrolled is the part that matters. WinScrolled
+      -- fires after nvim has decided how to draw the frame, so hiding there saves nothing:
+      -- measured at 347220 bytes for a 15-event fling against 33282 for this.
+      local idle_ms = 150
+      local hidden, timer = false, nil
+
+      -- The plugin sets these window variables on its own floats (render.lua) and exposes no
+      -- supported way to find them, so an update that renames them turns this into a no-op.
+      local function set_hidden(value)
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.w[win].treesitter_context or vim.w[win].treesitter_context_line_number then
+            pcall(vim.api.nvim_win_set_config, win, { hide = value })
+          end
+        end
+      end
+
+      local function hide_while_scrolling()
+        if not hidden then
+          hidden = true
+          set_hidden(true)
+        end
+        if timer then
+          timer:stop()
+        end
+        timer = vim.defer_fn(function()
+          timer = nil
+          if hidden then
+            hidden = false
+            set_hidden(false)
+          end
+        end, idle_ms)
+      end
+
+      for _, key in ipairs({ '<ScrollWheelUp>', '<ScrollWheelDown>' }) do
+        vim.keymap.set({ 'n', 'v', 'i' }, key, function()
+          hide_while_scrolling()
+          return key
+        end, {
+          expr = true,
+          replace_keycodes = true,
+          desc = 'Scroll, hiding the treesitter context',
+        })
+      end
+    end,
   },
   {
     'nvim-treesitter/nvim-treesitter-textobjects',
