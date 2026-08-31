@@ -4,6 +4,7 @@
 
 INPUT=$(cat)
 CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty')
+SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // empty')
 MSG=$(printf '%s' "$INPUT" | jq -r '.last_assistant_message // ""')
 
 # last_assistant_message is the documented source for the final text of the turn.
@@ -25,4 +26,4 @@ if [ -z "$MSG" ]; then
   MSG=${MSG:-"Task completed"}
 fi
 
-"$(dirname "$0")/send-notification.sh" "Task done" "$MSG" "$CWD"
+"$(dirname "$0")/send-notification.sh" "Task done" "$MSG" "$CWD" "$SESSION_ID"

@@ -4,6 +4,7 @@
 INPUT=$(cat)
 MSG=$(printf '%s' "$INPUT" | jq -r '.message // "Claude needs your input"')
 CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty')
+SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // empty')
 KIND=$(printf '%s' "$INPUT" | jq -r '.notification_type // empty')
 # Present only when the notification came from inside a subagent.
 AGENT=$(printf '%s' "$INPUT" | jq -r '.agent_type // empty')
@@ -20,4 +21,4 @@ if [ -z "$EVENT" ]; then
 fi
 [ -n "$AGENT" ] && EVENT="$EVENT ($AGENT)"
 
-"$(dirname "$0")/send-notification.sh" "$EVENT" "$MSG" "$CWD" Glass
+"$(dirname "$0")/send-notification.sh" "$EVENT" "$MSG" "$CWD" "$SESSION_ID" Glass

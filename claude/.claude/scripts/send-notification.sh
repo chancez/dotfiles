@@ -2,17 +2,19 @@
 # Send a macOS notification that says which session it came from, and focuses that
 # session's kitty window when clicked.
 #
-# Usage: send-notification.sh EVENT MESSAGE [CWD] [SOUND]
+# Usage: send-notification.sh EVENT MESSAGE [CWD] [SESSION_ID] [SOUND]
 #
-#   EVENT    short description of what happened ("Permission needed", "Task done")
-#   MESSAGE  notification body
-#   CWD      session's working directory, for the repo/worktree line. Defaults to $PWD
-#   SOUND    terminal-notifier sound name
+#   EVENT       short description of what happened ("Permission needed", "Task done")
+#   MESSAGE     notification body
+#   CWD         session's working directory, for the repo/worktree line. Defaults to $PWD
+#   SESSION_ID  hook input's session_id, used to look up the Claude session name
+#   SOUND       terminal-notifier sound name
 
 EVENT="$1"
 MSG="$2"
 CWD="${3:-$PWD}"
-SOUND="$4"
+SESSION_ID="$4"
+SOUND="$5"
 
 # terminal-notifier is a GUI app: it runs NSApplicationMain and blocks in its event
 # loop waiting on a Mach reply from usernoted. That bootstrap port only resolves
@@ -69,28 +71,90 @@ location() {
 KITTY_BIN="/Applications/kitty.app/Contents/MacOS/kitty"
 CM_BIN=$(command -v cm 2>/dev/null)
 
-# The cm session name leads the title: it is what you type to reach the session, and
-# it is the only identifier that stays stable while the window it is shown in does
-# not. cm exports CM_SESSION and never reads it, so this is the session the hook
-# really ran in.
+# The title Claude Code shows for the session, which is how a session is recognised on
+# screen. Nothing in the hook input carries it, and it does not live in one place
+# either. Two sources, and the precedence between them is not guessable, so it was
+# checked against the live titles of every open session:
 #
+#   1. `name` in ~/.claude/sessions/<pid>.json, when `nameSource` is not "derived".
+#      An explicitly set name outranks the generated one: the session named
+#      "hs-fw policy status delta delivery" shows exactly that, NOT its generated
+#      "Set up worktree for HS FW delta delivery".
+#   2. the last `ai-title` entry in the transcript, holding the generated title. This
+#      is what reading only the sessions file missed: it said "hubble-timescape-37"
+#      while the terminal read "Review PR 9258 for leader-follower gateway
+#      compatibility".
+#   3. `name` when it IS derived, a cwd placeholder like "hubble-timescape-37". Its
+#      per-session suffix still separates the several sessions open on one repo.
+claude_session_name() {
+  local sid="$1" files=() rec name="" src="" ai transcript
+  local -a matches
+  [ -n "$sid" ] || return 0
+
+  # Newest first, because more than one file can carry the same sessionId: resuming
+  # leaves the previous process's file behind, holding whatever the name was then. One
+  # jq over all of them is a single call, and jq emits matches in the order the files
+  # were given, so the first line is current.
+  #
+  # Word splitting is safe: these paths are ~/.claude/sessions/<pid>.json.
+  # shellcheck disable=SC2207
+  files=($(ls -t "$HOME"/.claude/sessions/*.json 2>/dev/null))
+  if [ ${#files[@]} -gt 0 ]; then
+    rec=$(jq -r --arg sid "$sid" \
+      'select(.sessionId == $sid) | [(.name // ""), (.nameSource // "")] | @tsv' \
+      "${files[@]}" 2>/dev/null | head -1)
+    name=${rec%%$'\t'*}
+    src=${rec#*$'\t'}
+  fi
+
+  if [ -n "$name" ] && [ "$src" != derived ]; then
+    printf '%s' "$name"
+    return 0
+  fi
+
+  # A plain glob, not ls: session ids are unique, so at most one path matches.
+  matches=("$HOME"/.claude/projects/*/"$sid".jsonl)
+  transcript=${matches[0]}
+  if [ -f "$transcript" ]; then
+    # ai-title is rewritten every turn, so the last occurrence is the current title.
+    # grep rather than jq because transcripts reach tens of megabytes and only one
+    # field is wanted: 26MB scans in 20ms. The match is handed back to jq to decode
+    # JSON escapes, which also drops a fragment truncated by an escaped quote instead
+    # of showing a mangled title.
+    ai=$(grep -o '"aiTitle":"[^"]*"' "$transcript" 2>/dev/null | tail -1)
+    if [ -n "$ai" ]; then
+      ai=$(printf '{%s}' "$ai" | jq -r '.aiTitle // empty' 2>/dev/null)
+      [ -n "$ai" ] && printf '%s' "$ai" && return 0
+    fi
+  fi
+
+  printf '%s' "$name"
+}
+
+SESSION=$(claude_session_name "$SESSION_ID")
+
+# Fall back to the cm session name, which at least says which window to go to.
 # CM_SESSION sometimes holds the session id rather than a name, which is what a
 # session gets when it was created without one. An id like @fqwk9zdt says nothing at
 # a glance, so trade a `cm info` call for the name. Guarded on the @ prefix so the
 # usual case pays nothing.
-SESSION="$CM_SESSION"
-if [ -n "$CM_BIN" ] && [ "${SESSION#@}" != "$SESSION" ]; then
-  SESSION=$("$CM_BIN" info "$SESSION" --json 2>/dev/null | jq -r '.name // empty') || SESSION=""
-  SESSION=${SESSION:-$CM_SESSION}
+if [ -z "$SESSION" ]; then
+  SESSION="$CM_SESSION"
+  if [ -n "$CM_BIN" ] && [ "${SESSION#@}" != "$SESSION" ]; then
+    SESSION=$("$CM_BIN" info "$SESSION" --json 2>/dev/null | jq -r '.name // empty') || SESSION=""
+    SESSION=${SESSION:-$CM_SESSION}
+  fi
 fi
 
-if [ -n "$SESSION" ]; then
-  TITLE="$SESSION: $EVENT"
-else
-  TITLE="Claude: $EVENT"
-fi
-
-ARGS=(-title "$TITLE" -subtitle "$(location "$CWD")")
+# The event moved out of the title once titles became real generated ones: "Review PR
+# 9258 for leader-follower gateway compatibility" is 55 characters, so a trailing
+# ": Task done" was the part macOS cut off, losing the one thing that distinguishes
+# waiting from finished. In the subtitle it is always visible, and the title gets the
+# full width for identifying the session.
+ARGS=(
+  -title "${SESSION:-Claude}"
+  -subtitle "$EVENT - $(location "$CWD")"
+)
 [ -n "$SOUND" ] && ARGS+=(-sound "$SOUND")
 
 # A notification can be clicked long after it was posted, so the target window has to
