@@ -33,7 +33,9 @@ export ZDOTDIR=${XDG_CONFIG_HOME}/zsh
 export ZGEN_INSTALL_DIR=${XDG_DATA_HOME}/zgenom
 
 # zgen options
-export ZGEN_RESET_ON_CHANGE=(${ZDOTDIR}/.zshrc ${ZDOTDIR}/plugins.zsh)
+# paths.zsh is included because the save bakes in $fpath and the compinit dump built from it, so
+# adding a completion directory there has no effect until init.zsh is regenerated.
+export ZGEN_RESET_ON_CHANGE=(${ZDOTDIR}/.zshrc ${ZDOTDIR}/plugins.zsh ${ZDOTDIR}/paths.zsh)
 
 # zsh-autosuggestions config
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=red,bold,underline"
