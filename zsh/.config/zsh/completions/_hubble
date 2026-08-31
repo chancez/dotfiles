@@ -1,0 +1,3 @@
+#compdef hubble
+# vim: set filetype=zsh :
+zsh-load-completion hubble hubble completion zsh

@@ -1,0 +1,3 @@
+#compdef kitty clone-in-kitty kitten
+# vim: set filetype=zsh :
+zsh-load-completion kitty kitty + complete setup zsh
