@@ -1,0 +1,17 @@
+# vim: set filetype=zsh :
+#
+# Test whether a tool has changed since a file was generated from it, without running anything.
+#
+#   zsh-tool-changed-since <file> <command>
+#
+# True when <file> is missing or empty, or when <command>'s binary is newer than it. Every test is
+# a builtin, so asking this on every startup costs no processes.
+
+[[ -s $1 ]] || return 0
+
+local bin=$commands[$2]
+[[ -n $bin && $bin -nt $1 ]] && return 0
+
+# A mise shim is a symlink to the mise binary, so a shimmed tool's own path only ever tracks mise
+# itself. The lockfile is what changes when mise installs a different version of the tool.
+[[ $bin == */mise/shims/* && ${XDG_CONFIG_HOME:-$HOME/.config}/mise/mise.lock -nt $1 ]]

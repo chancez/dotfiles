@@ -11,9 +11,35 @@ export ZSH_COMPDUMP=$ZDOTDIR/.zcompdump
 # ZGENOM compinit dump location
 export ZGEN_CUSTOM_COMPDUMP=$ZDOTDIR/.zcompdump
 
-# Used by the completion stubs in $ZDOTDIR/completions, so it has to be declared on every startup
-# and not just while building the save below.
-autoload -Uz zsh-load-completion
+# zsh-load-completion is used by the completion stubs in $ZDOTDIR/completions, so these have to be
+# declared on every startup and not just while building the save below.
+autoload -Uz zsh-load-completion zsh-refresh-integration zsh-tool-changed-since
+
+# Shell integrations snapshotted below, as the name of the snapshot and the command that generates
+# it. Kept as data so the command that took a snapshot can also regenerate it, and read by name at
+# each call site rather than looped over, because the order these are loaded in is the order they
+# appear in below.
+typeset -A _zsh_integrations=(
+  direnv   'direnv hook zsh'
+  jump     'jump shell'
+  switcher 'switcher init zsh; echo compdef switch=switcher'
+  # --no-completions leaves out the half that _cm generates on demand, so this is cm_report and
+  # the hooks
+  cm       'cm shell-init zsh --no-completions'
+  fzf      'fzf --zsh; echo compdef _gnu_generic fzf'
+  # sed replaces the hardcoded versioned path with the 'starship' command, so upgrading starship
+  # via mise does not break the prompt
+  starship 'starship init zsh | sed "s|$HOME/.local/share/mise/installs/starship/[^/]*/starship|starship|g"'
+)
+
+# Unlike a completion, this output has to be in place before the first prompt, so it cannot wait
+# for something to ask for it. Rewrite any snapshot whose tool has been upgraded since it was
+# taken, before `zgenom saved` sources them below. Costs a couple of builtin file tests per entry
+# and runs a tool only when one of them reports a change.
+for _zsh_name in ${(k)_zsh_integrations}; do
+  zsh-refresh-integration $_zsh_name
+done
+unset _zsh_name
 
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
@@ -25,16 +51,16 @@ if ! zgenom saved; then
   # extensions
   zgenom load jandamm/zgenom-ext-eval
 
+  # Wraps `zgenom eval` with the generator named in $_zsh_integrations. Declared here rather than
+  # with the functions above because only building the save needs it.
+  autoload -Uz zsh-eval-integration
+
   zgenom compdef
 
   zgenom load $ZDOTDIR/plugins/ssh.zsh
   zgenom load $ZDOTDIR/plugins/atuin-history-substring-search.zsh
 
-  if (($+commands[starship])) then
-    # Use sed to replace the hardcoded versioned path with the 'starship' command
-    # This prevents breakage when upgrading starship via mise
-    zgenom eval --name starship < <(starship init zsh | sed "s|$HOME/.local/share/mise/installs/starship/[^/]*/starship|starship|g")
-  fi
+  zsh-eval-integration starship
 
   # zsh plugins
   zgenom load zdharma-continuum/fast-syntax-highlighting
@@ -47,19 +73,16 @@ if ! zgenom saved; then
 
   # custom extensions
   #
-  # Only integrations that have to be in place before the first prompt belong here, because a
-  # snapshot is taken once and never revisited: it goes stale the moment the tool is upgraded.
-  # A tool whose output is only a completion function has a stub in $ZDOTDIR/completions instead,
-  # which reruns the generator itself once it notices the tool has changed.
-  (($+commands[direnv])) && zgenom eval --name direnv < <(direnv hook zsh)
-  (($+commands[jump])) && zgenom eval --name jump < <(jump shell)
-  (($+commands[switcher])) && zgenom eval --name switcher < <(switcher init zsh; echo compdef switch=switcher)
-  # --no-completions leaves out the half that _cm generates on demand, so what is snapshotted
-  # here is only cm_report and the hooks.
-  (($+commands[cm])) && zgenom eval --name cm < <(cm shell-init zsh --no-completions)
+  # Only integrations that have to be in place before the first prompt belong here. A tool whose
+  # output is only a completion function has a stub in $ZDOTDIR/completions instead, which reruns
+  # the generator itself once it notices the tool has changed.
+  zsh-eval-integration direnv
+  zsh-eval-integration jump
+  zsh-eval-integration switcher
+  zsh-eval-integration cm
 
   # NOTE: This must be done after bindkey -v in options.zsh to ensure fzf completion works
-  (($+commands[fzf])) && zgenom eval --name fzf < <(fzf --zsh; echo compdef _gnu_generic fzf)
+  zsh-eval-integration fzf
 
   # Fill the completion caches those stubs read, at the same point the snapshots above are taken,
   # so the first completion of a command in a new shell never has to wait for its tool. Sourcing a
@@ -75,3 +98,5 @@ if ! zgenom saved; then
   # generate the init script from plugins above
   zgenom save
 fi
+
+unset _zsh_integrations

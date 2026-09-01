@@ -1,0 +1,38 @@
+# vim: set filetype=zsh :
+#
+# Replace a `zgenom eval` snapshot whose tool has been upgraded since it was taken.
+#
+#   zsh-refresh-integration <name>
+#
+# <name> is the name the snapshot was created with, and the command that produced it is the
+# generator recorded for it in $_zsh_integrations.
+#
+# A shell integration cannot be generated on demand the way a completion can, because "on demand"
+# for a prompt or a chpwd hook is the first prompt. Rewriting the snapshot in place is enough
+# though: the saved init.zsh sources it by an absolute path that does not change, so nothing has to
+# be rebuilt for a new copy to take effect.
+
+local name=$1 generator=$_zsh_integrations[$1]
+
+# Where `zgenom api clone_dir zgenom_eval/<name>` points, spelled out to avoid the subshell that
+# reading its output would cost on every startup.
+local snapshot=$ZGEN_DIR/zgenom_eval/$name/___/init.zsh
+
+# No snapshot means there is no save yet, and plugins.zsh is about to take one.
+[[ -s $snapshot ]] || return 0
+
+zsh-tool-changed-since $snapshot ${generator%% *} || return 0
+
+# Deliberately not sourced here. plugins.zsh runs this before `zgenom saved`, which sources the
+# snapshot a moment later, and running a prompt or hook setup twice in one shell is not obviously
+# harmless.
+#
+# Generated into a temporary file so a generator that fails or is interrupted leaves the previous
+# snapshot in place rather than a truncated one, which would then be loaded at every startup until
+# the tool changed again.
+local tmp=$snapshot.$$
+if eval $generator >! $tmp && [[ -s $tmp ]]; then
+  mv -f $tmp $snapshot
+else
+  rm -f $tmp
+fi

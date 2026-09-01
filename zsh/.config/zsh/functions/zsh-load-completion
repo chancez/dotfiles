@@ -33,25 +33,8 @@ shift
 local cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/completions
 local cache=$cache_dir/_$name
 
-# A mise shim is a symlink to the mise binary, so a shimmed tool's own path only ever tracks mise
-# itself. The lockfile is what changes when mise installs a different version of the tool.
-local -a triggers=($commands[$1])
-if [[ $commands[$1] == */mise/shims/* ]]; then
-  triggers+=(${XDG_CONFIG_HOME:-$HOME/.config}/mise/mise.lock)
-fi
-
-# Both tests are builtins, so completing a command whose cache is current forks nothing.
-local trigger stale=0
-[[ -s $cache ]] || stale=1
-for trigger in $triggers; do
-  if [[ $trigger -nt $cache ]]; then
-    stale=1
-    break
-  fi
-done
-
 # An uninstalled tool still completes from whatever was cached while it was installed.
-if (( stale )) && (( $+commands[$1] )); then
+if zsh-tool-changed-since $cache $1 && (( $+commands[$1] )); then
   [[ -d $cache_dir ]] || mkdir -p $cache_dir
 
   # Generate into a temporary file, so a generator that fails or is interrupted cannot leave a
