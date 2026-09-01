@@ -1,45 +1,38 @@
 # vim: set filetype=zsh :
 #
-# zgenom extension: replace every `zgenom eval-tool` snapshot whose tool has changed since it was
-# taken.
+# zgenom extension: regenerate every `zgenom eval-tool` output whose tool has changed since it was
+# produced.
 #
 #   zgenom refresh-tools
 #
-# Run before `zgenom saved`, which sources the snapshots: they are rewritten in place, and the
-# saved init.zsh sources them by an absolute path that does not change, so a new copy takes effect
-# without rebuilding the save. Snapshots taken by plain `zgenom eval` have no recorded generator
-# and are left alone.
+# Run before `zgenom saved`, which sources the snapshots: they are rewritten in place, and the saved
+# init.zsh loads them from a path that does not change, so a new copy takes effect without
+# rebuilding the save. Output from plain `zgenom eval` has no record and is left alone.
 #
-# A shell integration cannot be generated on demand the way a completion can, because "on demand"
-# for a prompt or a chpwd hook is the first prompt. So this runs at every startup, and is built out
-# of builtins for that reason: a tool runs only once its snapshot is out of date.
+# This runs at every startup, and is built out of builtins for that reason: a tool runs only once
+# its output is out of date. Doing the same lazily is only possible for a completion, and only
+# because compinit defers loading it; a prompt or a hook has to be in place before the first prompt,
+# which is to say before anything can ask for it.
 
 emulate -L zsh
 
-local record snapshot generator tmp
+local record dir generator output
 
-for record in $ZGEN_DIR/zgenom_eval/*/*/.generator(N); do
-  snapshot=${record:h}/init.zsh
-  [[ -s $snapshot ]] || continue
+for record in $ZGEN_DIR/zgenom_*/*/*/.generator(N); do
+  dir=${record:h}
 
-  # -d '' so a generator spanning several lines survives being read back. It reports failure at end
-  # of file, having assigned what it read, so the value is what to test rather than the status.
+  # First line is the file the generator writes, the rest is the generator. -d '' so one spanning
+  # several lines survives being read back; it reports failure at end of file having assigned what
+  # it read, so the value is what to test rather than the status.
   read -rd '' generator < $record
-  generator=${generator%$'\n'}
-  [[ -n $generator ]] || continue
+  output=$dir/${generator%%$'\n'*}
+  generator=${${generator#*$'\n'}%$'\n'}
 
-  zsh-tool-changed-since $snapshot ${generator%% *} || continue
+  [[ -n $generator && -s $output ]] || continue
 
-  # Deliberately not sourced: `zgenom saved` does that a moment later, and running a prompt or hook
-  # setup twice in one shell is not obviously harmless.
-  #
-  # Written via a temporary file so a generator that fails or is interrupted leaves the previous
-  # snapshot in place rather than a truncated one, which would then load at every startup until the
-  # tool changed again.
-  tmp=$snapshot.$$
-  if eval $generator >! $tmp && [[ -s $tmp ]]; then
-    mv -f $tmp $snapshot
-  else
-    rm -f $tmp
-  fi
+  zsh-tool-changed-since $output ${generator%% *} || continue
+
+  # Deliberately not loaded here: `zgenom saved` does that a moment later for a sourced snapshot,
+  # and compinit already knows where to find a completion.
+  zsh-generate-file $output $generator
 done

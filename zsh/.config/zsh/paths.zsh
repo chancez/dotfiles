@@ -86,10 +86,9 @@ if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   fpath=($HOMEBREW_PREFIX/share/zsh/site-functions $fpath)
 fi
 
-# Autoloaded functions, and the completion stubs that generate a tool's completion the first time
-# it is used. First in $fpath so a stub takes precedence over a copy shipped elsewhere, and set
-# here rather than in plugins.zsh because compinit reads $fpath as it is when the zgenom save runs.
-fpath=($ZDOTDIR/functions $ZDOTDIR/completions $fpath)
+# Autoloaded functions, including the local zgenom extensions plugins.zsh declares. Set here rather
+# than in plugins.zsh because compinit reads $fpath as it is when the zgenom save runs.
+fpath=($ZDOTDIR/functions $fpath)
 
 if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   manpath=($HOMEBREW_PREFIX/share/man $manpath)

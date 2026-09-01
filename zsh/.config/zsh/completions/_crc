@@ -1,3 +1,0 @@
-#compdef crc
-# vim: set filetype=zsh :
-zsh-load-completion crc crc completion zsh

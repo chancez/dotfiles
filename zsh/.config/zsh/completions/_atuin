@@ -1,3 +1,0 @@
-#compdef atuin
-# vim: set filetype=zsh :
-zsh-load-completion atuin atuin gen-completions --shell zsh

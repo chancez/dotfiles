@@ -1,0 +1,22 @@
+# vim: set filetype=zsh :
+#
+# Write the output of a command to a file, atomically.
+#
+#   zsh-generate-file <file> <generator>
+#
+# Generates via a temporary file, so a generator that fails or is interrupted leaves whatever was
+# there before rather than a truncated version of itself. That matters here because the result is
+# cached: a half-written shell integration or completion would be loaded at every startup until the
+# tool that produced it changed again.
+
+local file=$1 generator=$2
+local tmp=$file.$$
+
+[[ -d ${file:h} ]] || mkdir -p ${file:h}
+
+if eval $generator >! $tmp && [[ -s $tmp ]]; then
+  mv -f $tmp $file
+else
+  rm -f $tmp
+  return 1
+fi

@@ -1,3 +1,0 @@
-#compdef mise
-# vim: set filetype=zsh :
-zsh-load-completion mise mise completion zsh
