@@ -1,0 +1,37 @@
+# vim: set filetype=zsh :
+#
+# zgenom extension: snapshot the output of a tool as a plugin, and record what produced it.
+#
+#   zgenom eval-tool <name> <generator> [args ...]
+#
+# Like `zgenom eval --name <name>`, with the generator passed as arguments rather than on stdin so
+# that it can be kept and rerun. Quote it if it contains shell syntax:
+#
+#   zgenom eval-tool direnv direnv hook zsh
+#   zgenom eval-tool fzf 'fzf --zsh; echo compdef _gnu_generic fzf'
+#
+# Does nothing when the tool is not installed, so no snapshot of a missing command's error output
+# can be saved.
+#
+# The generator is written beside the snapshot for `zgenom refresh-tools` to replay when the tool
+# changes, which is the whole reason this exists: a snapshot is otherwise taken once and never
+# revisited, and goes stale as soon as the tool is upgraded.
+
+local name=$1
+shift
+local generator="$*"
+
+if [[ -z $name || -z $generator ]]; then
+  __zgenom_err '`eval-tool` requires a name and a generator:'
+  __zgenom_err '`zgenom eval-tool <name> <generator> [args ...]`'
+  return 1
+fi
+
+(( $+commands[${generator%% *}] )) || return 0
+
+zgenom eval --name $name < <(eval $generator) || return
+
+# Where `zgenom eval` just put it. Hidden so it stays out of the way of the directory's other job
+# as an $fpath entry, and left without a shebang so `zgenom compile` skips it.
+local record=$(zgenom api clone_dir zgenom_eval/$name)/.generator
+print -r -- $generator >! $record
