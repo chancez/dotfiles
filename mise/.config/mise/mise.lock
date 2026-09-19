@@ -1019,7 +1019,8 @@ version = "1.18.21"
 backend = "npm:opencode-ai"
 
 [[tools."npm:tree-sitter-cli"]]
-version = "0.26.13"
+version = "0.27.0"
+aube = { path = "locks/npm-tree-sitter-cli/0.27.0", digest = "sha256:9ca14d2c1c7c7fe85ad5a22dfaceec1f59ba0fc50ac7a217d63aae817c38ca40" }
 backend = "npm:tree-sitter-cli"
 
 [[tools."pipx:beets"]]
