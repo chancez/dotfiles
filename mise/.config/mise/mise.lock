@@ -436,6 +436,52 @@ checksum = "sha256:998e39e5c6b8425db0595bdcaf141401de2cd6c29241ece450ac6e260d30a
 url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-windows-amd64.tar.gz"
 url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425194"
 
+[[tools."github:tree-sitter/tree-sitter"]]
+version = "0.27.0"
+backend = "github:tree-sitter/tree-sitter"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.linux-arm64"]
+checksum = "sha256:3a35a2dd961ad842384e982c75daf792c01d1a67e442fc3914d4de37bd8a59cb"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-linux-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857304"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.linux-arm64-musl"]
+checksum = "sha256:3a35a2dd961ad842384e982c75daf792c01d1a67e442fc3914d4de37bd8a59cb"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-linux-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857304"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.linux-x64"]
+checksum = "sha256:20a1f39ec1c45f2211492dcb8881c802b643b554bb196869a29ac3778277fa77"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-linux-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857303"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.linux-x64-musl"]
+checksum = "sha256:20a1f39ec1c45f2211492dcb8881c802b643b554bb196869a29ac3778277fa77"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-linux-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857303"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.macos-arm64"]
+checksum = "sha256:70f7573b2b2e5371a5b58cc5227d2ad981fd5374596b9874e770af486060774e"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-macos-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857317"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.macos-x64"]
+checksum = "sha256:767528eaab3cca9d929fb96b4cb11cc9f03e09e293675151875c0fe5f79c06f0"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-macos-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857318"
+provenance = "github-attestations"
+
+[tools."github:tree-sitter/tree-sitter"."platforms.windows-x64"]
+checksum = "sha256:2d6c014b4e91d3d302ba7b30b3b625914027c3861ae7817e068a273e3f034550"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.27.0/tree-sitter-windows-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/536857325"
+provenance = "github-attestations"
+
 [[tools.go]]
 version = "1.24.13"
 backend = "core:go"
