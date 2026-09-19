@@ -79,6 +79,8 @@ zmx = "latest"
 "go:github.com/grpc-ecosystem/grpc-health-probe" = "latest"
 "go:github.com/pradipta/wallfacer" = "latest"
 yazi = "latest"
+oras = "latest"
+"npm:ccusage" = "latest"
 
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into
