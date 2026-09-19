@@ -1,0 +1,32 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      mcp-hub:
+        specifier: 4.2.1
+        version: 4.2.1
+
+packages:
+
+  json5@2.2.3:
+    resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
+    engines: {node: '>=6'}
+    hasBin: true
+
+  mcp-hub@4.2.1:
+    resolution: {integrity: sha512-GLtfsYwgtLMS0gyapxn+PTtS/3BX4dmQFqYg6oXjlk0udaYVWMLvMG50G9Nh/2ydzbeihxFMmwXBycr5TdA2AA==}
+    hasBin: true
+
+snapshots:
+
+  json5@2.2.3: {}
+
+  mcp-hub@4.2.1:
+    dependencies:
+      json5: 2.2.3
