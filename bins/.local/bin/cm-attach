@@ -4,4 +4,17 @@
 # Exists for kitty's save_as_session, which records a window's launch argv with argv[0] resolved to an
 # absolute path. Launching `cm` directly would freeze wherever cm resolved to at save time into the
 # session file; this wrapper's path is recorded instead, and it looks cm up again on every restore.
-exec cm attach "$1"
+# Usage: cm-attach NAME [command...]
+#
+# A command may follow the name: cm_launch.py passes `kitten ssh <host>` when the window it is splitting
+# from has ssh'd elsewhere, so the new session reconnects instead of opening a local shell.
+#
+# The `--` cm needs is added here rather than by the caller, deliberately. Passing it through kitty would
+# put a `--` in the middle of a `launch` command line, where kitty's own option parser sees it first, and
+# whether it survives is a question this avoids having to answer.
+name=$1
+shift
+if [ "$#" -gt 0 ]; then
+  exec cm attach "$name" -- "$@"
+fi
+exec cm attach "$name"
