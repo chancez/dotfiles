@@ -205,6 +205,10 @@ url = "https://awscli.amazonaws.com/AWSCLIV2-2.36.49.pkg"
 [tools.aws-cli."platforms.macos-x64"]
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.36.49.pkg"
 
+[[tools."cargo:tree-sitter-cli"]]
+version = "0.27.0"
+backend = "cargo:tree-sitter-cli"
+
 [[tools.fd]]
 version = "10.5.0"
 backend = "aqua:sharkdp/fd"
@@ -1216,6 +1220,10 @@ url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/47811
 checksum = "sha256:71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5"
 url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
+
+[[tools.rust]]
+version = "stable"
+backend = "asdf:rust"
 
 [[tools.starship]]
 version = "1.26.0"

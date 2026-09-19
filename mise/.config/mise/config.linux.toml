@@ -9,3 +9,6 @@
 #   "apt:libssl-dev" = "latest"
 #
 # Consider `[settings] system_packages.managers = ["apt"]` on hosts that must never use brew.
+
+[tools]
+"cargo:tree-sitter-cli" = "0.27.0"
