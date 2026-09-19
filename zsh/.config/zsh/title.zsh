@@ -51,6 +51,25 @@ _title_set() {
   print -rn -- $'\e]2;'"${(V)1}"$'\a' > /dev/tty 2>/dev/null
 }
 
+# A remote shell says so, because otherwise nothing in the title does.
+#
+# This is what kitty's own shell integration does and what starting it with no-title gave up: its zsh
+# integration computes is_ssh_session and prefixes the title with "${HOST%%.*}: " in both precmd and
+# preexec. Losing that is only invisible when the remote host runs different dotfiles; ssh'ing to
+# another machine with this same config produces a title identical to a local one, which is how it was
+# noticed.
+#
+# SSH_CONNECTION and SSH_TTY rather than kitty's fuller test, which also consults KITTY_PID and falls
+# back to `who -m`. Both of those exist to catch remote shells that did not get the variables: a sudo
+# that cleared the environment, or a server that does not set SSH_TTY. This config is only ever the
+# shell sshd itself started, so the variables are there, and `who -m` on every prompt is not worth it.
+#
+# The short host, matching kitty, because a fully qualified name eats the width the path needs.
+_title_host_prefix() {
+  [[ -n ${SSH_CONNECTION-}${SSH_TTY-} ]] || return 0
+  print -rn -- "${${HOST-}%%.*}: "
+}
+
 _title_location() {
   local dir branch
   dir=$(_title_shorten_path ${(%):-%~})
@@ -63,7 +82,7 @@ _title_location() {
 }
 
 _title_precmd() {
-  _title_set "$(_title_location)"
+  _title_set "$(_title_host_prefix)$(_title_location)"
 }
 
 # While a command runs, lead with its name so the tab says what is executing.
@@ -83,7 +102,7 @@ _title_preexec() {
     (( i++ ))
   done
   local cmd=${words[i]:-$words[1]}
-  _title_set "${cmd:t} $(_title_location)"
+  _title_set "$(_title_host_prefix)${cmd:t} $(_title_location)"
 }
 
 autoload -Uz add-zsh-hook
