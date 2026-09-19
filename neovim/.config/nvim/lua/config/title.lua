@@ -18,8 +18,35 @@ end
 
 local branch_cache = {}
 
+-- A remote nvim says which host it is on, matching zsh/title.zsh.
+--
+-- Needed for the same reason it is needed there: these dotfiles are installed on both ends of an ssh, so
+-- the rest of the title is byte for byte what a local session produces and there is nothing to tell them
+-- apart. kitty's own integration does this too, prefixing the short hostname, and it is switched off here
+-- with no-title because this file owns the title instead.
+--
+-- Computed once at load. Neither the hostname nor whether this process is remote changes while nvim runs,
+-- and the title is rebuilt on every BufEnter.
+--
+-- SSH_CONNECTION and SSH_TTY are what sshd sets, the same pair title.zsh tests. vim.uv with a vim.loop
+-- fallback because the rename landed in 0.10 and this config runs on remote hosts with whatever nvim they
+-- happen to have.
+local host_prefix = (function()
+  if (vim.env.SSH_CONNECTION or '') == '' and (vim.env.SSH_TTY or '') == '' then
+    return ''
+  end
+  local uv = vim.uv or vim.loop
+  local host = uv and uv.os_gethostname() or ''
+  -- The short form, as kitty and title.zsh use: a fully qualified name eats the width the path needs.
+  host = host:gsub('%..*$', '')
+  if host == '' then
+    return ''
+  end
+  return host .. ': '
+end)()
+
 local function set_titlestring(cwd, branch)
-  local title = 'nvim ' .. shorten(vim.fn.fnamemodify(cwd, ':~'))
+  local title = host_prefix .. 'nvim ' .. shorten(vim.fn.fnamemodify(cwd, ':~'))
   if branch and branch ~= '' then
     title = title .. ' (' .. branch .. ')'
   end
