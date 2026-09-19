@@ -114,7 +114,8 @@
     "skill-creator@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
     "cm@cm": true,
-    "mattpocock-skills@claude-plugins-official": true
+    "mattpocock-skills@claude-plugins-official": true,
+    "modern-go-guidelines@goland-claude-marketplace": true
   },
   "extraKnownMarketplaces": {
     "cm": {
@@ -122,14 +123,20 @@
         "source": "github",
         "repo": "chancez/cm"
       }
+    },
+    "goland-claude-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "JetBrains/go-modern-guidelines"
+      }
     }
   },
+  "tui": "fullscreen",
   "editorMode": "vim",
   "preferredNotifChannel": "notifications_disabled",
   "deny": [
     "Read(./.env)",
     "Read(./.env.*)",
     "Read(./secrets/**)"
-  ],
-  "tui": "fullscreen"
+  ]
 }
