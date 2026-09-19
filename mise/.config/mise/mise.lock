@@ -401,6 +401,11 @@ checksum = "sha256:10286fe2ddce8968cf300df663b041b4e670df5165ef1d9ceb34e17a605cc
 url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.1/cilium-darwin-amd64.tar.gz"
 url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/542430309"
 
+[tools."github:isovalent/cilium-cli-releases"."platforms.windows-x64"]
+checksum = "sha256:9d0a79dcd91775dfd7535b1361bd835ec3ff867c584950fef07959e44d2337d1"
+url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.1/cilium-windows-amd64.zip"
+url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/542430336"
+
 [[tools."github:isovalent/hubble-releases"]]
 version = "1.17.18-cee.1"
 backend = "github:isovalent/hubble-releases"
