@@ -3,6 +3,7 @@ experimental = true
 idiomatic_version_file_enable_tools = ["node"]
 lockfile = true
 minimum_release_age = "7d"
+minimum_release_age_excludes = ["github:chancez/cm"]
 legacy_version_file = false
 # prefer_offline = true
 
