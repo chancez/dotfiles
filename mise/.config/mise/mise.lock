@@ -320,8 +320,38 @@ url_api = "https://api.github.com/repos/cli/cli/releases/assets/522857996"
 provenance = "github-attestations"
 
 [[tools."github:chancez/cm"]]
-version = "0.1.0"
+version = "0.4.0"
 backend = "github:chancez/cm"
+
+[tools."github:chancez/cm"."platforms.linux-arm64"]
+checksum = "sha256:284b64c0329b01ea78c83a44ae250adb22c8c2240de572962fcc7d2eb64ac980"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488435"
+
+[tools."github:chancez/cm"."platforms.linux-arm64-musl"]
+checksum = "sha256:284b64c0329b01ea78c83a44ae250adb22c8c2240de572962fcc7d2eb64ac980"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488435"
+
+[tools."github:chancez/cm"."platforms.linux-x64"]
+checksum = "sha256:c9147e8cb98170910189cc39fb9445653bbf618502a07df767dec2d03e0a98c5"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488437"
+
+[tools."github:chancez/cm"."platforms.linux-x64-musl"]
+checksum = "sha256:c9147e8cb98170910189cc39fb9445653bbf618502a07df767dec2d03e0a98c5"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488437"
+
+[tools."github:chancez/cm"."platforms.macos-arm64"]
+checksum = "sha256:0acae24da6dd2250e6d543187a6e555236352662987bff62d0be8fea3a0780ef"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488436"
+
+[tools."github:chancez/cm"."platforms.macos-x64"]
+checksum = "sha256:c73e44aeab7419e50cce5a5229c523753b132d008b7963b3bee3f3506ce06870"
+url = "https://github.com/chancez/cm/releases/download/v0.4.0/cm_v0.4.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/cm/releases/assets/538488434"
 
 [[tools."github:isovalent/cilium-cli-releases"]]
 version = "0.19.6-cee.2"
