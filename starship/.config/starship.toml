@@ -22,11 +22,13 @@ disabled = false
 
 [username]
 format = "[$user]($style)"
+detect_env_vars = ["SSH_CONNECTION", "CM_CLIENT_HOST"]
 
 [hostname]
 format = "[@$hostname]($style) "
 style = "bold purple"
-ssh_only = true
+ssh_only = false
+detect_env_vars = ["SSH_CONNECTION", "CM_CLIENT_HOST"]
 
 [env_var.DEVCONTAINER]
 variable = 'DEVCONTAINER'
