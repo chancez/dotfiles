@@ -14,10 +14,10 @@ if [[ "$OSTYPE" == darwin* ]]; then
   # bindings are not carried over, the plugins in plugins.zsh rebind those anyway (verified
   # identical before and after).
   #
-  # On Debian and Ubuntu the equivalent files live in /etc/zsh/ and are harmless: zprofile is
-  # comment-only, there is no path_helper, and zshenv runs before this file so GLOBAL_RCS
-  # cannot suppress it anyway. Their zshrc runs a global compinit that zgenom already
-  # replaces, so nothing is lost by leaving the global files enabled there.
+  # On Debian and Ubuntu the equivalent files live in /etc/zsh/ and are mostly harmless:
+  # zprofile is comment-only, there is no path_helper, and zshenv runs before this file so
+  # GLOBAL_RCS cannot suppress it anyway. Their zshrc does run a compinit, which is not
+  # harmless; skip_global_compinit below turns that off rather than the whole file.
   unsetopt GLOBAL_RCS
 
   # zsh's `log` builtin shadows /usr/bin/log, and it takes entirely different arguments, so
@@ -25,6 +25,15 @@ if [[ "$OSTYPE" == darwin* ]]; then
   # Linux has no /usr/bin/log, so disabling the builtin there would only remove a feature.
   disable log
 fi
+
+# Ubuntu's /etc/zsh/zshrc runs its own compinit. That lands before .zshrc, so before zgenom puts
+# the plugin completion directories on $fpath, and it dumps to ${ZDOTDIR}/.zcompdump, which is the
+# same file plugins.zsh hands zgenom. The generated init.zsh then loads that dump with `compinit -C`,
+# and -C skips the rescan, so every completion zgenom installs is silently absent. Measured on an
+# Ubuntu 22.04 host: 961 functions in the dump against 978 on $fpath, with _cm, _mise and _atuin
+# among the 17 missing. /etc/zsh/zshrc documents this variable as the way out. Read in the same
+# shell, so it does not need exporting, and nothing on macOS reads it.
+skip_global_compinit=1
 
 # XDG
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
