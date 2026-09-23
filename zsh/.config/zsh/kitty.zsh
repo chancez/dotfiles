@@ -67,3 +67,34 @@ _cm_kitty_env_refresh() {
   return 0
 }
 add-zsh-hook preexec _cm_kitty_env_refresh
+
+# A kitty started from a shell must not replay the saved session.
+#
+# `startup_session` exists for launching kitty from the Dock, where replaying every window and reattaching
+# each to its cm session is the point. Typed at a prompt it is never what was meant, and it is expensive:
+# every window whose cm session is gone creates a new one under the same name.
+#
+# Measured on 2026-09-22. A typo, `pgrep -fl "cm shim" | kitty`, started a second instance that replayed a
+# 33-window session: 21 windows reattached live sessions and 12 created new ones. Killing that instance left
+# those 12 running with no client, and nothing cleans them up -- cm_reap.py deliberately does not reap when
+# kitty quits, since sessions surviving a quit is the reason for this setup, and it cannot tell a mistaken
+# instance from the one holding the work.
+#
+# --single-instance would be the tidier fix and does not work here: the kitty holding the work is launched
+# from the app bundle without it, so a typed `kitty --single-instance` becomes a first instance of its own
+# and replays the session anyway.
+#
+# Passed through untouched for a `+` subcommand (`kitty +kitten icat`), which launches no window, and for an
+# explicit --session, which is someone asking for a session file on purpose.
+kitty() {
+  local arg
+  for arg in "$@"; do
+    case $arg in
+      +*|--session|--session=*)
+        command kitty "$@"
+        return
+        ;;
+    esac
+  done
+  command kitty --session none "$@"
+}
