@@ -14,7 +14,10 @@ credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 go = ["latest", "1.25", "1.24"]
 java = "26"
 node = ['lts', '20', '19', '18', '17', '16']
-python = ['3', '2.7']
+python = [
+  { version='3', postinstall = "python -m pip install --upgrade pynvim esbonio" },
+  '2.7'
+]
 rust = "stable"
 
 usage = "latest"
