@@ -1054,51 +1054,61 @@ url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip"
 
 [[tools."npm:@agentclientprotocol/claude-agent-acp"]]
 version = "0.83.0"
+aube = { path = "locks/npm-agentclientprotocol-claude-agent-acp/0.83.0", digest = "sha256:7a964cdbfc7af8e999474f71cf33e5a9fe2a6f5196a4abf872d30c96306f88f5" }
 backend = "npm:@agentclientprotocol/claude-agent-acp"
 specifiers = ["latest"]
 
 [[tools."npm:@earendil-works/pi-coding-agent"]]
 version = "0.87.1"
+aube = { path = "locks/npm-earendil-works-pi-coding-agent/0.87.1", digest = "sha256:4a55f8555d04af5cd185998f5e558f605fbb2a62f7b232e36a8f2c7b5f56df2b" }
 backend = "npm:@earendil-works/pi-coding-agent"
 specifiers = ["latest"]
 
 [[tools."npm:@github/copilot"]]
 version = "1.0.88"
+aube = { path = "locks/npm-github-copilot/1.0.88", digest = "sha256:48c11107f6387db01962459d12116a7565b78de57ff8f2c154d59d13e44e61b7" }
 backend = "npm:@github/copilot"
 specifiers = ["latest"]
 
 [[tools."npm:@google/gemini-cli"]]
 version = "0.61.0"
+aube = { path = "locks/npm-google-gemini-cli/0.61.0", digest = "sha256:e9caf36f95dd4803097accab9e8e75b6983d581b5a92c3a3fa854deb430ccd09" }
 backend = "npm:@google/gemini-cli"
 specifiers = ["latest"]
 
 [[tools."npm:@mermaid-js/mermaid-cli"]]
 version = "12.0.0"
+aube = { path = "locks/npm-mermaid-js-mermaid-cli/12.0.0", digest = "sha256:5c988738018df4ad3d4a321350aa3dca7405f6b44608f8343628cfad5fe76cd2" }
 backend = "npm:@mermaid-js/mermaid-cli"
 specifiers = ["latest"]
 
 [[tools."npm:@zed-industries/codex-acp"]]
 version = "0.16.0"
+aube = { path = "locks/npm-zed-industries-codex-acp/0.16.0", digest = "sha256:c7f37cd0e6525a9748d3c7d3825889653c18848ec6dc8498ca72c57b4feb12ba" }
 backend = "npm:@zed-industries/codex-acp"
 specifiers = ["latest"]
 
 [[tools."npm:ccusage"]]
 version = "20.0.26"
+aube = { path = "locks/npm-ccusage/20.0.26", digest = "sha256:e1229ed145ebbaaaa3e6116f5a729c75f32a6fc901a681ad0febc7451f529025" }
 backend = "npm:ccusage"
 specifiers = ["latest"]
 
 [[tools."npm:jwt-cli"]]
 version = "2.0.0"
+aube = { path = "locks/npm-jwt-cli/2.0.0", digest = "sha256:36b45b58a710a62ae811c16d3bb4f4ccc0f62e4a78325f447df37cb6ed13708b" }
 backend = "npm:jwt-cli"
 specifiers = ["latest"]
 
 [[tools."npm:mcp-hub"]]
 version = "4.2.1"
+aube = { path = "locks/npm-mcp-hub/4.2.1", digest = "sha256:b94bb432c9f3b8fe5f11739a33815a8f827d9d890184cba2f7cf3d832e2e4d1e" }
 backend = "npm:mcp-hub"
 specifiers = ["latest"]
 
 [[tools."npm:opencode-ai"]]
 version = "1.18.33"
+aube = { path = "locks/npm-opencode-ai/1.18.33", digest = "sha256:74199f693756c1b4384cb46b9260a4a1f381d8a9a5fbd5316c85e8870ff47e26" }
 backend = "npm:opencode-ai"
 specifiers = ["latest"]
 
