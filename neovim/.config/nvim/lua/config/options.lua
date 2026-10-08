@@ -91,3 +91,5 @@ vim.g.mapleader = ','
 vim.g.netrw_silent = 1
 
 vim.g.project_directory = os.getenv('HOME') .. '/projects'
+
+vim.g.python3_host_prog = vim.fn.expand('~/.local/share/mise/installs/python/3/bin/python')
