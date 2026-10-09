@@ -8,7 +8,13 @@ legacy_version_file = false
 # prefer_offline = true
 
 [settings.github]
-credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
+# gh's token lives in the macOS keychain, so mise cannot read it from gh's hosts.yml and has to ask
+# gh for it. Called by path rather than by name: gh is a tool below, so a bare `gh` can resolve to
+# the shim, which is the mise binary, which asks for a credential again. That recursion filled the
+# process table with 3500 `gh auth token` processes once. mise strips its shims directory from the
+# credential subprocess PATH as of 2026.3.30, so this is belt and braces, and it keeps the command
+# honest if that protection ever regresses.
+credential_command = 'exec "$HOME"/.local/share/mise/installs/gh/latest/*/bin/gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 
 [tools]
 go = ["latest", "1.25", "1.24"]
