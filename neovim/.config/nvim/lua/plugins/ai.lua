@@ -14,10 +14,6 @@ return {
         markdown = true,
       },
       copilot_node_command = { "mise", "exec", "node@lts", "--", "node", "--use-system-ca" },
-      server = {
-        type = 'nodejs',
-        custom_server_filepath = vim.fn.stdpath("data") .. "/mason/bin/copilot-language-server",
-      },
       server_opts_overrides = {
         settings = {
           advanced = {
@@ -41,7 +37,27 @@ return {
             require("copilot.config.should_attach").default
         return default_should_attach(bufnr, bufname)
       end,
-    }
+    },
+    -- The language server comes from mise (npm:@github/copilot-language-server) rather than
+    -- the copy copilot.lua bundles. It cannot be named by binary: with `type = "nodejs"`
+    -- copilot.lua passes the path to node, and the mise shim on $PATH is the mise binary, not
+    -- the server's js entry point. Resolve the install dir instead, which is why this runs in
+    -- `config` (on InsertEnter) rather than in `opts` (on startup, for every session).
+    config = function(_, opts)
+      local tool = "npm:@github/copilot-language-server"
+      local where = vim.system({ "mise", "where", tool }, { text = true }):wait()
+      if where.code == 0 then
+        opts.server = {
+          type = "nodejs",
+          custom_server_filepath = vim.fs.joinpath(vim.trim(where.stdout),
+            "node_modules/@github/copilot-language-server/dist/language-server.js"),
+        }
+      else
+        vim.notify(("%s is not installed, falling back to the bundled server: %s")
+          :format(tool, vim.trim(where.stderr or "")), vim.log.levels.WARN)
+      end
+      require("copilot").setup(opts)
+    end
   },
   {
     "carlos-algms/agentic.nvim",

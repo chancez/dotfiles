@@ -1,6 +1,9 @@
 return {
   {
     'neovim/nvim-lspconfig',
+    config = function()
+      require("plugins.configs.lspconfig").setup()
+    end
   },
   {
     'ray-x/lsp_signature.nvim',
@@ -24,34 +27,6 @@ return {
         },
       },
     }
-  },
-  {
-    'williamboman/mason.nvim',
-    opts = {
-      ui = {
-        icons = {
-          package_installed = "✓",
-          package_pending = "➜",
-          package_uninstalled = "✗"
-        }
-      }
-    }
-  },
-  {
-    "mason-org/mason-lspconfig.nvim",
-    dependencies = {
-      "mason-org/mason.nvim",
-      "neovim/nvim-lspconfig",
-    },
-    config = function()
-      local myLspConfigs = require("plugins.configs.lspconfig")
-      local serverNames = myLspConfigs.auto_install_servers
-      require("mason-lspconfig").setup({
-        ensure_installed = serverNames,
-        automatic_enable = false,
-      })
-      myLspConfigs.setup()
-    end
   },
   {
     "chancez/codeactions-on-save.nvim",

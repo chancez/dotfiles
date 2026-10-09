@@ -13,7 +13,7 @@ local auto_enable_servers = {
     filetypes = { "bash", "sh", "zsh" },
     bashIde = {
       enableSourceErrorDiagnostics = true,
-      shellcheckPath = vim.fn.stdpath("data") .. "/mason/bin/shellcheck",
+      shellcheckPath = "shellcheck",
     }
   },
   dockerls               = {},
@@ -75,10 +75,6 @@ local auto_enable_servers = {
   },
 }
 
-
-local install_only_servers = {
-  "copilot",
-}
 
 local function LspOrgImports()
   local cos = require("codeactions-on-save")
@@ -198,10 +194,6 @@ local function lspAttach(bufnr, client)
   end
 end
 
-local auto_install_servers = util.table_concat(vim.tbl_keys(auto_enable_servers), install_only_servers)
-
-M.auto_install_servers = auto_install_servers
-
 local ignored_filetypes = {
   'neotest-output-panel',
 }
@@ -236,6 +228,22 @@ vim.api.nvim_create_autocmd({ 'BufNew', 'BufNewFile', 'BufReadPost', 'BufFilePos
     end
   end,
 })
+
+-- Servers are installed by mise (see mise/.config/mise/config.toml) and found on $PATH.
+-- mason-lspconfig's `ensure_installed` used to guarantee a binary existed before a server was
+-- enabled; without it, enabling a server whose command is missing errors on every buffer that
+-- matches its filetype. Not every server can be checked: ts_ls, yamlls and jsonls resolve
+-- their own executable in a `cmd` function so they can prefer a project-local copy.
+--
+---@param server_name string
+---@return boolean
+local function server_is_installed(server_name)
+  local cmd = vim.lsp.config[server_name].cmd
+  if type(cmd) ~= "table" then
+    return true
+  end
+  return vim.fn.executable(cmd[1]) == 1
+end
 
 M.setup = function()
   -- Suppress No code actions available message
@@ -276,7 +284,9 @@ M.setup = function()
 
     -- Server-specific settings. See `:help lsp-quickstart`
     vim.lsp.config(server_name, server_opts)
-    vim.lsp.enable(server_name)
+    if server_is_installed(server_name) then
+      vim.lsp.enable(server_name)
+    end
   end
 end
 
