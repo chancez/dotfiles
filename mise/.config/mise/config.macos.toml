@@ -120,7 +120,6 @@
 "brew:rename" = "latest"
 "brew:retry" = "latest"
 "brew:rsync" = "latest"
-"brew:shellcheck" = "latest"
 "brew:shfmt" = "latest"
 "brew:sipcalc" = "latest"
 "brew:skopeo" = "latest"

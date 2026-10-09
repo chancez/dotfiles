@@ -46,6 +46,75 @@ stylua = "latest"
 # For neovim
 "github:tree-sitter/tree-sitter" = "v0.27.0"
 
+# Neovim language servers, replacing mason.nvim. nvim-lspconfig looks every one of these up
+# on $PATH by bare name, and the mise shim dir is already on $PATH (zsh/.config/zsh/paths.zsh),
+# so nvim and the servers it spawns find them with no editor-side plumbing.
+#
+# esbonio is missing on purpose: its lspconfig cmd is `python3 -m esbonio.server`, which the
+# python postinstall above already installs.
+rust-analyzer = "latest"
+terraform-ls = "latest"
+lua-language-server = "latest"
+helm-ls = "latest"
+buf = "latest"        # buf_ls runs as `buf lsp serve`
+shellcheck = "latest" # bashls shells out to it
+"go:golang.org/x/tools/gopls" = "latest"
+"go:github.com/grafana/jsonnet-language-server" = "latest"
+"npm:pyright" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:dockerfile-language-server-nodejs" = "latest"
+# sql-language-server 1.7.1 (published 2024-11-14) deep-imports three internals:
+# vscode-languageserver-protocol/lib/common/protocol, vscode-jsonrpc/lib/node/main and
+# vscode-languageserver/lib/node/main. Only the last still resolves. 3.18.4 of the protocol
+# added an "exports" map that hides the first, and jsonrpc is not even a declared dependency,
+# so it only ever resolved by npm hoisting. Any fresh install breaks, mason included; a copy
+# installed before 3.18.4 keeps working, which is why this looks like a regression.
+#
+# Upstream already fixed it: packages/server now imports the public vscode-languageserver/node
+# and declares neither package. There has just been no release since. Drop this postinstall
+# when one lands. Pinning the tool version cannot help, the range is ^3.15.3.
+#
+# The install root is on the module resolution path, so linking the two pinned packages into
+# its node_modules satisfies the imports. Versions match what the working mason install
+# resolved. The protocol also needs its aube symlink dropped, which would otherwise shadow the
+# pinned copy. The pinned tree goes in a scratch dir because npm --prefix on the install root
+# would read the package.json aube wrote there and rebuild every native dependency.
+"npm:sql-language-server" = { version = "latest", postinstall = """
+set -eu
+pinned="$MISE_TOOL_INSTALL_PATH/.pinned"
+rm -rf "$pinned"
+npm install --no-save --no-audit --no-fund --prefix "$pinned" \
+  vscode-languageserver-protocol@3.17.5 vscode-jsonrpc@8.2.0
+for pkg in vscode-languageserver-protocol vscode-jsonrpc; do
+  ln -sfn "$pinned/node_modules/$pkg" "$MISE_TOOL_INSTALL_PATH/node_modules/$pkg"
+done
+rm -f "$MISE_TOOL_INSTALL_PATH"/node_modules/.mise/sql-language-server@*/node_modules/vscode-languageserver-protocol
+""" }
+"npm:yaml-language-server" = "latest"
+"npm:vscode-langservers-extracted" = "latest" # jsonls
+"npm:graphql-language-service-cli" = "latest"
+# Not an lspconfig server: copilot.lua runs it itself, see neovim .../plugins/ai.lua.
+"npm:@github/copilot-language-server" = "latest"
+# typescript-language-server declares no dependency on typescript, and mise gives every npm
+# tool its own node_modules, so tsserver would only ever resolve out of a project's own
+# node_modules. Installing typescript into the tool's install dir restores the fallback that
+# mason provided by putting both packages in one tree. The hook runs in the caller's cwd, not
+# the install dir, hence the explicit --prefix. typescript is held at 6 because 7 is the
+# native rewrite and ships no lib/tsserver.js, which is the only thing
+# typescript-language-server knows how to launch.
+"npm:typescript-language-server" = { version = "latest", postinstall = "npm install --no-save --prefix $MISE_TOOL_INSTALL_PATH typescript@6" }
+# The release zip holds bin/clangd plus the lib/clang builtin headers, which clangd needs to
+# resolve stddef.h and friends, so take the whole archive rather than one extracted binary.
+# There is no linux-arm64 build upstream: see the Dockerfile, which installs clangd from apt
+# and disables this tool instead.
+"github:clangd/clangd" = { version = "latest", extract_all = true, strip_components = 1, bin_path = "bin" }
+# Also a whole-archive install: a launcher script plus the jars it runs.
+"github:fwcd/kotlin-language-server" = { version = "latest", extract_all = true, bin_path = "server/bin" }
+# eclipse.jdt.ls publishes no GitHub release assets. The real artifact is a timestamped
+# tarball on download.eclipse.org, so version and url are pinned by hand and have to be
+# bumped together from https://download.eclipse.org/jdtls/milestones/.
+"http:jdtls" = { version = "1.61.0", url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz", bin_path = "bin" }
+
 # Music manager
 "pipx:beets" = { version = "latest", extras = "scrub,chroma" }
 
