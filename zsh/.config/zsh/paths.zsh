@@ -18,7 +18,11 @@ cdpath=(
   $HOME/go/src/github.com
 )
 
-# Add mise shims to $PATH instead of using mise activate/mise hook-env, as it interfers with kitten ssh
+# The mise shims directory, which is how every shell that never reaches a prompt finds a
+# mise-managed tool: `zsh -c ...`, editor subprocesses, git hooks, cron. Interactive shells also
+# run `mise activate` in .zshrc, which prepends the real install directories ahead of this and
+# moves this entry to the front of the rest. Equivalent to `mise activate --shims` without paying
+# for an exec, and placed here deliberately rather than at the front.
 mise_path=()
 if [[ -d "$HOME/.local/share/mise/shims" ]]; then
   mise_path=("$HOME/.local/share/mise/shims")
