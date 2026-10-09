@@ -13,7 +13,9 @@ RUN apt install -y gpg wget curl tcpdump jq git unzip net-tools sudo coreutils f
 # Utilities and tools for development (stow is gone: dotfiles are managed by mise now)
 RUN apt install -y zsh
 
-# Mason cannot install clangd on Linux aarch64
+# clangd publishes no linux-arm64 release, and llvm/llvm-project only offers it inside the
+# full 1.8G toolchain tarball, so arm64 builds take clangd from apt and tell mise to skip its
+# own clangd. On amd64 the mise shim shadows this one, which is why it is unconditional.
 RUN apt install -y clangd
 
 # For python to be built via mise pyenv
@@ -41,14 +43,15 @@ RUN curl https://mise.run | sh && ~/.local/bin/mise --version
 # Put mise + its shims on PATH (matching how the real machine uses shims, not `mise activate`).
 ENV PATH="/home/chance/.local/bin:/home/chance/.local/share/mise/shims:${PATH}"
 
-# Hack to make nvim mason use local clangd
-# https://github.com/mason-org/mason.nvim/issues/1578
-RUN \
-    mkdir -p ~/.local/share/nvim/mason/packages/clangd/mason-schemas && \
-    curl https://raw.githubusercontent.com/clangd/vscode-clangd/master/package.json \
-        | jq .contributes.configuration > ~/.local/share/nvim/mason/packages/clangd/mason-schemas/lsp.json && \
-    echo '{"schema_version":"1.1","primary_source":{"type":"local"},"name":"clangd","links":{"share":{"mason-schemas/lsp/clangd.json":"mason-schemas/lsp.json"}}}' \
-        > ~/.local/share/nvim/mason/packages/clangd/mason-receipt.json
+# Let mise skip its own clangd on arm64, where the apt clangd above is the only one available.
+# Without this, `mise install` fails: there is no matching release asset. conf.d is untouched
+# by `mise dotfiles apply`, which links config.toml and its siblings only, so this survives
+# bootstrap and keeps applying to mise inside the running container.
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+      mkdir -p ~/.config/mise/conf.d && \
+      printf '[settings]\ndisable_tools = ["github:clangd/clangd"]\n' \
+        > ~/.config/mise/conf.d/no-clangd.toml; \
+    fi
 
 # Trust github.com SSH host key
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -105,10 +108,7 @@ RUN --mount=type=ssh,required=true,uid=999,gid=999 \
   # Install nvim plugins
   nvim --headless "+Lazy! sync" +qa
 
-# Install LSP servers
-RUN --mount=type=ssh,required=true,uid=999,gid=999 \
-  # Mason LSP installation
-  nvim --headless -c "MasonInstallAll" -c qall
+# No separate LSP install step: the language servers are mise [tools], installed above.
 
 ENV DEVCONTAINER=devctr
 ENTRYPOINT ["/bin/zsh", "--login", "--interactive"]
