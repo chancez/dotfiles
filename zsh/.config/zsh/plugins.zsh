@@ -56,7 +56,6 @@ if ! zgenom saved; then
   # custom extensions
   #
   # Sourced at every startup, so only what has to be in place before the first prompt belongs here.
-  zgenom eval-tool direnv direnv hook zsh
   zgenom eval-tool jump jump shell
   zgenom eval-tool switcher 'switcher init zsh; echo compdef switch=switcher'
   # --no-completions leaves out the half generated as a completion below, so this is cm_report and

@@ -34,7 +34,6 @@
 "brew:ctags" = "latest"
 "brew:curl" = "latest"
 "brew:diffutils" = "latest"
-"brew:direnv" = "latest"
 "brew:docker" = "latest"
 "brew:docker-buildx" = "latest"
 "brew:docker-compose" = "latest"

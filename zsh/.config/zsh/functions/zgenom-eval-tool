@@ -7,7 +7,7 @@
 # Like `zgenom eval --name <name>`, with the generator passed as arguments rather than on stdin so
 # that it can be kept and rerun. Quote it if it contains shell syntax:
 #
-#   zgenom eval-tool direnv direnv hook zsh
+#   zgenom eval-tool jump jump shell
 #   zgenom eval-tool fzf 'fzf --zsh; echo compdef _gnu_generic fzf'
 #
 # --completion writes the output as _<name> into a directory that is added to $fpath rather than
