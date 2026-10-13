@@ -1310,6 +1310,7 @@ specifiers = ["latest"]
 
 [[tools."npm:@github/copilot-language-server"]]
 version = "1.551.2"
+aube = { path = "locks/npm-github-copilot-language-server/1.551.2", digest = "sha256:b3785037d48d12ac9c4294cf9017a4f3d764b4c436d591d7a52c961782c5a0da" }
 backend = "npm:@github/copilot-language-server"
 specifiers = ["latest"]
 
@@ -1333,6 +1334,7 @@ specifiers = ["latest"]
 
 [[tools."npm:bash-language-server"]]
 version = "5.8.1"
+aube = { path = "locks/npm-bash-language-server/5.8.1", digest = "sha256:8884e71e19a3bb70df45b356a06194f6c0cf3e99f83f1332f8ca26a62eacb6ef" }
 backend = "npm:bash-language-server"
 specifiers = ["latest"]
 
@@ -1344,11 +1346,13 @@ specifiers = ["latest"]
 
 [[tools."npm:dockerfile-language-server-nodejs"]]
 version = "0.15.0"
+aube = { path = "locks/npm-dockerfile-language-server-nodejs/0.15.0", digest = "sha256:9a867659d6a30001d7bd5cf2c045ff2013edf031c4c92345f6b928ad499d6f97" }
 backend = "npm:dockerfile-language-server-nodejs"
 specifiers = ["latest"]
 
 [[tools."npm:graphql-language-service-cli"]]
 version = "3.5.0"
+aube = { path = "locks/npm-graphql-language-service-cli/3.5.0", digest = "sha256:303feadb0efe83d2b9f988655f6c75805bd271014392db3b9b46913e8db2364a" }
 backend = "npm:graphql-language-service-cli"
 specifiers = ["latest"]
 
@@ -1372,26 +1376,31 @@ specifiers = ["latest"]
 
 [[tools."npm:pyright"]]
 version = "1.1.414"
+aube = { path = "locks/npm-pyright/1.1.414", digest = "sha256:69cd62e5613c907964fbb78b05a85eb9d12a503285d716f6529144cc884cf656" }
 backend = "npm:pyright"
 specifiers = ["latest"]
 
 [[tools."npm:sql-language-server"]]
 version = "1.7.1"
+aube = { path = "locks/npm-sql-language-server/1.7.1", digest = "sha256:44fad3fb223c5dd563a21fe477e161f96a260ddaee429a083b0a3fdf6741f8e1" }
 backend = "npm:sql-language-server"
 specifiers = ["latest"]
 
 [[tools."npm:typescript-language-server"]]
 version = "6.0.1"
+aube = { path = "locks/npm-typescript-language-server/6.0.1", digest = "sha256:cd5db34273d07076d582ba959987cbd36e89c20d479a4671433aca4f6bdc3c7e" }
 backend = "npm:typescript-language-server"
 specifiers = ["latest"]
 
 [[tools."npm:vscode-langservers-extracted"]]
 version = "4.10.0"
+aube = { path = "locks/npm-vscode-langservers-extracted/4.10.0", digest = "sha256:8c37c53ce46961037a4464ce307c15cfe5bd44479ea3b082d3412c0a27b760da" }
 backend = "npm:vscode-langservers-extracted"
 specifiers = ["latest"]
 
 [[tools."npm:yaml-language-server"]]
 version = "1.24.0"
+aube = { path = "locks/npm-yaml-language-server/1.24.0", digest = "sha256:31712c1e1e84bba5931a8620976b61fe375f362eee123b94e3393936afc8f7c3" }
 backend = "npm:yaml-language-server"
 specifiers = ["latest"]
 
