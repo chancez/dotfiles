@@ -73,7 +73,6 @@ fi
 path=(
   $HOME/.local/bin
   $HOME/.krew/bin
-  $HOME/.cargo/bin
   $mise_path
   "/Applications/Android Studio.app/Contents/MacOS"
   $GOBIN

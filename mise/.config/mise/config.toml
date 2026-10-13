@@ -19,7 +19,10 @@ python = [
   { version='3', postinstall = "python -m pip install --upgrade pynvim esbonio" },
   '2.7'
 ]
-rust = "stable"
+# mise's rust is a self-contained rustup install, and a bare toolchain carries neither the
+# rust-analyzer binary nor the std sources it reads, so `rust-analyzer` resolves to a proxy that
+# errors. Adding the components here rather than by hand means a reinstall restores them.
+rust = { version = "stable", postinstall = "$MISE_TOOL_INSTALL_PATH/bin/rustup component add rust-analyzer rust-src" }
 
 usage = "latest"
 # Prompt
@@ -52,7 +55,8 @@ stylua = "latest"
 #
 # esbonio is missing on purpose: its lspconfig cmd is `python3 -m esbonio.server`, which the
 # python postinstall above already installs.
-rust-analyzer = "latest"
+# rust_analyzer is absent on purpose: the rust toolchain above ships rust-analyzer, and it owns
+# the shim of that name, so a standalone entry here is installed and then never resolved.
 terraform-ls = "latest"
 lua-language-server = "latest"
 helm-ls = "latest"
