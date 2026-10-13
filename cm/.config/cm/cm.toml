@@ -1,10 +1,8 @@
 # cm configuration. See https://github.com/chancez/cm/blob/main/docs/config.md
 
-detach_key = "ctrl-\\"
-
 scrollback_lines = 10000
 
-# log_level = "debug"
+log_level = "debug"
 
 [persist]
 # Let session content survive a reboot. Off by default.
@@ -12,3 +10,7 @@ enabled = true
 sessions = ["*"]
 on_restore = "shell"
 safe_commands = ["nvim", "less", "htop"]
+
+[keys.session]
+detach = ["ctrl-\\"]
+prefix = ["ctrl-]"]
