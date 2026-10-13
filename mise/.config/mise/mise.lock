@@ -219,6 +219,53 @@ url = "https://awscli.amazonaws.com/AWSCLIV2-2.37.9.pkg"
 [tools.aws-cli."platforms.macos-x64"]
 url = "https://awscli.amazonaws.com/AWSCLIV2-2.37.9.pkg"
 
+[[tools.buf]]
+version = "1.72.0"
+backend = "aqua:bufbuild/buf"
+specifiers = ["latest"]
+
+[tools.buf."platforms.linux-arm64"]
+checksum = "sha256:7641bd7e06a37a54cbb8c789f53465899def96196ab5c08057432f781a15d517"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772526"
+provenance = "minisign"
+
+[tools.buf."platforms.linux-arm64-musl"]
+checksum = "sha256:7641bd7e06a37a54cbb8c789f53465899def96196ab5c08057432f781a15d517"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772526"
+provenance = "minisign"
+
+[tools.buf."platforms.linux-x64"]
+checksum = "sha256:a9c6186cf6fcf062b247345e1b7b12c26f580c1b2a4bbf4d3fe080abf85ceee8"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772583"
+provenance = "minisign"
+
+[tools.buf."platforms.linux-x64-musl"]
+checksum = "sha256:a9c6186cf6fcf062b247345e1b7b12c26f580c1b2a4bbf4d3fe080abf85ceee8"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772583"
+provenance = "minisign"
+
+[tools.buf."platforms.macos-arm64"]
+checksum = "sha256:be040ae0ca381103dfda68a36738695c4db3e48de8e91412acdc3d991f39b91e"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772487"
+provenance = "minisign"
+
+[tools.buf."platforms.macos-x64"]
+checksum = "sha256:8b87e66786b46b20e7f7e328c9e15f64f636041acfdbf93374873d9014a62d30"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Darwin-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772489"
+provenance = "minisign"
+
+[tools.buf."platforms.windows-x64"]
+checksum = "sha256:0332d8d1bf062c95a0418081b7e574551032ee72064af05e304e3a1454f8cf11"
+url = "https://github.com/bufbuild/buf/releases/download/v1.72.0/buf-Windows-x86_64.zip"
+url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/480772631"
+provenance = "minisign"
+
 [[tools.fd]]
 version = "10.5.0"
 backend = "aqua:sharkdp/fd"
@@ -345,6 +392,80 @@ checksum = "sha256:bc6c814367b193cd8e713611d61e36013c0ef843b8f516458fe3eda039192
 url = "https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_windows_amd64.zip"
 url_api = "https://api.github.com/repos/cli/cli/releases/assets/565857681"
 provenance = "github-attestations"
+
+[[tools."github:clangd/clangd"]]
+version = "23.1.0"
+backend = "github:clangd/clangd"
+specifiers = ["latest"]
+
+[tools."github:clangd/clangd"."platforms.linux-arm64"]
+checksum = "sha256:e53b1a96196095faedb7642cf64964f7fb9ad4a0c1f00dd2c172a3d9dcbafdfd"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-linux-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/541002329"
+
+[tools."github:clangd/clangd"."platforms.linux-arm64-musl"]
+checksum = "sha256:e53b1a96196095faedb7642cf64964f7fb9ad4a0c1f00dd2c172a3d9dcbafdfd"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-linux-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/541002329"
+
+[tools."github:clangd/clangd"."platforms.linux-x64"]
+checksum = "sha256:e53b1a96196095faedb7642cf64964f7fb9ad4a0c1f00dd2c172a3d9dcbafdfd"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-linux-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/541002329"
+
+[tools."github:clangd/clangd"."platforms.linux-x64-musl"]
+checksum = "sha256:e53b1a96196095faedb7642cf64964f7fb9ad4a0c1f00dd2c172a3d9dcbafdfd"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-linux-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/541002329"
+
+[tools."github:clangd/clangd"."platforms.macos-arm64"]
+checksum = "sha256:1082e6638223b785ca2daf0939f13afcd0bb95c84ee9a4bbaff4745365159253"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-mac-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/540976785"
+
+[tools."github:clangd/clangd"."platforms.macos-x64"]
+checksum = "sha256:1082e6638223b785ca2daf0939f13afcd0bb95c84ee9a4bbaff4745365159253"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-mac-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/540976785"
+
+[tools."github:clangd/clangd"."platforms.windows-x64"]
+checksum = "sha256:23412a240756a162e7b98a282f36aa2a23a88db5ce16a0cbc4fef7253768c810"
+url = "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-windows-23.1.0.zip"
+url_api = "https://api.github.com/repos/clangd/clangd/releases/assets/540970607"
+
+[[tools."github:fwcd/kotlin-language-server"]]
+version = "1.3.13"
+backend = "github:fwcd/kotlin-language-server"
+specifiers = ["latest"]
+
+[tools."github:fwcd/kotlin-language-server"."platforms.linux-arm64"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.linux-arm64-musl"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.linux-x64"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.linux-x64-musl"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.macos-arm64"]
+checksum = "blake3:934ecd385cadec73b4e4ac65eaac95c5b8844cae9892b4610438e5b2ab807ad8"
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.macos-x64"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
+
+[tools."github:fwcd/kotlin-language-server"."platforms.windows-x64"]
+url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
+url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
 
 [[tools."github:isovalent/cilium-cli-releases"]]
 version = "0.20.0-cee.2"
@@ -577,6 +698,11 @@ version = "0.3.29"
 backend = "go:github.com/google/gops"
 specifiers = ["latest"]
 
+[[tools."go:github.com/grafana/jsonnet-language-server"]]
+version = "0.17.0"
+backend = "go:github.com/grafana/jsonnet-language-server"
+specifiers = ["latest"]
+
 [[tools."go:github.com/grpc-ecosystem/grpc-health-probe"]]
 version = "0.4.57"
 backend = "go:github.com/grpc-ecosystem/grpc-health-probe"
@@ -610,6 +736,11 @@ specifiers = ["v0.0.0-20260825160852-19be9d8e6c70"]
 [[tools."go:golang.org/x/tools/cmd/goimports"]]
 version = "0.50.0"
 backend = "go:golang.org/x/tools/cmd/goimports"
+specifiers = ["latest"]
+
+[[tools."go:golang.org/x/tools/gopls"]]
+version = "0.23.0"
+backend = "go:golang.org/x/tools/gopls"
 specifiers = ["latest"]
 
 [[tools."go:gotest.tools/gotestsum"]]
@@ -701,6 +832,73 @@ url = "https://get.helm.sh/helm-v3.22.0-darwin-amd64.tar.gz"
 [tools.helm."platforms.windows-x64"]
 checksum = "sha256:43d898ffe2929046c805160b54ee704abc8b5736331fd3d54898cddabb86595f"
 url = "https://get.helm.sh/helm-v3.22.0-windows-amd64.tar.gz"
+
+[[tools.helm-ls]]
+version = "0.5.4"
+backend = "aqua:mrjosh/helm-ls"
+specifiers = ["latest"]
+
+[tools.helm-ls."platforms.linux-arm64"]
+checksum = "sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_linux_arm64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167536"
+
+[tools.helm-ls."platforms.linux-arm64-musl"]
+checksum = "sha256:565d4a298d15e69a1bc7275a7fcf287d364668e53fdf09110d76aac5c820f78c"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_linux_arm64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167536"
+
+[tools.helm-ls."platforms.linux-x64"]
+checksum = "sha256:5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_linux_amd64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167516"
+
+[tools.helm-ls."platforms.linux-x64-musl"]
+checksum = "sha256:5d857ba25c461d3218bb98d9e98cb61bc948bfa92b124667d7e6ed695fe2da5f"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_linux_amd64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167516"
+
+[tools.helm-ls."platforms.macos-arm64"]
+checksum = "sha256:8d917fedac8aa7c0199bccb5fc54df68303d215d2c76a47b59094ea272e250c1"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_darwin_arm64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167501"
+
+[tools.helm-ls."platforms.macos-x64"]
+checksum = "sha256:d2e2a201ddb698c333b2408549a43bfcfbe3b03662e259bb39c8f1b0a0b1f748"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_darwin_amd64"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167486"
+
+[tools.helm-ls."platforms.windows-x64"]
+checksum = "sha256:38ed1eea9c018365d4ba1c335c2955b067a4ae68fcfe18ed52b5dc1df51c860f"
+url = "https://github.com/mrjosh/helm-ls/releases/download/v0.5.4/helm_ls_windows_amd64.exe"
+url_api = "https://api.github.com/repos/mrjosh/helm-ls/releases/assets/321167538"
+
+[[tools."http:jdtls"]]
+version = "1.61.0"
+backend = "http:jdtls"
+specifiers = ["1.61.0"]
+
+[tools."http:jdtls"."platforms.linux-arm64"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.linux-arm64-musl"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.linux-x64"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.linux-x64-musl"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.macos-arm64"]
+checksum = "blake3:1dafd751681d9cfc07a9288129d04bddbd1b5346859e8a9f135426cbeaffbe13"
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.macos-x64"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
+
+[tools."http:jdtls"."platforms.windows-x64"]
+url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz"
 
 [[tools.java]]
 version = "26.0.2.1"
@@ -849,6 +1047,46 @@ url = "https://dl.k8s.io/v1.37.1/bin/darwin/amd64/kubectl"
 [tools.kubectl."platforms.windows-x64"]
 checksum = "sha256:14b93c4916a6f37a06fbc1f46b0a1d2404c4f9741be09f00d6caf8af3b05f1d3"
 url = "https://dl.k8s.io/v1.37.1/bin/windows/amd64/kubectl.exe"
+
+[[tools.lua-language-server]]
+version = "3.17.1"
+backend = "aqua:LuaLS/lua-language-server"
+specifiers = ["latest"]
+
+[tools.lua-language-server."platforms.linux-arm64"]
+checksum = "sha256:680285a36d8cf7b17ca4be7a2f9c93643ebd8daec0b7425a6b7a02d003f3da81"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343154986"
+
+[tools.lua-language-server."platforms.linux-arm64-musl"]
+checksum = "sha256:680285a36d8cf7b17ca4be7a2f9c93643ebd8daec0b7425a6b7a02d003f3da81"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343154986"
+
+[tools.lua-language-server."platforms.linux-x64"]
+checksum = "sha256:248b0858a0afc8233f2535e89b648398b2202cb96cf51ce187e3263923dd0223"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343155200"
+
+[tools.lua-language-server."platforms.linux-x64-musl"]
+checksum = "sha256:248b0858a0afc8233f2535e89b648398b2202cb96cf51ce187e3263923dd0223"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343155200"
+
+[tools.lua-language-server."platforms.macos-arm64"]
+checksum = "sha256:a69ffcef61d3eb4ca7b7bc92d69cb85892c8af15120bf2815768ed0afe5ed3bc"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343154961"
+
+[tools.lua-language-server."platforms.macos-x64"]
+checksum = "sha256:5e976b24868aa5810427eaa1224b77a1fb258b02cb66ffc2ba83bae0e2706641"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343154932"
+
+[tools.lua-language-server."platforms.windows-x64"]
+checksum = "sha256:795670a80d35b23e7ecf932ede742609f2267314f2df64054b020698fcc8a892"
+url = "https://github.com/LuaLS/lua-language-server/releases/download/3.17.1/lua-language-server-3.17.1-win32-x64.zip"
+url_api = "https://api.github.com/repos/LuaLS/lua-language-server/releases/assets/343155174"
 
 [[tools.node]]
 version = "16.20.2"
@@ -1070,6 +1308,11 @@ aube = { path = "locks/npm-github-copilot/1.0.88", digest = "sha256:48c11107f638
 backend = "npm:@github/copilot"
 specifiers = ["latest"]
 
+[[tools."npm:@github/copilot-language-server"]]
+version = "1.551.2"
+backend = "npm:@github/copilot-language-server"
+specifiers = ["latest"]
+
 [[tools."npm:@google/gemini-cli"]]
 version = "0.61.0"
 aube = { path = "locks/npm-google-gemini-cli/0.61.0", digest = "sha256:e9caf36f95dd4803097accab9e8e75b6983d581b5a92c3a3fa854deb430ccd09" }
@@ -1088,10 +1331,25 @@ aube = { path = "locks/npm-zed-industries-codex-acp/0.16.0", digest = "sha256:c7
 backend = "npm:@zed-industries/codex-acp"
 specifiers = ["latest"]
 
+[[tools."npm:bash-language-server"]]
+version = "5.8.1"
+backend = "npm:bash-language-server"
+specifiers = ["latest"]
+
 [[tools."npm:ccusage"]]
 version = "20.0.26"
 aube = { path = "locks/npm-ccusage/20.0.26", digest = "sha256:e1229ed145ebbaaaa3e6116f5a729c75f32a6fc901a681ad0febc7451f529025" }
 backend = "npm:ccusage"
+specifiers = ["latest"]
+
+[[tools."npm:dockerfile-language-server-nodejs"]]
+version = "0.15.0"
+backend = "npm:dockerfile-language-server-nodejs"
+specifiers = ["latest"]
+
+[[tools."npm:graphql-language-service-cli"]]
+version = "3.5.0"
+backend = "npm:graphql-language-service-cli"
 specifiers = ["latest"]
 
 [[tools."npm:jwt-cli"]]
@@ -1110,6 +1368,31 @@ specifiers = ["latest"]
 version = "1.18.33"
 aube = { path = "locks/npm-opencode-ai/1.18.33", digest = "sha256:74199f693756c1b4384cb46b9260a4a1f381d8a9a5fbd5316c85e8870ff47e26" }
 backend = "npm:opencode-ai"
+specifiers = ["latest"]
+
+[[tools."npm:pyright"]]
+version = "1.1.414"
+backend = "npm:pyright"
+specifiers = ["latest"]
+
+[[tools."npm:sql-language-server"]]
+version = "1.7.1"
+backend = "npm:sql-language-server"
+specifiers = ["latest"]
+
+[[tools."npm:typescript-language-server"]]
+version = "6.0.1"
+backend = "npm:typescript-language-server"
+specifiers = ["latest"]
+
+[[tools."npm:vscode-langservers-extracted"]]
+version = "4.10.0"
+backend = "npm:vscode-langservers-extracted"
+specifiers = ["latest"]
+
+[[tools."npm:yaml-language-server"]]
+version = "1.24.0"
+backend = "npm:yaml-language-server"
 specifiers = ["latest"]
 
 [[tools.oras]]
@@ -1256,6 +1539,86 @@ version = "stable"
 backend = "asdf:rust"
 specifiers = ["stable"]
 
+[[tools.rust-analyzer]]
+version = "2026-10-05"
+backend = "aqua:rust-lang/rust-analyzer"
+specifiers = ["latest"]
+
+[tools.rust-analyzer."platforms.linux-arm64"]
+checksum = "sha256:3974c863acbbd96ef2cc02a7aaa79123935b05f27ffe4fd393fc229522f75cb9"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-aarch64-unknown-linux-gnu.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796114"
+
+[tools.rust-analyzer."platforms.linux-arm64-musl"]
+checksum = "sha256:3974c863acbbd96ef2cc02a7aaa79123935b05f27ffe4fd393fc229522f75cb9"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-aarch64-unknown-linux-gnu.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796114"
+
+[tools.rust-analyzer."platforms.linux-x64"]
+checksum = "sha256:28070188df63b6f217768040781decc8db43bc9d29b126847acb365575b09bc9"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796683"
+
+[tools.rust-analyzer."platforms.linux-x64-musl"]
+checksum = "sha256:28070188df63b6f217768040781decc8db43bc9d29b126847acb365575b09bc9"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796683"
+
+[tools.rust-analyzer."platforms.macos-arm64"]
+checksum = "sha256:64d3f6b8aacd94a93a03298d7988dfa0c747f8a4fcc539a4e59d9c9f920ca62f"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-aarch64-apple-darwin.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796032"
+
+[tools.rust-analyzer."platforms.macos-x64"]
+checksum = "sha256:32400dfe2b1472fff9689e063dbb80b8c90e0d4f883af49de7abbba3f2e20705"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-x86_64-apple-darwin.gz"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796601"
+
+[tools.rust-analyzer."platforms.windows-x64"]
+checksum = "sha256:5a9d499aa26d835406cbccfc52f12bce8286733c5bfe62d79f0ed87cae2e64b9"
+url = "https://github.com/rust-lang/rust-analyzer/releases/download/2026-10-05/rust-analyzer-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/rust-lang/rust-analyzer/releases/assets/611796637"
+
+[[tools.shellcheck]]
+version = "0.11.0"
+backend = "aqua:koalaman/shellcheck"
+specifiers = ["latest"]
+
+[tools.shellcheck."platforms.linux-arm64"]
+checksum = "sha256:12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.aarch64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056934"
+
+[tools.shellcheck."platforms.linux-arm64-musl"]
+checksum = "sha256:12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.aarch64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056934"
+
+[tools.shellcheck."platforms.linux-x64"]
+checksum = "sha256:8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056942"
+
+[tools.shellcheck."platforms.linux-x64-musl"]
+checksum = "sha256:8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056942"
+
+[tools.shellcheck."platforms.macos-arm64"]
+checksum = "sha256:56affdd8de5527894dca6dc3d7e0a99a873b0f004d7aabc30ae407d3f48b0a79"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.aarch64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056932"
+
+[tools.shellcheck."platforms.macos-x64"]
+checksum = "sha256:3c89db4edcab7cf1c27bff178882e0f6f27f7afdf54e859fa041fca10febe4c6"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.x86_64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056930"
+
+[tools.shellcheck."platforms.windows-x64"]
+checksum = "sha256:8a4e35ab0b331c85d73567b12f2a444df187f483e5079ceffa6bda1faa2e740e"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.zip"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056944"
+
 [[tools.starship]]
 version = "1.26.0"
 backend = "aqua:starship/starship"
@@ -1368,6 +1731,39 @@ url = "https://releases.hashicorp.com/terraform/1.16.4/terraform_1.16.4_darwin_a
 [tools.terraform."platforms.windows-x64"]
 checksum = "sha256:5c736ed6b0f13e98bc5029fe159574cca33634c3477466c56442c28b513a7054"
 url = "https://releases.hashicorp.com/terraform/1.16.4/terraform_1.16.4_windows_amd64.zip"
+
+[[tools.terraform-ls]]
+version = "0.39.0"
+backend = "aqua:hashicorp/terraform-ls"
+specifiers = ["latest"]
+
+[tools.terraform-ls."platforms.linux-arm64"]
+checksum = "sha256:62f32ea22cb78e5e5667ed638ad6e0fbde30ab59228d073c3c9bb249f89c7f5a"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_linux_arm64.zip"
+
+[tools.terraform-ls."platforms.linux-arm64-musl"]
+checksum = "sha256:62f32ea22cb78e5e5667ed638ad6e0fbde30ab59228d073c3c9bb249f89c7f5a"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_linux_arm64.zip"
+
+[tools.terraform-ls."platforms.linux-x64"]
+checksum = "sha256:7750edc736845fd8c04ff0fc6332423c12d8275b358668c8c17e8aedc43ef971"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_linux_amd64.zip"
+
+[tools.terraform-ls."platforms.linux-x64-musl"]
+checksum = "sha256:7750edc736845fd8c04ff0fc6332423c12d8275b358668c8c17e8aedc43ef971"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_linux_amd64.zip"
+
+[tools.terraform-ls."platforms.macos-arm64"]
+checksum = "sha256:6f80fe0b34af184175508f3d9135d8159f5dce4000d9b39540553eb1c267c54b"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_darwin_arm64.zip"
+
+[tools.terraform-ls."platforms.macos-x64"]
+checksum = "sha256:cc5bbc5b5a39d12d455c0d2b1e4b3a2c1f237d02d2cf819cf5252358f2d674de"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_darwin_amd64.zip"
+
+[tools.terraform-ls."platforms.windows-x64"]
+checksum = "sha256:6edc885fe113f6a7fd049622ed0bd255141e68c84acc2fce1bb6a54c1f47bfe1"
+url = "https://releases.hashicorp.com/terraform-ls/0.39.0/terraform-ls_0.39.0_windows_amd64.zip"
 
 [[tools.usage]]
 version = "6.12.0"
