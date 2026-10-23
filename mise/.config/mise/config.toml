@@ -120,12 +120,12 @@ rm -f "$MISE_TOOL_INSTALL_PATH"/node_modules/.mise/sql-language-server@*/node_mo
 "http:jdtls" = { version = "1.61.0", url = "https://download.eclipse.org/jdtls/milestones/1.61.0/jdt-language-server-1.61.0-202609031315.tar.gz", bin_path = "bin" }
 
 # Music manager
-"pipx:beets" = { version = "latest", extras = "scrub,chroma" }
+"pypi:beets" = { version = "latest", python = "3.14" , extras = "scrub,chroma" }
 
 # AI Tools
 "npm:@github/copilot" = "latest"
 "npm:mcp-hub" = "latest"
-"pipx:oraios/serena" = "v0.1.4"                  # MCP using LSPs
+"pypi:oraios/serena" = "v0.1.4"                  # MCP using LSPs
 "npm:opencode-ai" = "latest"
 "aqua:openai/codex" = "latest"
 "npm:@zed-industries/codex-acp" = "latest"
@@ -159,6 +159,9 @@ zmx = "latest"
 yazi = "latest"
 oras = "latest"
 "npm:ccusage" = "latest"
+herdr = "latest"
+"github:YoanWai/agent-manager" = "latest"
+pnpm = "latest"
 
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into

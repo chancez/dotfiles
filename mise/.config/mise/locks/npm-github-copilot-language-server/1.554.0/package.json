@@ -1,0 +1,7 @@
+{
+  "name": "mise-npm-install",
+  "private": true,
+  "dependencies": {
+    "@github/copilot-language-server": "1.554.0"
+  }
+}
