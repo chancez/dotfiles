@@ -132,6 +132,7 @@
     }
   },
   "tui": "fullscreen",
+  "theme": "dark",
   "editorMode": "vim",
   "preferredNotifChannel": "notifications_disabled",
   "deny": [
