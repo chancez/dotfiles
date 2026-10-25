@@ -22,7 +22,7 @@ python = [
 # mise's rust is a self-contained rustup install, and a bare toolchain carries neither the
 # rust-analyzer binary nor the std sources it reads, so `rust-analyzer` resolves to a proxy that
 # errors. Adding the components here rather than by hand means a reinstall restores them.
-rust = { version = "stable", postinstall = "$MISE_TOOL_INSTALL_PATH/bin/rustup component add rust-analyzer rust-src" }
+rust = { version = "stable", components = ["rust-analyzer", "rust-src"] }
 
 usage = "latest"
 # Prompt
