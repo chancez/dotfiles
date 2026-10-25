@@ -1,7 +1,0 @@
-{
-  "name": "mise-npm-install",
-  "private": true,
-  "dependencies": {
-    "@mermaid-js/mermaid-cli": "11.17.0"
-  }
-}

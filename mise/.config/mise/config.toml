@@ -5,6 +5,7 @@ lockfile = true
 minimum_release_age = "7d"
 minimum_release_age_excludes = ["github:chancez/cm"]
 legacy_version_file = false
+
 # prefer_offline = true
 
 [settings.github]
@@ -13,7 +14,7 @@ oauth_export_env = ""
 
 [tools]
 go = ["latest", "1.25", "1.24"]
-java = "26"
+java = "lts"
 node = ['lts', '20', '19', '18', '17', '16']
 python = [
   { version='3', postinstall = "python -m pip install --upgrade pynvim esbonio" },

@@ -1,7 +1,0 @@
-{
-  "name": "mise-npm-install",
-  "private": true,
-  "dependencies": {
-    "@google/gemini-cli": "0.59.0"
-  }
-}
