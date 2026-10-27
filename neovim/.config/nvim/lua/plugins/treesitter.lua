@@ -292,8 +292,8 @@ return {
           f = move.goto_next_start,
           modes = { "n", "x", "o" },
           mappings = {
-            [']f'] = '@function.outer',
-            [']c'] = '@class.outer',
+            -- [']f'] = '@function.outer',
+            -- [']c'] = '@class.outer',
             [']b'] = '@block.outer',
             [']l'] = '@loop.outer',
           },
@@ -302,8 +302,8 @@ return {
           f = move.goto_previous_start,
           modes = { "n", "x", "o" },
           mappings = {
-            ['[f'] = '@function.outer',
-            ['[c'] = '@class.outer',
+            -- ['[f'] = '@function.outer',
+            -- ['[c'] = '@class.outer',
             ['[b'] = '@block.outer',
             ['[l'] = '@loop.outer',
           },
