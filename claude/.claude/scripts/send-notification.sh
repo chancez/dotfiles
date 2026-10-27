@@ -31,6 +31,32 @@ if [ "$(launchctl managername 2>/dev/null)" != "Aqua" ]; then
   exit 0
 fi
 
+# Apps that post their own notifications for Claude sessions they host. Matched as a
+# .app bundle anywhere in an ancestor's executable path. Orca needs both: its terminals
+# hang off "Orca Terminal Host.app", a launchd-parented daemon, not Orca.app itself.
+SELF_NOTIFYING_APPS=("Orca.app" "Orca Terminal Host.app")
+
+# One ps snapshot walked in awk, rather than a ps per ancestor.
+under_self_notifying_app() {
+  ps -axo pid=,ppid=,comm= | awk -v pid="$$" -v apps="$(IFS=:; printf "%s" "${SELF_NOTIFYING_APPS[*]}")" '
+    BEGIN { n = split(apps, app, ":") }
+    {
+      p = $1; pp = $2
+      sub(/^[ \t]*[0-9]+[ \t]+[0-9]+[ \t]+/, "")
+      parent[p] = pp; comm[p] = $0
+    }
+    END {
+      for (; pid > 1 && pid in parent; pid = parent[pid])
+        for (i = 1; i <= n; i++)
+          if (app[i] != "" && index(comm[pid], "/" app[i] "/")) exit 0
+      exit 1
+    }'
+}
+
+if under_self_notifying_app; then
+  exit 0
+fi
+
 # Where the session is working, as a human would name it. A repo name alone does not
 # distinguish the several sessions usually open on the same repo, so worktrees are
 # named after the worktree and everything else after the branch. Both layouts in use
