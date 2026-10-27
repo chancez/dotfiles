@@ -32,7 +32,12 @@ return {
           end
           return false
         end,
-      }
+      },
+      blocklist = {
+        my_rule = {
+          buf_name = 'agent%-session://',
+        },
+      },
     }
   },
 

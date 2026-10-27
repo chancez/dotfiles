@@ -15,7 +15,18 @@ return {
             path = 1,
           }
         },
-        lualine_x = { 'filetype', 'lsp_status' },
+        lualine_x = {
+          {
+            function()
+              return require("agent-session").status()
+            end,
+            cond = function()
+              return require("agent-session.session").get_current() ~= nil
+            end,
+          },
+          'filetype',
+          'lsp_status',
+        },
         lualine_y = { 'progress' },
         lualine_z = { 'location' }
       },

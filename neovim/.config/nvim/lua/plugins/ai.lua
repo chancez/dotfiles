@@ -61,6 +61,7 @@ return {
   },
   {
     "carlos-algms/agentic.nvim",
+    enabled = false,
     opts = {
       -- provider = "codex-acp",
       provider = "claude-agent-acp",
@@ -240,5 +241,66 @@ return {
         desc = "Search and restore a Claude session by content"
       },
     },
+  },
+  {
+    "YochLin/agent-session.nvim",
+    event = "VeryLazy",
+    keys = {
+      { "<leader>an", "<cmd>AgentSessionToggle<cr>",      mode = { "n", "t" },                     desc = "Toggle Agent Session Window" },
+      { "<leader>ad", "<cmd>AgentSessionDelete<cr>",      mode = { "n", "t" },                     desc = "Stop and remove the current session" },
+      { "<leader>az", "<cmd>AgentSessionZoom<cr>",        mode = { "n", "t" },                     desc = "Toggle Center Full / Side View" },
+      { "<leader>ae", "<cmd>AgentSessionSidebar<cr>",     mode = { "n", "t" },                     desc = "Toggle Agent Explorer (Sidebar)" },
+      { "<leader>aa", "<cmd>AgentSessionSelectAgent<cr>", desc = "Select & Launch Agent" },
+      { "<leader>al", "<cmd>AgentSessionList<cr>",        desc = "List Active Sessions" },
+      { "]a",         "<cmd>AgentSessionNext<cr>",        mode = { "n", "t" },                     desc = "Next Agent Session" },
+      { "[a",         "<cmd>AgentSessionPrev<cr>",        mode = { "n", "t" },                     desc = "Previous Agent Session" },
+      { "<leader>ap", "<cmd>AgentSessionPrompt<cr>",      desc = "Prompt / Command Target Session" },
+      { "<leader>aP", "<cmd>AgentSessionPipe<cr>",        mode = { "n", "v" },                     desc = "Pipe Output to Target Session" },
+      { "<leader>ar", "<cmd>AgentSessionRename<cr>",      desc = "Rename Session" },
+      { "<leader>as", "<cmd>AgentSessionSendLine<cr>",    mode = { "n", "v" },                     desc = "Send Line/Selection Ref to Session" },
+      { "<leader>ab", "<cmd>AgentSessionSendFile<cr>",    desc = "Send File Ref to Session" },
+    },
+    opts = {
+      default_agent = "claude",
+      agents = {
+        claude = {
+          env = {
+            CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = "1",
+          },
+        },
+      }
+    },
+
+    config = function(_, opts)
+      require("agent-session").setup(opts)
+
+      vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
+        pattern = "agent-session://*",
+        callback = function(args)
+          -- Set the filetype to agent-session for other plugins to recognize it
+          vim.bo[args.buf].filetype = "agent-session"
+
+          local ok, session = pcall(require, "agent-session.session")
+          if not ok then
+            return
+          end
+          local sess = session.get_by_bufnr(args.buf)
+          if not sess then
+            return
+          end
+
+          vim.opt_local.list = false
+
+          if sess.status == "stopped" then
+            return
+          end
+          vim.schedule(function()
+            if vim.api.nvim_get_current_buf() == args.buf and vim.api.nvim_get_mode().mode == "nt" then
+              vim.cmd("startinsert")
+            end
+          end)
+        end,
+      })
+    end
   }
 }

@@ -41,6 +41,12 @@ map('t', '<A-k>', '<C-\\><C-n><C-w>k')
 map('t', '<A-l>', '<C-\\><C-n><C-w>l')
 
 local function clearScrollback()
+  -- Agent TUIs keep their own chat history, so only send <C-l> for a redraw
+  if vim.api.nvim_buf_get_name(0):find('^agent%-session://') then
+    vim.api.nvim_chan_send(vim.bo.channel, '\x0c')
+    return
+  end
+
   -- Enter insert mode if needed
   local mode = vim.api.nvim_get_mode().mode
   if mode == 'nt' then
