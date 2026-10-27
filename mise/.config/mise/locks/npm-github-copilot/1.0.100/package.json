@@ -2,6 +2,6 @@
   "name": "mise-npm-install",
   "private": true,
   "dependencies": {
-    "ccusage": "20.0.34"
+    "@github/copilot": "1.0.100"
   }
 }

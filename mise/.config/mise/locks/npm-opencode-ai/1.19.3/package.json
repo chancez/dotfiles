@@ -2,6 +2,6 @@
   "name": "mise-npm-install",
   "private": true,
   "dependencies": {
-    "opencode-ai": "1.19.0"
+    "opencode-ai": "1.19.3"
   }
 }
