@@ -11,6 +11,12 @@ return {
         lualine_b = { 'diagnostics' },
         lualine_c = {
           {
+            function()
+              return require('config.util').compact_path(vim.fn.getcwd())
+            end,
+            icon = '📁',
+          },
+          {
             'filename',
             path = 1,
           }
