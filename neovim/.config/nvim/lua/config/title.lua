@@ -1,20 +1,8 @@
 -- Terminal title matching the zsh one: shortened cwd plus git branch.
 -- Keeps the kitty tab title stable when switching between the shell and nvim.
+local util = require('config.util')
 
 local M = {}
-
--- ~/projects/foo/bar/baz -> ~/p/f/b/baz
-local function shorten(path)
-  local parts = vim.split(path, '/', { plain = true })
-  for i = 1, #parts - 1 do
-    local seg = parts[i]
-    if seg ~= '' and seg ~= '~' then
-      -- Keep the dot on hidden dirs, otherwise they all collapse to '.'
-      parts[i] = seg:sub(1, 1) == '.' and seg:sub(1, 2) or seg:sub(1, 1)
-    end
-  end
-  return table.concat(parts, '/')
-end
 
 local branch_cache = {}
 
@@ -46,7 +34,7 @@ local host_prefix = (function()
 end)()
 
 local function set_titlestring(cwd, branch)
-  local title = host_prefix .. 'nvim ' .. shorten(vim.fn.fnamemodify(cwd, ':~'))
+  local title = host_prefix .. 'nvim ' .. util.compact_path(cwd)
   if branch and branch ~= '' then
     title = title .. ' (' .. branch .. ')'
   end

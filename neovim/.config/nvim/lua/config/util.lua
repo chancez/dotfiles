@@ -1,5 +1,18 @@
 local M = {}
 
+-- $HOME/projects/foo/bar/baz -> ~/p/f/b/baz
+function M.compact_path(path)
+  local parts = vim.split(vim.fn.fnamemodify(path, ':~'), '/', { plain = true })
+  for i = 1, #parts - 1 do
+    local seg = parts[i]
+    if seg ~= '' and seg ~= '~' then
+      -- Keep the dot on hidden dirs, otherwise they all collapse to '.'
+      parts[i] = seg:sub(1, 1) == '.' and seg:sub(1, 2) or seg:sub(1, 1)
+    end
+  end
+  return table.concat(parts, '/')
+end
+
 function M.ReplaceBufferLines(content)
   vim.api.nvim_buf_set_lines(0, 0, -1, false, content)
 end
