@@ -291,6 +291,52 @@ url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Windows-x86
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/641111438"
 provenance = "minisign"
 
+[[tools.dyff]]
+version = "1.12.0"
+backend = "aqua:homeport/dyff"
+specifiers = ["latest"]
+
+[tools.dyff."platforms.linux-arm64"]
+checksum = "sha256:c9710f57940306abc1e34e2bf1a1ba94e6a92c543cde4e5dfaea169ded06e832"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097912"
+
+[tools.dyff."platforms.linux-arm64-musl"]
+checksum = "sha256:c9710f57940306abc1e34e2bf1a1ba94e6a92c543cde4e5dfaea169ded06e832"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097912"
+
+[tools.dyff."platforms.linux-x64"]
+checksum = "sha256:50b43017a7474c2216694d0b5387439488a1d3c2b5eefe1674cd0e5c18bc0316"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097913"
+
+[tools.dyff."platforms.linux-x64-musl"]
+checksum = "sha256:50b43017a7474c2216694d0b5387439488a1d3c2b5eefe1674cd0e5c18bc0316"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097913"
+
+[tools.dyff."platforms.macos-arm64"]
+checksum = "sha256:3c1bbefb44ec92675c9fc1349a102a41d2568f294fd1fd4e468dc0804944040f"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097911"
+
+[tools.dyff."platforms.macos-x64"]
+checksum = "sha256:f791c83f055cc651c8a2f70894b51461594bc6f41f2876168cc72d4bb81abc91"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097926"
+
+[tools.dyff."platforms.windows-x64"]
+checksum = "sha256:63d237debecd0188287df4de01ded6dbede28ee15a616d5eeaf061c0cdd9a394"
+checksum_source = "mise-versions"
+url = "https://github.com/homeport/dyff/releases/download/v1.12.0/dyff_1.12.0_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/homeport/dyff/releases/assets/406097914"
+
 [[tools.fd]]
 version = "10.5.0"
 backend = "aqua:sharkdp/fd"
