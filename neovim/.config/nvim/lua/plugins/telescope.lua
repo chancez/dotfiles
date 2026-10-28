@@ -1,3 +1,164 @@
+-- `:Telescope tabs` extension. Telescope discovers extensions via
+-- require('telescope._extensions.<name>'), so config preloads this as that module.
+local function tabs_extension()
+  local actions = require("telescope.actions")
+  local action_state = require("telescope.actions.state")
+  local conf = require("telescope.config").values
+  local finders = require("telescope.finders")
+  local pickers = require("telescope.pickers")
+  local previewers = require("telescope.previewers")
+
+  local function buf_name(bufnr)
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    return name == "" and "[No Name]" or vim.fn.fnamemodify(name, ":~:.")
+  end
+
+  local function make_finder()
+    local current = vim.api.nvim_get_current_tabpage()
+    local results = {}
+    for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+      local nr = vim.api.nvim_tabpage_get_number(tab)
+      local active = vim.api.nvim_tabpage_get_win(tab)
+      local wins = {}
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+        -- Skip floats, e.g. this picker's own windows
+        if vim.api.nvim_win_get_config(win).relative == "" then
+          local bufnr = vim.api.nvim_win_get_buf(win)
+          table.insert(wins, {
+            active = win == active,
+            name = buf_name(bufnr),
+            line = vim.api.nvim_win_get_cursor(win)[1],
+            modified = vim.bo[bufnr].modified,
+          })
+        end
+      end
+      table.insert(results, {
+        tab = tab,
+        nr = nr,
+        bufnr = vim.api.nvim_win_get_buf(active),
+        wins = wins,
+        cwd = vim.fn.haslocaldir(-1, nr) == 1 and vim.fn.fnamemodify(vim.fn.getcwd(-1, nr), ":~") or nil,
+        current = tab == current,
+      })
+    end
+
+    return finders.new_table({
+      results = results,
+      entry_maker = function(t)
+        -- Active window's buffer first, then the other windows' buffers
+        local names, seen = { buf_name(t.bufnr) }, { [buf_name(t.bufnr)] = true }
+        local modified = false
+        for _, w in ipairs(t.wins) do
+          modified = modified or w.modified
+          if not seen[w.name] then
+            seen[w.name] = true
+            table.insert(names, w.name)
+          end
+        end
+        local names_str = table.concat(names, ", ")
+        return {
+          value = t,
+          display = string.format("%d %s %s%s%s", t.nr, t.current and "%" or " ", names_str,
+            modified and " [+]" or "", t.cwd and ("  (" .. t.cwd .. ")") or ""),
+          ordinal = t.nr .. " " .. names_str .. " " .. (t.cwd or ""),
+          bufnr = t.bufnr,
+        }
+      end,
+    })
+  end
+
+  -- List the tab's windows: active marker, buffer, cursor line, modified flag
+  local windows_previewer = previewers.new_buffer_previewer({
+    title = "Tab Windows",
+    define_preview = function(self, entry)
+      local lines = {}
+      if entry.value.cwd then
+        table.insert(lines, "cwd: " .. entry.value.cwd)
+        table.insert(lines, "")
+      end
+      for _, w in ipairs(entry.value.wins) do
+        table.insert(lines, string.format("%s %s:%d%s", w.active and "*" or " ", w.name, w.line,
+          w.modified and " [+]" or ""))
+      end
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+    end,
+  })
+
+  -- Preview the buffer in the tab's active window
+  local buffer_previewer = previewers.new_buffer_previewer({
+    title = "Tab Buffer",
+    define_preview = function(self, entry)
+      local bufnr = entry.bufnr
+      if not vim.api.nvim_buf_is_valid(bufnr) then
+        return
+      end
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.api.nvim_buf_get_lines(bufnr, 0, -1, false))
+      local ft = vim.bo[bufnr].filetype
+      if ft ~= "" then
+        require("telescope.previewers.utils").highlighter(self.state.bufnr, ft)
+      end
+    end,
+  })
+
+  local function switch_tab(prompt_bufnr)
+    local selection = action_state.get_selected_entry()
+    actions.close(prompt_bufnr)
+    if selection then
+      vim.api.nvim_set_current_tabpage(selection.value.tab)
+    end
+  end
+
+  -- Close the multi-selection, or the entry under the cursor. Closing the
+  -- tab the picker lives in also closes the picker.
+  local function close_tabs(prompt_bufnr)
+    local picker = action_state.get_current_picker(prompt_bufnr)
+    local selections = picker:get_multi_selection()
+    if #selections == 0 then
+      selections = { action_state.get_selected_entry() }
+    end
+
+    local close_current = false
+    for _, entry in ipairs(selections) do
+      if #vim.api.nvim_list_tabpages() == 1 then
+        vim.notify("Cannot close the last tab", vim.log.levels.WARN)
+        break
+      end
+      if entry.value.current then
+        close_current = true
+      elseif vim.api.nvim_tabpage_is_valid(entry.value.tab) then
+        vim.cmd.tabclose(vim.api.nvim_tabpage_get_number(entry.value.tab))
+      end
+    end
+
+    if close_current and #vim.api.nvim_list_tabpages() > 1 then
+      actions.close(prompt_bufnr)
+      vim.cmd.tabclose()
+      return
+    end
+
+    picker:refresh(make_finder(), { reset_prompt = false })
+  end
+
+  local function tabs(opts)
+    opts = opts or {}
+    pickers.new(opts, {
+      prompt_title = "Tabs",
+      finder = make_finder(),
+      sorter = conf.generic_sorter(opts),
+      -- <C-s>/<C-a> cycle between them
+      previewer = { windows_previewer, buffer_previewer },
+      attach_mappings = function(_, map)
+        actions.select_default:replace(switch_tab)
+        map({ "i", "n" }, "<C-x>", close_tabs)
+        map("n", "dd", close_tabs)
+        return true
+      end,
+    }):find()
+  end
+
+  return require('telescope').register_extension({ exports = { tabs = tabs } })
+end
+
 return {
   {
     'nvim-telescope/telescope.nvim',
@@ -346,6 +507,8 @@ return {
         },
       }
 
+      package.preload['telescope._extensions.tabs'] = tabs_extension
+      telescope.load_extension('tabs')
       telescope.load_extension('fzf')
       telescope.load_extension('file_browser')
       telescope.load_extension('dap')
