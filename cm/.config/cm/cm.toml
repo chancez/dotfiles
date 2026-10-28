@@ -4,6 +4,12 @@ scrollback_lines = 10000
 
 log_level = "debug"
 
+[debug]
+# Enable pprof server for profiling. Off by default.
+pprof = true
+flight_recorder = true
+flight_recorder_window = "10s"
+
 [persist]
 # Let session content survive a reboot. Off by default.
 enabled = true
