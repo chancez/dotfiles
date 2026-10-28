@@ -175,44 +175,44 @@ url = "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-pac
 url_api = "https://api.github.com/repos/openai/codex/releases/assets/645224538"
 
 [[tools.atuin]]
-version = "18.16.1"
+version = "18.24.2"
 backend = "aqua:atuinsh/atuin"
-specifiers = ["18.16.1"]
+specifiers = ["18.24.2"]
 
 [tools.atuin."platforms.linux-arm64"]
-checksum = "sha256:9b2b7b41c3587533964ec5ab204b5116200bda39d534619387bcf4f197739b47"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813707"
+checksum = "sha256:5ec6cc8bd3889b616970cc1fa1ede46b5608da693a0bb81c04fbb48ed63967ab"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441748"
 provenance = "github-attestations"
 
 [tools.atuin."platforms.linux-arm64-musl"]
-checksum = "sha256:5245dc1553f40afe3a160878a71076e4c5257c83cf819e259c0447a67a9c2d37"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813717"
+checksum = "sha256:9addf06ece26e68e842489cefa33e81860c288da373538986ea58c23eccb4f14"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441749"
 provenance = "github-attestations"
 
 [tools.atuin."platforms.linux-x64"]
-checksum = "sha256:5c41e20c0130ac84fa4bfa42c19bb55a07855838506063caad0d2922593b39be"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813812"
+checksum = "sha256:005a4953f2fe96d4506fee7d926de73ec8cf64c89b2a07acd39bfa4fd88c0449"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441954"
 provenance = "github-attestations"
 
 [tools.atuin."platforms.linux-x64-musl"]
-checksum = "sha256:aeee16faab126d2f11658ad4920c73fa8479b25fbd3e26570450af7310aac70a"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813851"
+checksum = "sha256:311cd1ba4b8be27de7071dbcae1c95ff4c2b38aeec82d557707b6b832bfceddf"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441992"
 provenance = "github-attestations"
 
 [tools.atuin."platforms.macos-arm64"]
-checksum = "sha256:0a3fdc4cfa18758d6a872950625f2042233df0412a0c10d0dadf30bfc3bc6d6b"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813708"
+checksum = "sha256:ba155cb61385e424c972ba5cadab68add2c6ad0d4f842365fc958d7a5f5917d5"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441742"
 provenance = "github-attestations"
 
 [tools.atuin."platforms.windows-x64"]
-checksum = "sha256:ffebcc8fcb530b79a6096e0a04a7926beda021d68e066cd1c76b423b4e4f7281"
-url = "https://github.com/atuinsh/atuin/releases/download/v18.16.1/atuin-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/418813807"
+checksum = "sha256:ff7b211112783ca05f4e3bbc8dc69593791982668750f46bb83f7148e357e102"
+url = "https://github.com/atuinsh/atuin/releases/download/v18.24.2/atuin-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/atuinsh/atuin/releases/assets/665441944"
 provenance = "github-attestations"
 
 [[tools.aws-cli]]
@@ -851,6 +851,16 @@ url = "https://dl.google.com/go/go1.24.13.darwin-amd64.tar.gz"
 [tools.go."platforms.windows-x64"]
 checksum = "sha256:40b16bc8f00540a2cb02dff4de72b73e966fdd8d65f95e33d8e4080b48a2459a"
 url = "https://dl.google.com/go/go1.24.13.windows-amd64.zip"
+
+[[tools."go:github.com/alonshuld/grpctui/cmd/grpctui"]]
+version = "1.0.2"
+backend = "go:github.com/alonshuld/grpctui/cmd/grpctui"
+specifiers = ["latest"]
+
+[[tools."go:github.com/cloudentity/oauth2c"]]
+version = "1.21.1"
+backend = "go:github.com/cloudentity/oauth2c"
+specifiers = ["latest"]
 
 [[tools."go:github.com/google/gops"]]
 version = "0.3.29"

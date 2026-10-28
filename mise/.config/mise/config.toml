@@ -29,7 +29,7 @@ usage = "latest"
 # Prompt
 starship = "latest"
 # History
-atuin = "18.16.1"
+atuin = "18.24.2"
 
 kubectl = "latest"
 helm = "prefix:3"
@@ -164,6 +164,8 @@ herdr = "latest"
 "github:YoanWai/agent-manager" = "latest"
 pnpm = "latest"
 dyff = "latest"
+"go:github.com/alonshuld/grpctui/cmd/grpctui" = "latest"
+"go:github.com/cloudentity/oauth2c" = "latest"
 
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into
