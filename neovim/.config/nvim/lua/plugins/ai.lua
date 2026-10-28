@@ -247,6 +247,7 @@ return {
     event = "VeryLazy",
     keys = {
       { "<leader>an", "<cmd>AgentSessionToggle<cr>",      mode = { "n", "t" },                     desc = "Toggle Agent Session Window" },
+      { "<leader>aN", "<cmd>AgentSessionNew<cr>",         mode = { "n", "t" },                     desc = "Start a new Agent Session" },
       { "<leader>ad", "<cmd>AgentSessionDelete<cr>",      mode = { "n", "t" },                     desc = "Stop and remove the current session" },
       { "<leader>az", "<cmd>AgentSessionZoom<cr>",        mode = { "n", "t" },                     desc = "Toggle Center Full / Side View" },
       { "<leader>ae", "<cmd>AgentSessionSidebar<cr>",     mode = { "n", "t" },                     desc = "Toggle Agent Explorer (Sidebar)" },
@@ -258,7 +259,7 @@ return {
       { "<leader>aP", "<cmd>AgentSessionPipe<cr>",        mode = { "n", "v" },                     desc = "Pipe Output to Target Session" },
       { "<leader>ar", "<cmd>AgentSessionRename<cr>",      desc = "Rename Session" },
       { "<leader>as", "<cmd>AgentSessionSendLine<cr>",    mode = { "n", "v" },                     desc = "Send Line/Selection Ref to Session" },
-      { "<leader>ab", "<cmd>AgentSessionSendFile<cr>",    desc = "Send File Ref to Session" },
+      { "<leader>af", "<cmd>AgentSessionSendFile<cr>",    desc = "Send File Ref to Session" },
     },
     opts = {
       default_agent = "claude",
@@ -268,7 +269,20 @@ return {
             CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = "1",
           },
         },
-      }
+      },
+      sidebar = {
+        position = "auto",
+        width = 0.10,
+        height = 0.35,
+      },
+      notifications = {
+        enabled = false, -- We manage notifications ourselves via hooks
+      },
+      persist = {
+        enabled = true,
+        auto_restore = true,
+        max_age_days = 90,
+      },
     },
 
     config = function(_, opts)
