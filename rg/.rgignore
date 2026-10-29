@@ -4,3 +4,4 @@ vendor
 node_modules
 !scratch/
 !*override*yaml
+*.worktrees/
