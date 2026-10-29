@@ -215,8 +215,13 @@ local ignored_filetypes = {
 --
 -- Schemes some servers do understand, such as jdt:// from nvim-jdtls, would
 -- need an exception here.
+--
+-- term:// is skipped too: termopen fires BufFilePost while buftype is still
+-- "", and changing it there fails with E474. The buffer ends up with
+-- buftype=terminal anyway.
 local lsp_uri_scheme_allowlist = {
   file = true,
+  term = true,
 }
 
 vim.api.nvim_create_autocmd({ 'BufNew', 'BufNewFile', 'BufReadPost', 'BufFilePost' }, {
