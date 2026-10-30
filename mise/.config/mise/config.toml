@@ -112,9 +112,9 @@ rm -f "$MISE_TOOL_INSTALL_PATH"/node_modules/.mise/sql-language-server@*/node_mo
 # resolve stddef.h and friends, so take the whole archive rather than one extracted binary.
 # There is no linux-arm64 build upstream: see the Dockerfile, which installs clangd from apt
 # and disables this tool instead.
-"github:clangd/clangd" = { version = "latest", extract_all = true, strip_components = 1, bin_path = "bin" }
+"github:clangd/clangd" = { version = "latest", strip_components = 1, bin_path = "bin" }
 # Also a whole-archive install: a launcher script plus the jars it runs.
-"github:fwcd/kotlin-language-server" = { version = "latest", extract_all = true, bin_path = "server/bin" }
+"github:fwcd/kotlin-language-server" = { version = "latest", bin_path = "server/bin" }
 # eclipse.jdt.ls publishes no GitHub release assets. The real artifact is a timestamped
 # tarball on download.eclipse.org, so version and url are pinned by hand and have to be
 # bumped together from https://download.eclipse.org/jdtls/milestones/.
