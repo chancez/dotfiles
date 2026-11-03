@@ -166,6 +166,7 @@ pnpm = "latest"
 dyff = "latest"
 "go:github.com/alonshuld/grpctui/cmd/grpctui" = "latest"
 "go:github.com/cloudentity/oauth2c" = "latest"
+oh-my-pi = { version = "latest", rename_exe = "omp" }
 
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into

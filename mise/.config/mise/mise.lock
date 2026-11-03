@@ -1627,6 +1627,52 @@ aube = { path = "locks/npm-yaml-language-server/2.0.0", digest = "sha256:4fa26e6
 backend = "npm:yaml-language-server"
 specifiers = ["latest"]
 
+[[tools.oh-my-pi]]
+version = "18.13.1"
+backend = "github:can1357/oh-my-pi"
+specifiers = ["latest"]
+
+[tools.oh-my-pi."platforms.linux-arm64"]
+checksum = "sha256:803db725f9e5bd177ce5274f7718081481f367829f773d984a0a9611f4713244"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-linux-arm64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996800"
+
+[tools.oh-my-pi."platforms.linux-arm64-musl"]
+checksum = "sha256:9ed05dd7dd6a6a1161feb7daeaf06aa719b980e75bfe5b54fe11d82e9513eaf8"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-linux-musl-arm64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996808"
+
+[tools.oh-my-pi."platforms.linux-x64"]
+checksum = "sha256:ee2961c7da02e514a2475ee958c2fd85dbabf4d0907949ba5022edb2951f84b5"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-linux-x64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996809"
+
+[tools.oh-my-pi."platforms.linux-x64-musl"]
+checksum = "sha256:1cc28c269a887f9e5589d905e53cb48c2a44f18698df7ab191c811464309a84c"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-linux-musl-x64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996802"
+
+[tools.oh-my-pi."platforms.macos-arm64"]
+checksum = "sha256:f9c66e8725cf132a6de31b2321908ae1c43c668de12c91deaf368d25c01947d8"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-darwin-arm64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996803"
+
+[tools.oh-my-pi."platforms.macos-x64"]
+checksum = "sha256:96de0e3b42231f0e5b00333005f413dd97a76160da0d54df299eb0302e0522f7"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-darwin-x64"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996813"
+
+[tools.oh-my-pi."platforms.windows-x64"]
+checksum = "sha256:9fde2d73099ac3cc124d02982bdbeca697de42c7cd3ebf8b63faec1e2f9926f7"
+checksum_source = "mise-versions"
+url = "https://github.com/can1357/oh-my-pi/releases/download/v18.13.1/omp-windows-x64.exe"
+url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/679996805"
+
 [[tools.oras]]
 version = "1.3.5"
 backend = "aqua:oras-project/oras"
@@ -1861,9 +1907,12 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rust]]
-version = "stable"
-backend = "asdf:rust"
+version = "1.99.1"
+backend = "core:rust"
 specifiers = ["stable"]
+
+[tools.rust.options]
+components = "rust-analyzer,rust-src"
 
 [[tools.shellcheck]]
 version = "0.11.0"
