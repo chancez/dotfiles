@@ -202,6 +202,14 @@ dyff = "latest"
 "~/.codex/skills/agora"     = { source = "~/projects/agora/skills/agora",     mode = "symlink" }
 "~/.agents/skills/agora"    = { source = "~/projects/agora/skills/agora",     mode = "symlink" }
 
+# gr skills linked to the local checkout
+"~/.claude/skills/gr"        = { source = "~/projects/gr/skills/gr",     mode = "symlink" }
+"~/.codex/skills/gr"         = { source = "~/projects/gr/skills/gr",     mode = "symlink" }
+"~/.agents/skills/gr"        = { source = "~/projects/gr/skills/gr",     mode = "symlink" }
+"~/.claude/skills/gr-review" = { source = "~/projects/gr/skills/gr-review",     mode = "symlink" }
+"~/.codex/skills/gr-review"  = { source = "~/projects/gr/skills/gr-review",     mode = "symlink" }
+"~/.agents/skills/gr-review" = { source = "~/projects/gr/skills/gr-review",     mode = "symlink" }
+
 "~/.claude/CLAUDE.md"   = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Reuse AGENTS.md
 "~/.codex/AGENTS.md"    = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
 "~/.pi/agent/AGENTS.md" = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
