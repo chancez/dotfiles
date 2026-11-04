@@ -194,6 +194,7 @@ oh-my-pi = { version = "latest", rename_exe = "omp" }
 "~/.claude"             = { source = "~/.dotfiles/claude/.claude",            mode = "symlink-each" }
 "~/.codex"              = { source = "~/.dotfiles/codex/.codex",              mode = "symlink-each" }
 "~/.pi"                 = { source = "~/.dotfiles/pi/.pi",                    mode = "symlink-each" }
+"~/.config/herdr-app"   = { source = "~/.dotfiles/herdr-app/.config/herdr-app", mode = "symlink-each" }
 
 "~/.claude/skills/*"    = { source = "~/.dotfiles/agents/.agents/skills/*",   mode = "symlink" }  # Share skills
 "~/.codex/skills/*"     = { source = "~/.dotfiles/agents/.agents/skills/*",   mode = "symlink" }  # Share skills without replacing unmanaged entries
