@@ -33,6 +33,7 @@ if [[ -n "${HOMEBREW_PREFIX}" ]]; then
   brew_paths=(
     $HOMEBREW_PREFIX/opt/openssl@3/bin
     $HOMEBREW_PREFIX/opt/curl/bin
+    $HOMEBREW_PREFIX/opt/ffmpeg-full/bin
     $HOMEBREW_PREFIX/{bin,sbin}
     $HOMEBREW_PREFIX/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin
   )
