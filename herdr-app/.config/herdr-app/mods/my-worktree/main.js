@@ -320,6 +320,15 @@ export default class Worktree extends View {
               : `Closes the space and deletes ${tilde(r.top, this.userHome)}. The branch stays.`
             : `A new space on a checkout in ${tilde(ROOT(r), this.userHome)}/. A branch that exists is checked out; a new one starts from here.`;
     const blocked = !r || (remove && !r.linked);
+    // Loaded and nothing to do: not in git, or the main checkout.
+    const dead = r !== undefined && blocked;
+    const ready = Boolean(r) && !this.busy;
+    const verb = remove ? "Remove" : "Create";
+    const button = (id, label, bg, fg, enabled, onClick) =>
+      h_flex().id(id).h(32).px(14).items_center().rounded(8).border_1().border_color(id === "wt-cancel" ? t.input : bg).bg(bg).text_color(fg)
+        .when(enabled, (el) => el.cursor_pointer().hover((s) => s.opacity(0.88)).on_click((_e, cx) => onClick(cx)))
+        .when(!enabled, (el) => el.opacity(0.5))
+        .child(label);
     return v_flex()
       .id("worktree")
       .track_focus(this.handle)
@@ -351,9 +360,10 @@ export default class Worktree extends View {
       .child(
         h_flex()
           .justify_end()
-          .text_size(11)
-          .text_color(t.dim)
-          .child(this.busy ? "working…" : blocked ? "esc close" : remove ? "↵ remove · esc cancel" : "↵ create · esc cancel"),
+          .gap(8)
+          .text_size(12)
+          .child(button("wt-cancel", dead ? "Close" : "Cancel", t.raised, t.foreground, true, () => this.close()))
+          .when(!dead, (el) => el.child(button("wt-confirm", this.busy ? `${remove ? "Removing" : "Creating"}\u2026` : verb, remove ? t.blocked : t.solid, remove ? t.background : t.solid_foreground, ready, (cx) => this.go(cx)))),
       );
   }
 }
