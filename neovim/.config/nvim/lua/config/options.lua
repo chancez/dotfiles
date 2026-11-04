@@ -64,7 +64,7 @@ vim.opt.splitright = true
 vim.opt.exrc = true
 
 -- https://github.com/rmagatti/auto-session?tab=readme-ov-file#recommended-sessionoptions-config
-vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,localoptions"
+vim.opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.cmd [[ packadd cfilter ]]
 
