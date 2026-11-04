@@ -263,13 +263,6 @@ return {
     },
     opts = {
       default_agent = "claude",
-      agents = {
-        claude = {
-          env = {
-            CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = "1",
-          },
-        },
-      },
       sidebar = {
         position = "auto",
         width = 0.10,
