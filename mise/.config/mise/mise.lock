@@ -465,50 +465,50 @@ url_api = "https://api.github.com/repos/cli/cli/releases/assets/599854760"
 provenance = "github-attestations"
 
 [[tools."github:YoanWai/agent-manager"]]
-version = "0.42.0"
+version = "0.47.1"
 backend = "github:YoanWai/agent-manager"
 specifiers = ["latest"]
 
 [tools."github:YoanWai/agent-manager"."platforms.linux-arm64"]
-checksum = "sha256:1d4e60bc141354a54422cfc9916f61e059b3f5c9f87d1a6d5fb914dce0e5ee5d"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171037"
+checksum = "sha256:28ff4d1ca5bc2c338c09bccdaea6aa72a53806da5059cb24235940116a6b6e3b"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568555"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.linux-arm64-musl"]
-checksum = "sha256:1d4e60bc141354a54422cfc9916f61e059b3f5c9f87d1a6d5fb914dce0e5ee5d"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171037"
+checksum = "sha256:28ff4d1ca5bc2c338c09bccdaea6aa72a53806da5059cb24235940116a6b6e3b"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568555"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.linux-x64"]
-checksum = "sha256:ab195e77401e407cea06d38b7aa6f881cb13e5499268ee7ae66f35bf1739f30b"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171028"
+checksum = "sha256:d2b17c9b3fe0d26602be9f66cf5d42f20997f2bbb410c05509e4f68abec3ed53"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568508"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.linux-x64-musl"]
-checksum = "sha256:ab195e77401e407cea06d38b7aa6f881cb13e5499268ee7ae66f35bf1739f30b"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171028"
+checksum = "sha256:d2b17c9b3fe0d26602be9f66cf5d42f20997f2bbb410c05509e4f68abec3ed53"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568508"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.macos-arm64"]
-checksum = "sha256:797ec7e7f967e08664e6bc178098f5e8c514aa7f8893288c021572e2df1769fb"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171038"
+checksum = "sha256:e1c472e4e313606aba6bcfac202b307f997406c2fa830bc7d4e7cf42d87ea234"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568552"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.macos-x64"]
-checksum = "sha256:c2fece6dd30cb2d878d1ced8cef1cd3c67fceb9a91d52301e358ffd44b564ec9"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171029"
+checksum = "sha256:e409f938770fcaee0a890d77b080b2acac39b0919e357e7533cf6fbe022b4f24"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568504"
 provenance = "github-attestations"
 
 [tools."github:YoanWai/agent-manager"."platforms.windows-x64"]
-checksum = "sha256:65e6d17929f85c7c5aaba187bf66484649e3f0d3491f2df2baabe651cf40bf48"
-url = "https://github.com/YoanWai/agent-manager/releases/download/v0.42.0/agent-manager_0.42.0_windows_amd64.zip"
-url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/644171110"
+checksum = "sha256:184d7bf75d69b8e9d2b9da3f613df79a8d0937e02cd2d6db55b590e85ecabd95"
+url = "https://github.com/YoanWai/agent-manager/releases/download/v0.47.1/agent-manager_0.47.1_windows_amd64.zip"
+url_api = "https://api.github.com/repos/YoanWai/agent-manager/releases/assets/703568506"
 provenance = "github-attestations"
 
 [[tools."github:chancez/cm"]]
