@@ -75,6 +75,7 @@ if ! zgenom saved; then
   zgenom eval-tool --completion hubble hubble completion zsh
   zgenom eval-tool --completion cm cm completions zsh
   zgenom eval-tool --completion crc crc completion zsh
+  zgenom eval-tool --completion gr gr completion zsh
 
   # generate the init script from plugins above
   zgenom save
