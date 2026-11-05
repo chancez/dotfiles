@@ -1532,10 +1532,13 @@ backend = "npm:@github/copilot"
 specifiers = ["latest"]
 
 [[tools."npm:@github/copilot-language-server"]]
-version = "1.556.0"
-aube = { path = "locks/npm-github-copilot-language-server/1.556.0", digest = "sha256:8c54b2b30b4d4f8ddf5552f7d72f02758b42e257082a2f57feee4c86453cf31f" }
+version = "1.564.0"
+aube = { path = "locks/npm-github-copilot-language-server/1.564.0~e0af0f4c", digest = "sha256:68c8b78974b8d31137f6ffa0c12c960bb7e926087d8dd34921b009971e3bd68d" }
 backend = "npm:@github/copilot-language-server"
 specifiers = ["latest"]
+
+[tools."npm:@github/copilot-language-server".options]
+trust_policy_excludes = '["@github/copilot-sdk-darwin-arm64@1.0.26", "@github/copilot-sdk-darwin-x64@1.0.26", "@github/copilot-sdk-linux-arm64@1.0.26", "@github/copilot-sdk-linux-x64@1.0.26", "@github/copilot-sdk-win32-arm64@1.0.26", "@github/copilot-sdk-win32-x64@1.0.26"]'
 
 [[tools."npm:@google/gemini-cli"]]
 version = "0.64.0"

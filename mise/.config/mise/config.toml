@@ -99,7 +99,14 @@ rm -f "$MISE_TOOL_INSTALL_PATH"/node_modules/.mise/sql-language-server@*/node_mo
 "npm:vscode-langservers-extracted" = "latest" # jsonls
 "npm:graphql-language-service-cli" = "latest"
 # Not an lspconfig server: copilot.lua runs it itself, see neovim .../plugins/ai.lua.
-"npm:@github/copilot-language-server" = "latest"
+"npm:@github/copilot-language-server" = {
+  version = "latest",
+  trust_policy_excludes = [
+    "@github/copilot-sdk-darwin-arm64@1.0.26", "@github/copilot-sdk-darwin-x64@1.0.26",
+    "@github/copilot-sdk-linux-arm64@1.0.26", "@github/copilot-sdk-linux-x64@1.0.26",
+    "@github/copilot-sdk-win32-arm64@1.0.26", "@github/copilot-sdk-win32-x64@1.0.26",
+  ],
+}
 # typescript-language-server declares no dependency on typescript, and mise gives every npm
 # tool its own node_modules, so tsserver would only ever resolve out of a project's own
 # node_modules. Installing typescript into the tool's install dir restores the fallback that
