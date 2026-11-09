@@ -15,7 +15,7 @@ flight_recorder_window = "10s"
 enabled = true
 sessions = ["*"]
 on_restore = "shell"
-safe_commands = ["nvim", "less", "htop"]
+safe_commands = ["nvim", "less", "htop", "vim"]
 
 [keys.session]
 detach = ["ctrl-\\"]
