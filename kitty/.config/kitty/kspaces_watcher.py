@@ -35,9 +35,11 @@ def add_docks(boss):
     for tab in tuple(boss.all_tabs):
         if not wants_dock(tab):
             continue
+        # Focusable, so a click or kspaces_focus.py can give the sidebar the keyboard, but --keep-focus so
+        # adding one does not take focus from the window being worked in.
         boss.call_remote_control(tab.active_window, (
             'launch', '--type=tab-dock', '--match', f'id:{tab.id}',
-            '--dock-edge=left', f'--dock-size={DOCK_COLUMNS}', '--dock-skip-focus',
+            '--dock-edge=left', f'--dock-size={DOCK_COLUMNS}', '--keep-focus',
             f'--var={DOCK_VAR}=1', '--add-to-session=!', KSPACES, 'sidebar',
         ))
 
