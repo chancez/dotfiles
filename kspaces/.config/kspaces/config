@@ -1,0 +1,12 @@
+# Spaces shown in the kspaces sidebar, one repository per line, in display order.
+space ~/projects/work/hubble-timescape
+space ~/projects/gr
+space ~/projects/work/isovalent-operator
+space ~/projects/work/docs-hypershield
+space ~/projects/work/docs-reference
+space ~/projects/kitty
+space ~/.dotfiles
+
+# Open a worktree's first tab through cm, like cmd+t does. kspaces appends --cwd and
+# --add-to-session.
+new_tab kitten cm_launch.py --type=tab
