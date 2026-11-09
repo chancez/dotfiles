@@ -210,6 +210,15 @@ def handle_result(args, answer, target_window_id, boss):
     cmd = ['launch']
     cmd.extend(args[1:])
 
+    # A caller that chose the directory, such as kspaces opening a worktree, gets a local window there. The
+    # current window's session says nothing about where that window belongs, so neither its host nor its cwd
+    # applies.
+    if any(a.startswith('--cwd') for a in args[1:]):
+        cmd.extend([CM_ATTACH, next_session_name()])
+        _log('  -> explicit cwd cmd=%r' % (cmd,))
+        boss.call_remote_control(window, tuple(cmd))
+        return
+
     # A session that has ssh'd elsewhere is reconnected rather than opened locally, which is what kitty
     # does on its own for a window running `kitten ssh`: the new window *is* the connection, and it closes
     # when ssh exits.
