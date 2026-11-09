@@ -37,11 +37,16 @@ def add_docks(boss):
             continue
         # Focusable, so a click or kspaces_focus.py can give the sidebar the keyboard, but --keep-focus so
         # adding one does not take focus from the window being worked in.
+        prev = tab.active_window
         boss.call_remote_control(tab.active_window, (
             'launch', '--type=tab-dock', '--match', f'id:{tab.id}',
             '--dock-edge=left', f'--dock-size={DOCK_COLUMNS}', '--keep-focus',
             f'--var={DOCK_VAR}=1', '--add-to-session=!', KSPACES, 'sidebar',
         ))
+        # --keep-focus only keeps the window that has focus. In any other tab the new dock becomes the tab's
+        # active window, and the tab takes its title.
+        if prev is not None and tab.active_window is not prev:
+            tab.set_active_window(prev)
 
 
 # Called from the tab bar and window hooks below. They fire in the middle of creating tabs and loading
