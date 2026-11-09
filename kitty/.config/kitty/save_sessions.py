@@ -33,6 +33,12 @@ def default_name():
     return os.path.basename(startup_path()).rpartition('.')[0]
 
 
+# TODO: fix in kitty. With --match, save_as_session leaves out the `new_os_window` line only for the first
+# OS window it iterates (Boss.serialize_state_as_session, `is_first=i == 0`), not the first one it writes.
+# When that window has no matching windows, the file starts with `new_os_window`, and restore() opens the
+# session in a new OS window instead of the current one. Which window comes first depends on focus, so with
+# more than one OS window a space can come back in a window of its own. Pass is_first to the first OS window
+# that produces output instead; --match dates from e43d894dd, a week after is_first (067afe35e).
 def save_all(boss):
     if not startup_path():
         return
