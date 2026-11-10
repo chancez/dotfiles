@@ -25,3 +25,9 @@ branch_prefix = "pr/chancez"
 
 [sidebar]
 width = 30
+
+# kspaces kitty install's files, included from kitty.conf: rewrite them when another
+# kspaces is installed, and install the session saver.
+[kitty]
+auto_install = true
+save_sessions = true
