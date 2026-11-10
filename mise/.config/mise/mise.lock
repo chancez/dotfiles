@@ -546,6 +546,47 @@ checksum = "sha256:104aa907d418866d1617af97d8b49f996800d29bc82a42aa986869de8331a
 url = "https://github.com/chancez/cm/releases/download/v0.4.2/cm_v0.4.2_darwin_amd64.tar.gz"
 url_api = "https://api.github.com/repos/chancez/cm/releases/assets/575500551"
 
+[[tools."github:chancez/kspaces"]]
+version = "0.1.0"
+backend = "github:chancez/kspaces"
+specifiers = ["latest"]
+
+[tools."github:chancez/kspaces"."platforms.linux-arm64"]
+checksum = "sha256:7995abcfe4fb4fea6ef64aeb00e69cc57f40152b232858341bdd586a1bda1cdb"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327835"
+
+[tools."github:chancez/kspaces"."platforms.linux-arm64-musl"]
+checksum = "sha256:7995abcfe4fb4fea6ef64aeb00e69cc57f40152b232858341bdd586a1bda1cdb"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327835"
+
+[tools."github:chancez/kspaces"."platforms.linux-x64"]
+checksum = "sha256:214926a5fe9bbd01dc7c622bb148736d1049819d700242ccac2ebd9ba7e88693"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327834"
+
+[tools."github:chancez/kspaces"."platforms.linux-x64-musl"]
+checksum = "sha256:214926a5fe9bbd01dc7c622bb148736d1049819d700242ccac2ebd9ba7e88693"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327834"
+
+[tools."github:chancez/kspaces"."platforms.macos-arm64"]
+checksum = "sha256:07271245ce3a7cae62f28d1ff06160915b41f83c3d82098645515614ba2d8a3d"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327832"
+
+[tools."github:chancez/kspaces"."platforms.macos-x64"]
+checksum = "sha256:a97b014316976c88dc3d6c53e687fea0510f7827f8ec56822ed1c5adf5dce4fb"
+checksum_source = "mise-versions"
+url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327829"
+
 [[tools."github:clangd/clangd"]]
 version = "23.1.0"
 backend = "github:clangd/clangd"

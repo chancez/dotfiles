@@ -3,7 +3,7 @@ experimental = true
 idiomatic_version_file_enable_tools = ["node"]
 lockfile = true
 minimum_release_age = "7d"
-minimum_release_age_excludes = ["github:chancez/cm"]
+minimum_release_age_excludes = ["github:chancez/cm", "github:chancez/kspaces"]
 legacy_version_file = false
 
 # prefer_offline = true
@@ -38,6 +38,7 @@ helm = "prefix:3"
 uv = "latest"
 terraform = "latest"
 "github:chancez/cm" = "latest"
+"github:chancez/kspaces" = "latest"
 
 golangci-lint = "latest"
 "go:gotest.tools/gotestsum" = "latest"
