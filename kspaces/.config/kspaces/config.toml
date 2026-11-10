@@ -1,0 +1,24 @@
+# Spaces shown in the kspaces sidebar, in display order.
+spaces = [
+  "~/projects/work/hubble-timescape",
+  "~/projects/gr",
+  "~/projects/work/isovalent-operator",
+  "~/projects/work/docs-hypershield",
+  "~/projects/work/docs-reference",
+  "~/projects/kitty",
+  "~/projects/cm",
+  "~/projects/kspaces",
+  "~/.dotfiles",
+]
+
+# Open a worktree's first tab through cm, like cmd+t does. kspaces appends --cwd and
+# --add-to-session.
+new_tab = ["kitten", "cm_launch.py", "--type=tab"]
+
+# Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
+sessions = "~/.local/share/kitty/sessions"
+
+# The new worktree form starts branch names with pr/chancez/.
+[worktrees]
+dir = ".worktrees"
+branch_prefix = "pr/chancez"
