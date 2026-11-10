@@ -16,6 +16,6 @@ new_tab kitten cm_launch.py --type=tab
 # Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
 sessions ~/.local/share/kitty/sessions
 
-# New worktrees made from the sidebar go in .worktrees/NAME on pr/chancez/NAME.
+# The new worktree form starts branch names with pr/chancez/.
 worktree_dir .worktrees
-branch_prefix pr/chancez/
+branch_prefix pr/chancez
