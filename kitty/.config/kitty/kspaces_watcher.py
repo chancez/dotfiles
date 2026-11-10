@@ -34,7 +34,22 @@ def wants_dock(tab):
     return bool(tab.created_in_session_name) and bool(tab.windows.groups) and not has_dock(tab)
 
 
+# TODO: fix in kitty. Moving a tab to another OS window, as detach_tab does, makes a new tab that takes
+# over the old one's windows (Boss._move_tab_to, Tab.take_over_from) but not its session name. The windows
+# keep theirs, so the tab is put back in their session here; until then tab_bar_filter's session:^$ shows
+# the moved tab in every session.
+def repair_session(tab):
+    names = {w.created_in_session_name for w in tab} - {''}
+    if not tab.created_in_session_name and len(names) == 1:
+        tab.created_in_session_name = names.pop()
+        tm = tab.tab_manager_ref()
+        if tm is not None:
+            tm.mark_tab_bar_dirty()
+
+
 def add_docks(boss):
+    for tab in tuple(boss.all_tabs):
+        repair_session(tab)
     if getattr(boss, 'kspaces_hidden', False):
         return
     for tab in tuple(boss.all_tabs):
@@ -63,7 +78,7 @@ def add_docks(boss):
 # into one pass.
 def schedule(boss):
     global _scheduled
-    if _scheduled or getattr(boss, 'kspaces_hidden', False):
+    if _scheduled:
         return
     _scheduled = True
 
