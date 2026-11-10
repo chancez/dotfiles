@@ -166,6 +166,13 @@ def on_focus_change(boss, window, data):
         note_change(boss, window, closed=False)
 
 
+# One session per timer, not all in one go. kitty calls watchers from a 0s timer for every window resize and
+# focus change, and loading a session resizes each window several times. None of those fire until the timer
+# that is loading returns, and on macOS kitty has room for 128, so loading every space at once filled the
+# table and kitty dropped the rest of the watcher calls. Between sessions the queued ones fire.
+RESTORE_STEP = 0.05
+
+
 def restore(boss):
     list_path = os.path.join(os.path.dirname(startup_path()), OPEN_LIST)
     try:
@@ -174,12 +181,20 @@ def restore(boss):
         os.remove(list_path)
     except FileNotFoundError:
         return
-    for name in names:
-        if os.path.exists(session_path(name)):
-            boss.goto_session(session_path(name))
+    paths = [session_path(name) for name in names if os.path.exists(session_path(name))]
     # Loading a session switches to it, so end up back where startup_session left off.
     if names and startup_path():
-        boss.goto_session(startup_path())
+        paths.append(startup_path())
+    load_next(boss, paths)
+
+
+# load_next loads the first of paths, and the rest from a timer. With no timer to be had, it goes on loading
+# rather than leave sessions unloaded.
+def load_next(boss, paths):
+    while paths:
+        boss.goto_session(paths.pop(0))
+        if paths and add_timer(lambda timer_id: load_next(boss, paths), RESTORE_STEP, False):
+            return
 
 
 # Called when kitty loads this watcher, which is during startup, while startup_session is being created, and
