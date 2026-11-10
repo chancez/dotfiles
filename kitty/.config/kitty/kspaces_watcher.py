@@ -11,19 +11,82 @@
 #
 # It also notes when each program status record (OSC 7501) of a window last changed state, which kitty
 # does not report, so the sidebar can show how long a program has been blocked or working.
+#
+# The sidebars' width is [sidebar] width in kspaces' config, applied to every sidebar when it changes.
 
 import json
 import os
 import time
+import tomllib
 
 from kitty.fast_data_types import add_timer
 
 DOCK_VAR = 'kspaces'
 # By absolute path: a watcher runs inside kitty, whose PATH under launchd does not have ~/.local/bin.
 KSPACES = os.path.expanduser('~/.local/bin/kspaces')
-DOCK_COLUMNS = '28'
+# kspaces' default for [sidebar] width, and how often its config is checked for a new one.
+DEFAULT_WIDTH = 28
+CONFIG_CHECK_SECONDS = 2
 
 _scheduled = False
+# The config's sidebar width, and the modification time of the config it was read from.
+_width = (DEFAULT_WIDTH, None)
+
+
+def config_path():
+    base = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
+    return os.path.join(base, 'kspaces', 'config.toml')
+
+
+# sidebar_width is [sidebar] width from kspaces' config, read again only when the file changes. kspaces
+# checks the config itself and shows what is wrong with it in the sidebar, so here a value it would reject
+# just keeps the width there was.
+def sidebar_width():
+    global _width
+    try:
+        mtime = os.stat(config_path()).st_mtime
+    except OSError:
+        return _width[0]
+    if mtime == _width[1]:
+        return _width[0]
+    width = _width[0]
+    try:
+        with open(config_path(), 'rb') as f:
+            value = tomllib.load(f).get('sidebar', {}).get('width', DEFAULT_WIDTH)
+        if isinstance(value, int) and 12 <= value <= 120:
+            width = value
+    except (OSError, ValueError):
+        pass
+    _width = (width, mtime)
+    return width
+
+
+# resize_docks gives every sidebar the configured width. kitty has no command to resize a dock, so this
+# changes the size its group was docked with and lays the tab out again.
+def resize_docks(boss, width):
+    for tab in tuple(boss.all_tabs):
+        changed = False
+        for g in tab.windows.tab_docks:
+            if g.dock is not None and any(DOCK_VAR in w.user_vars for w in g) and g.dock.size_as_string != str(width):
+                g.dock = g.dock._replace(size=width, size_is_percent=False)
+                changed = True
+        if changed:
+            tab.relayout()
+
+
+def check_config(boss):
+    def run(timer_id):
+        resize_docks(boss, sidebar_width())
+
+    add_timer(run, CONFIG_CHECK_SECONDS, True)
+
+
+# Called when kitty loads this watcher, at startup and whenever kitty.conf's list of watchers changes. The
+# flag on boss keeps a config reload from starting a second check.
+def on_load(boss, data):
+    if not getattr(boss, 'kspaces_checking_config', False):
+        boss.kspaces_checking_config = True
+        check_config(boss)
 
 
 def has_dock(tab):
@@ -63,7 +126,7 @@ def add_docks(boss):
         prev = tab.active_window
         boss.call_remote_control(tab.active_window, (
             'launch', '--type=tab-dock', '--match', f'id:{tab.id}',
-            '--dock-edge=left', f'--dock-size={DOCK_COLUMNS}', '--keep-focus',
+            '--dock-edge=left', f'--dock-size={sidebar_width()}', '--keep-focus',
             f'--var={DOCK_VAR}=1', f'--add-to-session={tab.created_in_session_name}', KSPACES, 'sidebar',
         ))
         # --keep-focus only keeps the window that has focus. In any other tab the new dock becomes the tab's
