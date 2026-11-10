@@ -98,3 +98,29 @@ kitty() {
   done
   command kitty --session none "$@"
 }
+
+# Install kspaces' kitty files, which kitty.conf includes, the step `mise install` cannot do. A machine that
+# gets kspaces from its releases has them after its first shell, and a new release or local build gets its
+# own files from the first shell after it. kitty loads them when it restarts.
+#
+# zsh-tool-changed-since is all builtins, so a shell pays nothing while the files are newer than kspaces and
+# its config; it notices a mise upgrade, whose shim never changes, by mise.lock. Past that, `kitty check`
+# tells a kspaces whose files are the same, after which the touch records it, from one whose files changed,
+# so only that says anything. Every shell of a restored kitty starts at once, which install's atomic writes
+# allow.
+#
+# The sidebar's auto_install covers the same ground once kitty runs the watcher, but cannot do the first
+# install: with no watcher there is no sidebar.
+_kspaces_kitty_files() {
+  (( $+commands[kspaces] )) || return 0
+  local conf=${KITTY_CONFIG_DIRECTORY:-${XDG_CONFIG_HOME:-$HOME/.config}/kitty}/kspaces/kspaces.conf
+  local cfg=${XDG_CONFIG_HOME:-$HOME/.config}/kspaces/config.toml
+  zsh-tool-changed-since $conf kspaces || [[ $cfg -nt $conf ]] || return 0
+  if command kspaces kitty check >/dev/null 2>&1; then
+    touch $conf
+  elif command kspaces kitty install >/dev/null; then
+    print -u2 'kspaces: kitty files installed, restart kitty to load them'
+  fi
+}
+_kspaces_kitty_files
+unfunction _kspaces_kitty_files
