@@ -184,6 +184,7 @@ oh-my-pi = { version = "latest", rename_exe = "omp" }
 # App config directories
 "~/.config/nvim"     = { source = "~/.dotfiles/neovim/.config/nvim",       mode = "symlink-each" }
 "~/.config/kitty"    = { source = "~/.dotfiles/kitty/.config/kitty",       mode = "symlink-each" }
+"~/.config/kspaces"  = { source = "~/.dotfiles/kspaces/.config/kspaces",   mode = "symlink-each" }
 "~/.config/atuin"    = { source = "~/.dotfiles/atuin/.config/atuin",       mode = "symlink-each" }
 "~/.config/zsh"      = { source = "~/.dotfiles/zsh/.config/zsh",           mode = "symlink-each" }
 "~/.config/mcphub"   = { source = "~/.dotfiles/mcphub/.config/mcphub",     mode = "symlink-each" }
