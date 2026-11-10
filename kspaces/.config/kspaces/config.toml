@@ -22,3 +22,6 @@ sessions = "~/.local/share/kitty/sessions"
 [worktrees]
 dir = ".worktrees"
 branch_prefix = "pr/chancez"
+
+[sidebar]
+width = 30
