@@ -35,24 +35,40 @@ def default_name():
     return os.path.basename(startup_path()).rpartition('.')[0]
 
 
-# What save_as_session --match writes, with its bug fixed: it leaves out the `new_os_window` line only for
+# What save_as_session --match writes, with two bugs fixed. It leaves out the `new_os_window` line only for
 # the first OS window it iterates (Boss.serialize_state_as_session, `is_first=i == 0`), not for the first
 # one it writes. When that window has no matching windows, the file starts with `new_os_window`, and
 # restore() opens the session in an OS window of its own instead of the current one; with a second OS window
 # open at quit, every space came back in its own. Which window comes first depends on focus. This is that
 # loop, passing is_first to the first OS window that has output.
-# TODO: fix in kitty, then go back to boss.save_as_session. --match dates from e43d894dd, a week after
+#
+# And its `focus_tab` is the OS window's active tab's index among all of its tabs, while loading counts only
+# the tabs the file creates: every session but the one on screen came back on the wrong tab. See
+# focus_tab_line.
+# TODO: fix both in kitty, then go back to boss.save_as_session. --match dates from e43d894dd, a week after
 # is_first (067afe35e).
 def save_matching(boss, match, path, main):
     opts, _ = parse_save_as_options_spec_args(['--use-foreground-process', f'--match={match}'])
     matched = frozenset(boss.match_windows(match))
     lines, first = [], True
     for os_window_id in os_window_order(boss, main):
-        out = boss.os_window_map[os_window_id].serialize_state_as_session(path, matched, opts, is_first=first)
+        tm = boss.os_window_map[os_window_id]
+        out = tm.serialize_state_as_session(path, matched, opts, is_first=first)
+        if out:
+            out = [line for line in out if not line.startswith('focus_tab ')] + [focus_tab_line(tm, matched)]
         first = first and not out
         lines.extend(out)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     atomic_save('\n'.join(lines).encode(), path)
+
+
+# focus_tab_line focuses, among the tabs of tm the file creates, the one with the session's most recently
+# focused window, which is the tab kitty switches to when going to the session while it is open.
+def focus_tab_line(tm, matched):
+    saved = [[w for w in tab if w in matched] for tab in tm]
+    saved = [ws for ws in saved if ws]
+    latest = max(range(len(saved)), key=lambda i: max(w.last_focused_at for w in saved[i]))
+    return f'focus_tab {latest}'
 
 
 # The OS windows in the order they are saved: kitty's, by focus, but with main last. kitty creates the OS
@@ -73,19 +89,78 @@ def main_os_window(boss, sessions):
     return max(counts, key=counts.get) if counts else last_focused_os_window_id()
 
 
+def session_match(name):
+    if name == default_name():
+        return f'(session:^{re.escape(name)}$ or session:^$) and not var:kspaces'
+    return f'session:^{re.escape(name)}$ and not var:kspaces'
+
+
 def save_all(boss):
     if not startup_path():
         return
     default = default_name()
     others = sorted(n for n in boss.all_loaded_session_names if n != default)
     main = main_os_window(boss, set(others))
-    matches = {default: f'(session:^{re.escape(default)}$ or session:^$) and not var:kspaces'}
-    for name in others:
-        matches[name] = f'session:^{re.escape(name)}$ and not var:kspaces'
-    for name, match in matches.items():
-        save_matching(boss, match, session_path(name), main)
+    for name in [default] + others:
+        save_matching(boss, session_match(name), session_path(name), main)
     with open(os.path.join(os.path.dirname(startup_path()), OPEN_LIST), 'w') as f:
         f.write(''.join(n + '\n' for n in others))
+
+
+# Saving at quit alone left a session's file as it was at the last quit: closing a session's tabs and panes
+# and opening it again brought them all back. So a session is also saved a moment after one of its windows
+# closes or takes focus, which keeps which window is focused too. A session whose last window closed has
+# its file removed, so opening it again starts afresh. The default session's file is startup_session's and
+# is never removed.
+#
+# Not while kitty quits, which closes every window after on_quit has saved them, nor for the windows of an
+# OS window closed as a whole, which kitty also closes one by one: either would remove every file. The
+# sessions keep what was saved before, as when the last of them took focus.
+SAVE_DELAY = 0.5
+_quitting = False
+# Session names waiting to be saved, each with the OS windows its windows closed in.
+_pending = {}
+_timer = None
+
+
+def note_change(boss, window, closed):
+    global _timer
+    if _quitting or not startup_path() or any(k.startswith('kspaces') for k in window.user_vars):
+        return
+    name = window.created_in_session_name or default_name()
+    os_windows = _pending.setdefault(name, set())
+    if closed:
+        os_windows.add(window.os_window_id)
+    if _timer is None:
+        _timer = add_timer(lambda timer_id: save_pending(boss), SAVE_DELAY, False)
+
+
+def save_pending(boss):
+    global _timer, _pending
+    _timer, pending, _pending = None, _pending, {}
+    if _quitting or not boss.os_window_map:
+        return
+    main = main_os_window(boss, set(boss.all_loaded_session_names) - {default_name()})
+    for name, closed_in in pending.items():
+        if any(i not in boss.os_window_map for i in closed_in):
+            continue
+        match = session_match(name)
+        if any(True for _ in boss.match_windows(match)):
+            save_matching(boss, match, session_path(name), main)
+        elif name != default_name():
+            try:
+                os.remove(session_path(name))
+            except FileNotFoundError:
+                pass
+
+
+def on_close(boss, window, data):
+    note_change(boss, window, closed=True)
+
+
+def on_focus_change(boss, window, data):
+    if data.get('focused'):
+        note_change(boss, window, closed=False)
 
 
 def restore(boss):
@@ -114,12 +189,13 @@ def on_load(boss, data):
     add_timer(lambda timer_id: restore(boss), 0, False)
 
 
-# kitty has no exit event, only this quit hook, so sessions are saved when the app is asked to terminate:
-# the macOS menu/Dock Quit item, cmd+q, or logout. Closing OS windows one at a time still bypasses it, there
-# is nothing to hook.
+# kitty has no exit event, only this quit hook, so every session is saved when the app is asked to
+# terminate: the macOS menu/Dock Quit item, cmd+q, or logout.
 def on_quit(boss, window, data):
+    global _quitting
     # Called once before the confirmation dialog and again after it is accepted.
     if data.get('confirmed'):
+        _quitting = True
         save_all(boss)
 
 
