@@ -8,8 +8,13 @@
 # that are not part of the workspace at all, such as the tab switcher's OS window.
 #
 # kspaces_toggle.py hides and shows the sidebars by setting boss.kspaces_hidden.
+#
+# It also notes when each program status record (OSC 7501) of a window last changed state, which kitty
+# does not report, so the sidebar can show how long a program has been blocked or working.
 
+import json
 import os
+import time
 
 from kitty.fast_data_types import add_timer
 
@@ -76,3 +81,27 @@ def on_tab_bar_dirty(boss, window, data):
 def on_resize(boss, window, data):
     if data['old_geometry'].xnum == 0:
         schedule(boss)
+
+
+# The user variable that holds when each of a window's program status records last changed state, as JSON:
+# {"pid": KITTY_PID, "records": {"RECORD_ID": ["STATE", UNIX_TIME]}}. Kept on the window because there is
+# one sidebar per tab, each refreshing on its own every two seconds: noted here, at the change, every copy
+# reads the same time and one started later still has it. Not named kspaces*, as save_sessions.py leaves
+# windows with a var:kspaces out of saved sessions.
+STATUS_AT_VAR = 'program_status_at'
+
+
+def on_program_status_change(boss, window, data):
+    try:
+        prev = json.loads(window.user_vars.get(STATUS_AT_VAR, ''))
+    except ValueError:
+        prev = {}
+    # User vars are saved into session files, so a restored window can bring times from a kitty that is
+    # gone, for records that kitty no longer has. Only trust times noted by this kitty.
+    known = prev.get('records', {}) if isinstance(prev, dict) and prev.get('pid') == os.getpid() else {}
+    now = time.time()
+    records = {}
+    for r in data['program_status']:
+        was = known.get(r['id'])
+        records[r['id']] = was if was and was[0] == r['state'] else [r['state'], now]
+    window.set_user_var(STATUS_AT_VAR, json.dumps({'pid': os.getpid(), 'records': records}) if records else None)
