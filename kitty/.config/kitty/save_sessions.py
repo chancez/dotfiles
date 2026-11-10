@@ -132,7 +132,10 @@ def note_change(boss, window, closed):
     if closed:
         os_windows.add(window.os_window_id)
     if _timer is None:
-        _timer = add_timer(lambda timer_id: save_pending(boss), SAVE_DELAY, False)
+        # kitty's timers are a fixed table on macOS, and add_timer returns 0, never to call back, when it is
+        # full, as it can be at startup with every watcher call taking one. Keeping 0 would wait for that
+        # timer forever; the next change tries again instead, and saves what has piled up since.
+        _timer = add_timer(lambda timer_id: save_pending(boss), SAVE_DELAY, False) or None
 
 
 def save_pending(boss):
