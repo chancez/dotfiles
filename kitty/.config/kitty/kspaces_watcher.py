@@ -41,12 +41,15 @@ def add_docks(boss):
         if not wants_dock(tab):
             continue
         # Focusable, so a click or kspaces_focus.py can give the sidebar the keyboard, but --keep-focus so
-        # adding one does not take focus from the window being worked in.
+        # adding one does not take focus from the window being worked in. In the tab's session, as a
+        # window in no session makes tab_bar_filter's session:^$ match its tab: with another OS window
+        # focused, kitty finds the tabs to show by their windows, so every tab with a sidebar was shown.
+        # save_sessions.py leaves the docks out of saved sessions by their var.
         prev = tab.active_window
         boss.call_remote_control(tab.active_window, (
             'launch', '--type=tab-dock', '--match', f'id:{tab.id}',
             '--dock-edge=left', f'--dock-size={DOCK_COLUMNS}', '--keep-focus',
-            f'--var={DOCK_VAR}=1', '--add-to-session=!', KSPACES, 'sidebar',
+            f'--var={DOCK_VAR}=1', f'--add-to-session={tab.created_in_session_name}', KSPACES, 'sidebar',
         ))
         # --keep-focus only keeps the window that has focus. In any other tab the new dock becomes the tab's
         # active window, and the tab takes its title.
