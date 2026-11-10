@@ -29,6 +29,8 @@ DEFAULT_WIDTH = 28
 CONFIG_CHECK_SECONDS = 2
 
 _scheduled = False
+# A pass of add_docks that schedule could not get a timer for, left to the config check.
+_missed = False
 # The config's sidebar width, and the modification time of the config it was read from.
 _width = (DEFAULT_WIDTH, None)
 
@@ -76,7 +78,11 @@ def resize_docks(boss, width):
 
 def check_config(boss):
     def run(timer_id):
+        global _missed
         resize_docks(boss, sidebar_width())
+        if _missed:
+            _missed = False
+            add_docks(boss)
 
     add_timer(run, CONFIG_CHECK_SECONDS, True)
 
@@ -139,8 +145,12 @@ def add_docks(boss):
 # sessions, so launching from inside them could act on a half-built tab, and the launch itself fires them
 # again. Doing it from a timer runs it once the current change is finished, and coalesces a burst of changes
 # into one pass.
+#
+# kitty's timers are a fixed table on macOS, and add_timer returns 0, never to call back, when it is full, as
+# it can be while sessions load. Then the pass is left to the config check, which is already running, rather
+# than waiting forever for a timer that will not come.
 def schedule(boss):
-    global _scheduled
+    global _scheduled, _missed
     if _scheduled:
         return
     _scheduled = True
@@ -150,7 +160,8 @@ def schedule(boss):
         _scheduled = False
         add_docks(boss)
 
-    add_timer(run, 0, False)
+    if not add_timer(run, 0, False):
+        _scheduled, _missed = False, True
 
 
 def on_tab_bar_dirty(boss, window, data):
