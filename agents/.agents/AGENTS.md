@@ -28,6 +28,9 @@
 ## Git
 
 - Branch names: `pr/chancez/<topic>`.
+- Before removing a git worktree, check that nothing is using it: no kitty window or cm session with its
+  directory as cwd, nothing the user may have open in it. Use the project's own remove command when it has
+  one (`kspaces remove` closes the session first); ask when something is open there.
 - Throwaway identities for test repos (`GIT_AUTHOR_NAME=t` and the like) go on that one command only, never
   exported in the shell that commits real work. Check `git log -1 --format='%an <%ae>'` after committing.
 - Git worktrees should be created in the `.worktrees` directory within the repository being modified.
