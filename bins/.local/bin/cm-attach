@@ -12,9 +12,13 @@
 # The `--` cm needs is added here rather than by the caller, deliberately. Passing it through kitty would
 # put a `--` in the middle of a `launch` command line, where kitty's own option parser sees it first, and
 # whether it survives is a question this avoids having to answer.
+#
+# --if-running=attach, because the command runs only when the session is new or revived: restoring a saved
+# kitty session reruns this with the same command while the cm session is still running, and without it
+# cm refuses that attach and the window shows only an error.
 name=$1
 shift
 if [ "$#" -gt 0 ]; then
-  exec cm attach "$name" -- "$@"
+  exec cm attach --if-running=attach "$name" -- "$@"
 fi
 exec cm attach "$name"

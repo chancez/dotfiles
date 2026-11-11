@@ -187,6 +187,26 @@ def session_remote_path(info):
     return path or None
 
 
+# split_command splits a launch's arguments into its options and the command after them, which kspaces
+# passes to start a task in a new worktree. Options are taken to be in --name=value form, as every caller's
+# are; the first argument that is not one starts the command.
+def split_command(args):
+    for i, a in enumerate(args):
+        if not a.startswith('-'):
+            return [o for o in args[:i] if o != '--hold'], list(args[i:])
+    return list(args), []
+
+
+# attach is what the window runs: cm-attach NAME, with the command, if any, run in the cm session and then
+# the shell, so the window and its session outlive the command as a plain launch with --hold would. --hold
+# itself is dropped from the options: with it kitty would hold the window once cm-attach exits, at a shell
+# of its own outside cm, after the session's shell was exited on purpose.
+def attach(name, command):
+    if not command:
+        return [CM_ATTACH, name]
+    return [CM_ATTACH, name, 'sh', '-c', '"$@"; exec "${SHELL:-/bin/sh}" -l', 'sh'] + list(command)
+
+
 def main(args):
     return ''
 
@@ -207,14 +227,15 @@ def handle_result(args, answer, target_window_id, boss):
         (info or {}).get('cwd'),
     ))
 
+    opts, command = split_command(args[1:])
     cmd = ['launch']
-    cmd.extend(args[1:])
+    cmd.extend(opts)
 
     # A caller that chose the directory, such as kspaces opening a worktree, gets a local window there. The
     # current window's session says nothing about where that window belongs, so neither its host nor its cwd
     # applies.
-    if any(a.startswith('--cwd') for a in args[1:]):
-        cmd.extend([CM_ATTACH, next_session_name()])
+    if any(a.startswith('--cwd') for a in opts):
+        cmd.extend(attach(next_session_name(), command))
         _log('  -> explicit cwd cmd=%r' % (cmd,))
         boss.call_remote_control(window, tuple(cmd))
         return
@@ -253,6 +274,6 @@ def handle_result(args, answer, target_window_id, boss):
         cwd = window.cwd_of_child
     if cwd:
         cmd.append('--cwd={}'.format(cwd))
-    cmd.extend([CM_ATTACH, next_session_name()])
+    cmd.extend(attach(next_session_name(), command))
     _log('  -> local cmd=%r' % (cmd,))
     boss.call_remote_control(window, tuple(cmd))
