@@ -38,6 +38,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$CM_SESSION\" ] && [ -n \"$CLAUDE_PID\" ] || exit 0; set -- $(ps -o pgid=,tpgid= -p \"$CLAUDE_PID\"); [ \"$1\" = \"$2\" ] || exit 0; id=$(jq -r '.session_id // empty'); [ -n \"$id\" ] && cm restore-with -- claude --resume \"$id\" >/dev/null 2>&1; exit 0",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SessionEnd": [
