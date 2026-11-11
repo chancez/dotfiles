@@ -1,7 +1,5 @@
 # cm configuration. See https://github.com/chancez/cm/blob/main/docs/config.md
 
-scrollback_lines = 10000
-
 log_level = "debug"
 
 [debug]
@@ -20,3 +18,6 @@ safe_commands = ["nvim", "less", "htop", "vim"]
 [keys.session]
 detach = ["ctrl-\\"]
 prefix = ["ctrl-]"]
+
+[scrollback]
+lines = 10000
