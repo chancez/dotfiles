@@ -51,7 +51,7 @@ $S new mytest                 # launch, waits until a window actually exists
 $S ls mytest                  # window ids, pids, titles, cwd, running procs
 $S run mytest 'echo hi'       # run a shell line (escape-safe)
 $S screen mytest              # what is on screen right now
-$S shot mytest                # png of just this window (see below)
+$S shot mytest                # png of kitty's rendering, stays hidden (see below)
 $S rm mytest                  # tear down
 ```
 
@@ -66,9 +66,9 @@ $S rm mytest                  # tear down
 ## Sandboxes start hidden
 
 `new` passes `--start-as=hidden` and sets `macos_hide_from_tasks yes`, so the
-sandbox takes no focus, never covers the user's work, and adds no Dock icon or
-cmd-tab entry. Everything except pixels works while hidden: `run`, `text`, `ls`,
-`screen`, and any `kitten @` command.
+sandbox never covers the user's work and adds no Dock icon or cmd-tab entry.
+Everything works while hidden: `run`, `text`, `ls`, `screen`, `shot`, and any
+`kitten @` command.
 
 This is not a cosmetic nicety. A focused sandbox **steals the user's keystrokes**.
 While testing this, a visible sandbox captured two characters the user was typing
@@ -77,20 +77,53 @@ mangled line. A hidden sandbox in the same test received nothing. So a visible
 sandbox both interrupts the user and silently corrupts your own test input, which
 looks like a terminal bug rather than what it is.
 
+Hidden alone did not keep focus away. glfw focuses every window it shows, and on
+macOS focusing a window activates the whole app, so a hidden sandbox still took
+the keyboard whenever an OS window was created inside it, whenever focus moved
+between its OS windows, and when closing one focused the next. It can also be
+the instance LaunchServices picks to reopen "kitty" (`open -a kitty`, a launcher
+activating kitty by bundle id): it activates the app and opens a new window
+running the login shell. One such window appeared in a sandbox during this
+work, and a reopen event sent to a sandbox reproduced it. So `new` also writes
+`$dir/nofocus.py` and loads it as a `watcher`. It runs inside the sandbox
+process and:
+
+- turns `activateIgnoringOtherApps:` into a no-op, so kitty itself can never
+  activate the sandbox;
+- stops `makeKeyAndOrderFront:` from putting a hidden window on screen;
+- creates every new OS window hidden (`launch --type=os-window`, session
+  `new_os_window`, `detach-tab`, `detach-window`, a reopen), whatever state was
+  asked for;
+- hides the app the moment something outside activates it anyway, which hands
+  activation straight back to the previous app.
+
+Measured by logging `lsappinfo front` every ~60ms: `new`, `shot`, `run`,
+creating an OS window, `focus-window` across OS windows, closing one, a reopen
+event, and `rm` never made the sandbox frontmost. Outside activation is the one
+thing it cannot refuse, only undo: forcing the sandbox frontmost through System
+Events showed it in one sample (under 150ms) before it handed focus back. Keys
+typed in that moment can still land in it.
+
+Consequences for tests: in a hidden sandbox no OS window is ever focused (`ls`
+reports `is_focused` false everywhere) and OS window states like `maximized` or
+`fullscreen` are not applied. Test those with `--visible`, which has no guard.
+
 `--visible` exists for the case where a test genuinely depends on the window
 being on screen and focused: real focus-follows behavior, `focus_follows_mouse`,
-window-level rendering the compositor skips when hidden. Prefer hidden and reach
-for it only with a reason, since anything the user types goes into your window.
+focus events, OS window states, the macOS titlebar. Prefer hidden and reach for it
+only with a reason, since anything the user types goes into your window.
 
 To hand a sandbox over for a human look, show it deliberately:
 
 ```sh
 $S show mytest                # reveal and focus (takes focus on purpose)
-$S hide mytest                # send it back to the background
+$S hide mytest                # hide it and give focus back to the previous app
 ```
 
-Say what you are doing when you `show` one, since it interrupts them. A hidden
-sandbox needs no such warning.
+`show` switches the guard off and `hide` switches it back on, so between the two
+the sandbox behaves like a normal kitty, new OS windows included. Say what you are
+doing when you `show` one, since it interrupts them. `show` and `--visible` are
+the only things that take focus on purpose.
 
 ## Sandboxes are silent
 
@@ -175,24 +208,23 @@ $S shot mytest              # writes $dir/shot.png, prints the path
 $S shot mytest /tmp/out.png
 ```
 
-`shot` captures only this sandbox's OS window, via the `platform_window_id` that
-`kitten @ ls` reports, so it does not expose the rest of the user's display and
-needs no cropping.
+`shot` runs `kitten @ screenshot`: kitty renders the active OS window, tab bar
+included, into an offscreen buffer with its own shaders and writes the png
+itself. So it works while the sandbox stays hidden, never shows or focuses it,
+exposes nothing else on the user's display, and needs no screen-recording
+permission. The fonts, glyph widths, and colors are kitty's real rendering;
+what is missing is what macOS adds when it composites a window: the titlebar,
+the shadow, and transparency or blur over the desktop. For those, `show` it and
+ask the user to look.
 
-Because a hidden window is not composited, `shot` briefly shows the window, waits
-a frame for it to paint, captures, hides it again, and returns focus to whatever
-app had it. That flash is the only time a sandbox takes focus. Capturing without
-showing produces a png with the titlebar drawn and the entire text grid black,
-which is indistinguishable from a permissions failure, so do not try to skip it.
-Prefer `screen`/`get-text` when you only need the text: it needs no window at all.
+It used to show the window, capture it with `screencapture`, and hide it again,
+because macOS does not composite a hidden window and a capture without the show
+came back black. That show is what focused the sandbox, and it took two bursts of
+the user's typing. Do not go back to it.
 
-It requires macOS screen-recording permission for the process running the script,
-which is granted per-process and needs that process restarted to take effect. An
-unpermitted capture is not an error — it silently returns a solid black png that
-looks like a rendering bug. `shot` warns when the result is entirely black;
-believe the warning rather than the image. If permission is unavailable, set the
-sandbox up in the state you want and ask the user to screenshot it, telling them
-exactly what to look for.
+`shot` still warns when the png is entirely black, since that reads as a
+rendering bug; compare with `screen` before believing either.
+Prefer `screen`/`get-text` when you only need the text.
 
 **`get-text` does not include the tab bar.** It reads the focused *window's*
 screen; the tab bar is a separate Screen owned by the OS window, so no extent
