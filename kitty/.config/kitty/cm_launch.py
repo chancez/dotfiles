@@ -187,23 +187,27 @@ def session_remote_path(info):
     return path or None
 
 
-# split_command splits a launch's arguments into its options and the command after them, which kspaces
-# passes to start a task in a new worktree. Options are taken to be in --name=value form, as every caller's
-# are; the first argument that is not one starts the command.
+# split_command splits a launch's arguments into its options, the command after them, and whether --hold
+# was among the options. kspaces passes a command to run one of its commands in a worktree. Options are taken
+# to be in --name=value form, as every caller's are; the first argument that is not one starts the command.
 def split_command(args):
     for i, a in enumerate(args):
         if not a.startswith('-'):
-            return [o for o in args[:i] if o != '--hold'], list(args[i:])
-    return list(args), []
+            opts = list(args[:i])
+            return [o for o in opts if o != '--hold'], list(args[i:]), '--hold' in opts
+    return list(args), [], False
 
 
-# attach is what the window runs: cm-attach NAME, with the command, if any, run in the cm session and then
-# the shell, so the window and its session outlive the command as a plain launch with --hold would. --hold
-# itself is dropped from the options: with it kitty would hold the window once cm-attach exits, at a shell
-# of its own outside cm, after the session's shell was exited on purpose.
-def attach(name, command):
+# attach is what the window runs: cm-attach NAME, with the command, if any, run in the cm session. With
+# --hold the session's shell follows the command, so the window and its session outlive it as with a plain
+# launch --hold; without, the session ends with the command, as an overlay that closes back to its window
+# wants. --hold itself is never passed on: kitty would hold the window once cm-attach exits, at a shell of
+# its own outside cm.
+def attach(name, command, hold):
     if not command:
         return [CM_ATTACH, name]
+    if not hold:
+        return [CM_ATTACH, name] + list(command)
     return [CM_ATTACH, name, 'sh', '-c', '"$@"; exec "${SHELL:-/bin/sh}" -l', 'sh'] + list(command)
 
 
@@ -227,7 +231,7 @@ def handle_result(args, answer, target_window_id, boss):
         (info or {}).get('cwd'),
     ))
 
-    opts, command = split_command(args[1:])
+    opts, command, hold = split_command(args[1:])
     cmd = ['launch']
     cmd.extend(opts)
 
@@ -235,7 +239,7 @@ def handle_result(args, answer, target_window_id, boss):
     # current window's session says nothing about where that window belongs, so neither its host nor its cwd
     # applies.
     if any(a.startswith('--cwd') for a in opts):
-        cmd.extend(attach(next_session_name(), command))
+        cmd.extend(attach(next_session_name(), command, hold))
         _log('  -> explicit cwd cmd=%r' % (cmd,))
         boss.call_remote_control(window, tuple(cmd))
         return
@@ -274,6 +278,6 @@ def handle_result(args, answer, target_window_id, boss):
         cwd = window.cwd_of_child
     if cwd:
         cmd.append('--cwd={}'.format(cwd))
-    cmd.extend(attach(next_session_name(), command))
+    cmd.extend(attach(next_session_name(), command, hold))
     _log('  -> local cmd=%r' % (cmd,))
     boss.call_remote_control(window, tuple(cmd))
