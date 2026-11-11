@@ -28,6 +28,8 @@
 ## Git
 
 - Branch names: `pr/chancez/<topic>`.
+- Throwaway identities for test repos (`GIT_AUTHOR_NAME=t` and the like) go on that one command only, never
+  exported in the shell that commits real work. Check `git log -1 --format='%an <%ae>'` after committing.
 - Git worktrees should be created in the `.worktrees` directory within the repository being modified.
 - Git worktrees should should be named after the `<topic>` in the branch name, e.g. `.worktrees/<topic>`.
 - Commit in small logical units, one concern per commit. Every commit must build and pass
