@@ -199,16 +199,20 @@ def split_command(args):
 
 
 # attach is what the window runs: cm-attach NAME, with the command, if any, run in the cm session. With
-# --hold the session's shell follows the command, so the window and its session outlive it as with a plain
-# launch --hold; without, the session ends with the command, as an overlay that closes back to its window
-# wants. --hold itself is never passed on: kitty would hold the window once cm-attach exits, at a shell of
-# its own outside cm.
+# --hold the command is typed into the session's shell at its first prompt (cm attach --in-shell), so the
+# window and its session outlive it as with a plain launch --hold; without, the session ends with the
+# command, as an overlay that closes back to its window wants. --hold itself is never passed on: kitty would
+# hold the window once cm-attach exits, at a shell of its own outside cm.
+#
+# Typed rather than `sh -c '"$@"; exec $SHELL -l'`, which ran the command before any zsh existed: .zshrc
+# never ran, so omp and claude had no AWS or Bedrock environment, no preexec hook reported the command, and
+# cm list showed nothing running.
 def attach(name, command, hold):
     if not command:
         return [CM_ATTACH, name]
     if not hold:
         return [CM_ATTACH, name] + list(command)
-    return [CM_ATTACH, name, 'sh', '-c', '"$@"; exec "${SHELL:-/bin/sh}" -l', 'sh'] + list(command)
+    return [CM_ATTACH, '--in-shell', name] + list(command)
 
 
 def main(args):
