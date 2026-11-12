@@ -747,6 +747,53 @@ checksum = "sha256:998e39e5c6b8425db0595bdcaf141401de2cd6c29241ece450ac6e260d30a
 url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-windows-amd64.tar.gz"
 url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425194"
 
+[[tools."github:skardyy/mcat"]]
+version = "0.6.8"
+backend = "github:skardyy/mcat"
+specifiers = ["latest"]
+
+[tools."github:skardyy/mcat"."platforms.linux-arm64"]
+checksum = "sha256:fab759bd987408c2ee1097052864f417ccad34607eda7715b48fc6db944700e9"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-aarch64-unknown-linux-gnu.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416797"
+
+[tools."github:skardyy/mcat"."platforms.linux-arm64-musl"]
+checksum = "sha256:0ff7e73575e297d4d6f9fcf98a49afa5104b39eb67618af1d47efd9d690533a3"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-aarch64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416811"
+
+[tools."github:skardyy/mcat"."platforms.linux-x64"]
+checksum = "sha256:0e88a04c8c8a7485f0a75f9c33865824bbf3f64785fdf250fbb50545ea84e247"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-x86_64-unknown-linux-gnu.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416859"
+
+[tools."github:skardyy/mcat"."platforms.linux-x64-musl"]
+checksum = "sha256:c58a6e08d0c1599f3a401f0e9515443ee2d3cd8ed4d08f57fe9734a6a60b4d04"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-x86_64-unknown-linux-musl.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416873"
+
+[tools."github:skardyy/mcat"."platforms.macos-arm64"]
+checksum = "sha256:8c04f628ca848dc97b322b3470efe62fd8e5de28ae103df9dcfe638108cf4263"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-aarch64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416789"
+
+[tools."github:skardyy/mcat"."platforms.macos-x64"]
+checksum = "sha256:020c3f4deb587ce6780c5c877ca3c2279a53153b8a0ebd4cb9b07814c686c69e"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-x86_64-apple-darwin.tar.xz"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416831"
+
+[tools."github:skardyy/mcat"."platforms.windows-x64"]
+checksum = "sha256:92df165b80e62bdeac82b9087579918cd8919bc021d051f9b0a4c0b16986336b"
+checksum_source = "mise-versions"
+url = "https://github.com/Skardyy/mcat/releases/download/v0.6.8/mcat-v0.6.8-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/Skardyy/mcat/releases/assets/693416832"
+
 [[tools."github:tree-sitter/tree-sitter"]]
 version = "0.27.0"
 backend = "github:tree-sitter/tree-sitter"
