@@ -5,9 +5,9 @@ spaces = [
   "~/projects/work/isovalent-operator",
   "~/projects/work/docs-hypershield",
   "~/projects/work/docs-reference",
-  "~/projects/kitty",
   "~/projects/cm",
   "~/projects/kspaces",
+  "~/projects/kitty",
   "~/.dotfiles",
 ]
 
@@ -32,3 +32,37 @@ width = 30
 [kitty]
 auto_install = true
 save_sessions = true
+
+[[commands]]
+name = "claude"
+run = ["claude", "{prompt}"]
+inputs = [{ name = "prompt", label = "Prompt" }]
+
+[[commands]]
+name = "oh-my-pi"
+run = ["omp", "{prompt}"]
+inputs = [{ name = "prompt", label = "Prompt" }]
+
+[[commands]]
+name = "gr"
+run = ["gr"]
+open = "split"
+
+
+[[layouts]]
+name = "claude + review"
+[[layouts.tabs]]
+panes = [
+  { run = ["claude"] },
+  { run = ["gr"], split = "right", size = 42 },
+  { split = "below", of = 1, size = 24 },
+]
+
+[[layouts]]
+name = "omp + review"
+[[layouts.tabs]]
+panes = [
+  { run = ["omp"] },
+  { run = ["gr"], split = "right", size = 42 },
+  { split = "below", of = 1, size = 24 },
+]
