@@ -44,6 +44,11 @@
 - To rebase, `git fetch` the configured remote and rebase onto `$REMOTE/$BASE_BRANCH`.
   Do not check out the base branch and `git pull` it: this avoids having to leave the current branch.
 - If the local `$BASE_BRANCH` is ahead of the remote, rebase against `$BASE_BRANCH` instead.
+- Prefer rebasing your local branches onto the base branch rather than merging
+  the base branch into your local branch. This keeps the history linear and
+  easier to read.
+- When merging, always use `--ff-only` to avoid creating unnecessary merge
+  commits. Rebase before merging if necessary.
 
 ## Writing PRs
 
