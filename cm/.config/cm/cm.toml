@@ -12,8 +12,8 @@ flight_recorder_window = "10s"
 # Let session content survive a reboot. Off by default.
 enabled = true
 sessions = ["*"]
-on_restore = "prefill"
-safe_commands = ["nvim", "less", "htop", "vim"]
+on_restore = "command"
+safe_commands = ["nvim", "less", "htop", "vim", "gr"]
 
 [keys.session]
 detach = ["ctrl-\\"]
