@@ -21,3 +21,4 @@ prefix = ["ctrl-]"]
 
 [scrollback]
 lines = 10000
+pager = "nvim --cmd 'let g:auto_session_enabled = v:false' -c 'setlocal nonumber nolist showtabline=0 foldcolumn=0|Man!' -c \"autocmd VimEnter * normal G\" -"
