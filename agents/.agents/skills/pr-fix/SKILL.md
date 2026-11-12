@@ -1,6 +1,7 @@
 ---
 name: pr-fix
 description: Address issues raised in pull request comments and code reviews. Use when the user wants to fix or resolve feedback from PR reviewers, including inline code review comments and general PR comments.
+argument-hint: "Extra instructions, e.g. which comments to address or skip"
 allowed-tools: Bash(gh pr *), Bash(gh api *), Bash(git *), Bash(xargs -I NUM gh api *), Read, Edit, Write, Grep, Glob, Agent
 ---
 
@@ -17,6 +18,12 @@ allowed-tools: Bash(gh pr *), Bash(gh api *), Bash(git *), Bash(xargs -I NUM gh 
 
 Address the issues raised in the PR comments and reviews above.
 
+If the user passed arguments, treat them as extra instructions for this run (which comments to address or skip, how to resolve a specific item, added context). They take precedence over the workflow and guidelines below.
+
+### GitHub is read-only
+
+Use `gh` only to read the PR. All output goes to the user in this conversation. Do not post, edit, or react to comments, submit reviews, or resolve threads on GitHub unless the user explicitly asks for that in this conversation or in the skill arguments. When a reply seems warranted, draft it in the summary for the user to post.
+
 ### Workflow
 
 1. Analyze all review comments, inline code comments, and issue comments to identify actionable feedback items.
@@ -27,7 +34,7 @@ Address the issues raised in the PR comments and reviews above.
    - **Approvals/Acknowledgements**: No action needed
 3. For each actionable item, read the relevant file and surrounding context before making changes.
 4. Make the requested changes. When a review comment is ambiguous, prefer the most conservative interpretation that still addresses the reviewer's concern.
-5. After making all changes, provide a summary of what was addressed and what was skipped (with reasoning for anything skipped).
+5. After making all changes, provide a summary of what was addressed and what was skipped (with reasoning for anything skipped). Include draft answers to reviewer questions.
 
 ### Guidelines
 
