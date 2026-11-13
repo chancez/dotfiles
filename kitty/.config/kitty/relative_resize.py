@@ -1,68 +1,57 @@
 from kittens.tui.handler import result_handler
 
+MODE = 'resize'
+DEFAULT_STEP = 4
+# Shown while the mode is active, so it is obvious keys resize instead of typing.
+MODE_COLORS = (
+    'active_border_color=#e5c07b',
+    'active_tab_background=#e5c07b',
+    'active_tab_foreground=#282c34',
+)
+
+# direction -> (side whose neighbor the border is shared with, quality to use
+# when that neighbor exists, quality when only the opposite neighbor exists)
+MOVES = {
+    'left': ('right', 'narrower', 'wider'),
+    'right': ('right', 'wider', 'narrower'),
+    'up': ('bottom', 'shorter', 'taller'),
+    'down': ('bottom', 'taller', 'shorter'),
+}
+OPPOSITE = {'right': 'left', 'bottom': 'top'}
+
+
 def main(args):
     pass
 
+
 @result_handler(no_ui=True)
 def handle_result(args, result, target_window_id, boss):
-    window = boss.window_id_map.get(target_window_id)
-    if window is None:
+    action = args[1]
+    # boss outlives each kitten run, so the step is kept there.
+    step = getattr(boss, 'relative_resize_step', DEFAULT_STEP)
+
+    if action == 'enter':
+        boss.relative_resize_step = DEFAULT_STEP
+        boss.push_keyboard_mode(MODE)
+        boss.combine('set_colors --all --configured ' + ' '.join(MODE_COLORS))
+        return
+    if action == 'exit':
+        boss.pop_keyboard_mode()
+        boss.combine('set_colors --all --configured --reset')
+        return
+    if action in ('bigger', 'smaller'):
+        boss.relative_resize_step = step * 2 if action == 'bigger' else max(1, step // 2)
+        # The tab title shows the step.
+        boss.active_tab_manager.mark_tab_bar_dirty()
         return
 
-    direction = args[1]
-
-    neighbors = boss.active_tab.current_layout.neighbors_for_window(window, boss.active_tab.windows)
-    current_window_id = boss.active_tab.active_window
-
-    left_neighbors = neighbors.get('left')
-    right_neighbors = neighbors.get('right')
-    top_neighbors = neighbors.get('top')
-    bottom_neighbors = neighbors.get('bottom')
-
-    # has a neighbor on both sides
-    if direction == 'left' and (left_neighbors and right_neighbors):
-        # boss.active_tab.set_active_window(left_neighbors[0])
-        boss.active_tab.resize_window('narrower', 1)
-        # boss.active_tab.set_active_window(current_window_id)
-    # only has left neighbor
-    elif direction == 'left' and left_neighbors:
-        boss.active_tab.resize_window('wider', 1)
-    # only has right neighbor
-    elif direction == 'left' and right_neighbors:
-        boss.active_tab.resize_window('narrower', 1)
-
-    # has a neighbor on both sides
-    elif direction == 'right' and (left_neighbors and right_neighbors):
-        # boss.active_tab.set_active_window(left_neighbors[0])
-        boss.active_tab.resize_window('wider', 1)
-        # boss.active_tab.set_active_window(current_window_id)
-    # only has left neighbor
-    elif direction == 'right' and left_neighbors:
-        boss.active_tab.resize_window('narrower', 1)
-    # only has right neighbor
-    elif direction == 'right' and right_neighbors:
-        boss.active_tab.resize_window('wider', 1)
-
-    # has a neighbor above and below
-    elif direction == 'up' and (top_neighbors and bottom_neighbors):
-        # boss.active_tab.set_active_window(top_neighbors[0])
-        boss.active_tab.resize_window('shorter', 1)
-        # boss.active_tab.set_active_window(current_window_id)
-    # only has top neighbor
-    elif direction == 'up' and top_neighbors:
-        boss.active_tab.resize_window('taller', 1)
-    # only has bottom neighbor
-    elif direction == 'up' and bottom_neighbors:
-        boss.active_tab.resize_window('shorter', 1)
-
-    # has a neighbor above and below
-    elif direction == 'down' and (top_neighbors and bottom_neighbors):
-        # boss.active_tab.set_active_window(top_neighbors[0])
-        boss.active_tab.resize_window('taller', 1)
-        # boss.active_tab.set_active_window(current_window_id)
-    # only has top neighbor
-    elif direction == 'down' and top_neighbors:
-        boss.active_tab.resize_window('shorter', 1)
-    # only has bottom neighbor
-    elif direction == 'down' and bottom_neighbors:
-        boss.active_tab.resize_window('taller', 1)
+    tab = boss.active_tab
+    window = tab.active_window
+    if window is None:
+        return
+    neighbors = tab.current_layout.neighbors_for_window(window, tab.windows)
+    side, toward, away = MOVES[action]
+    if neighbors.get(side):
+        tab.resize_window(toward, step)
+    elif neighbors.get(OPPOSITE[side]):
+        tab.resize_window(away, step)
