@@ -1,13 +1,11 @@
-# Spaces shown in the kspaces sidebar, in display order.
+groups = ["work", "tools"]
+
 spaces = [
-  "~/projects/work/hubble-timescape",
-  "~/projects/gr",
-  "~/projects/work/isovalent-operator",
-  "~/projects/work/docs-hypershield",
-  "~/projects/work/docs-reference",
-  "~/projects/cm",
-  "~/projects/kspaces",
-  "~/projects/kitty",
+  { path = "~/projects/gr", group = "tools" },
+  { path = "~/projects/cm", group = "tools" },
+  { path = "~/projects/kspaces", group = "tools" },
+  { path = "~/projects/kitty", group = "tools" },
+
   "~/.dotfiles",
 ]
 
@@ -25,7 +23,7 @@ dir = ".worktrees"
 branch_prefix = "pr/chancez"
 
 [sidebar]
-width = 30
+width = 35
 popup = "panel"
 
 # kspaces kitty install's files, included from kitty.conf: rewrite them when another
@@ -36,11 +34,11 @@ save_sessions = true
 
 [[commands]]
 name = "claude"
-run = ["claude", "{prompt}"]
+run = ["claude", "{prompt?}"]
 inputs = [{ name = "prompt", label = "Prompt" }]
 
 [[commands]]
-name = "oh-my-pi"
+name = "omp"
 run = ["omp", "{prompt}"]
 inputs = [{ name = "prompt", label = "Prompt" }]
 
@@ -54,8 +52,8 @@ name = "claude + review"
 
 [[layouts.tabs]]
 panes = [
-  { run = ["claude"] },
-  { run = ["gr"], split = "right", size = 42 },
+  { command = "claude" },
+  { command = "gr", split = "right", size = 42 },
   { split = "below", of = 1, size = 24 },
 ]
 
@@ -63,7 +61,7 @@ panes = [
 name = "omp + review"
 [[layouts.tabs]]
 panes = [
-  { run = ["omp"] },
-  { run = ["gr"], split = "right", size = 42 },
+  { command = "omp" },
+  { command = "gr", split = "right", size = 42 },
   { split = "below", of = 1, size = 24 },
 ]
