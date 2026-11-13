@@ -176,6 +176,36 @@ that has it stays silent. That turns "is this my binary?" into an observation.
 Absence of the error is only meaningful for an option the released version does
 not know about — for anything else, use `ps`.
 
+## Programs the sandbox runs
+
+A sandbox does not isolate *which programs* its windows run. kitty looks a bare
+command name up itself, in `which()` (kitty/utils.py), before the child's
+environment exists, in this order:
+
+1. `exe_search_path` entries without a prefix;
+2. kitty's own `PATH`, the one it was started with;
+3. `~/.local/bin`, then `~/bin`;
+4. `exe_search_path` entries with a `+` prefix.
+
+`env PATH=...` in kitty.conf is not on that list: it only sets the child's
+environment once the program has been found. So a fake `gr` or `claude` put
+on `env PATH`, or on `exe_search_path +DIR`, loses to the real one in
+`~/.local/bin`, and the sandbox runs the user's real program against your test
+repo. This happened: a sandbox meant to run a fake `gr` ran the real one, which
+wrote rows for the throwaway repo into the user's gr database.
+
+Put fakes, and a build under test, in a directory listed first, without `+`,
+and on `env PATH` too for anything the child itself runs by name:
+
+```sh
+printf 'exe_search_path %s\nenv PATH=%s:/usr/bin:/bin\n' "$FAKES" "$FAKES" > /tmp/fakes.conf
+$S new mytest --conf /tmp/fakes.conf
+```
+
+Or launch by absolute path, which skips the lookup. Check before trusting a
+result: `ls` shows each window's `cmdline`, and `foreground_processes` its
+resolved executable.
+
 ## Driving the sandbox
 
 **`run` for anything containing escapes.** `kitten @ send-text` mangles
