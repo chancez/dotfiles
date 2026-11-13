@@ -26,6 +26,7 @@ branch_prefix = "pr/chancez"
 
 [sidebar]
 width = 30
+popup = "panel"
 
 # kspaces kitty install's files, included from kitty.conf: rewrite them when another
 # kspaces is installed, and install the session saver.
@@ -48,9 +49,9 @@ name = "gr"
 run = ["gr"]
 open = "split"
 
-
 [[layouts]]
 name = "claude + review"
+
 [[layouts.tabs]]
 panes = [
   { run = ["claude"] },
