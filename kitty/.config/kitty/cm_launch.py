@@ -115,9 +115,14 @@ def session_of(window):
         return None
 
     prog = os.path.basename(argv[0])
-    # The wrapper: cm-attach NAME.
-    if prog == 'cm-attach' and len(argv) >= 2:
-        return argv[1]
+    # The wrapper: cm-attach [--in-shell] NAME [COMMAND...]. The name is the first argument that is not a
+    # flag: since --hold types the command into the shell, argv[1] can be --in-shell, and taking it as the
+    # name made cm_reap.py run `cm kill --in-shell`, leaving the session running with nothing attached.
+    if prog == 'cm-attach':
+        for arg in argv[1:]:
+            if not arg.startswith('-'):
+                return arg
+        return None
     # cm itself: cm attach NAME. Guarded on the subcommand so `cm list` in a window is not mistaken for a
     # session, and the name is taken as the first argument that is not a flag, so a boolean flag before it
     # is skipped (`cm attach --persist NAME`). A flag whose value is separated by a space rather than an
