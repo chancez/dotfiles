@@ -1,0 +1,27 @@
+setupVersion: 2
+modelRoles:
+  default: amazon-bedrock/global.anthropic.claude-opus-5-5
+tui:
+  vimMode: true
+  vimModeDisplay: text
+magicKeywords:
+  enabled: true
+display:
+  showTurnTime: true
+  showTokenUsage: true
+github:
+  enabled: true
+telemetry:
+  otlpExportEnabled: false
+symbolPreset: nerd
+composer:
+  shape: band
+  tokenRate: true
+statusLine:
+  preset: default
+  separator: powerline-thin
+  contextLine: annotated
+lsp:
+  enabled: false
+dev:
+  autoqaConsent: denied
