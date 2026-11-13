@@ -138,5 +138,6 @@ ci-state.json
 .worktree
 .scratch
 mise.local.toml
+mise.local.lock
 AGENTS.local.md
 CLAUDE.local.md
