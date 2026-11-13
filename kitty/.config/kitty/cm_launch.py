@@ -241,7 +241,11 @@ def handle_result(args, answer, target_window_id, boss):
     ))
 
     opts, command, hold = split_command(args[1:])
-    cmd = ['launch']
+    # --self: remote control's launch otherwise uses kitty's active tab, the focused OS window's, so
+    # `kitten @ action --match=id:N kitten cm_launch.py` from another OS window, such as a kspaces panel, put
+    # the new tab or window there rather than by window N. kitty's own launch action uses the window it runs
+    # on; --self makes this match it.
+    cmd = ['launch', '--self']
     cmd.extend(opts)
 
     # A caller that chose the directory, such as kspaces opening a worktree, gets a local window there. The
