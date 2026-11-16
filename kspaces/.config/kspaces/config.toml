@@ -17,8 +17,9 @@ launch = ["kitten", "cm_launch.py"]
 # Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
 sessions = "~/.local/share/kitty/sessions"
 
-# The layout the new worktree form's Pull request tab starts on.
+# The layouts the new worktree form's Pull request and Issue tabs start on.
 pr_layout = "claude PR review"
+issue_layout = "claude implement issue"
 
 # The new worktree form starts branch names with pr/chancez/; removing a worktree starts with deleting
 # its branch ticked when that loses nothing.
@@ -76,4 +77,15 @@ name = "claude PR review"
 [[layouts.tabs]]
 panes = [
   { command = "claude", inputs = { prompt = "/review medium #{pr}" } },
+]
+
+# Claude implementing the issue, its prompt filled in with the issue's number, to edit or keep, with gr
+# beside it to review the changes and a shell below.
+[[layouts]]
+name = "claude implement issue"
+[[layouts.tabs]]
+panes = [
+  { command = "claude", inputs = { prompt = "Implement issue #{issue}" } },
+  { command = "gr", split = "right", size = 42 },
+  { split = "below", of = 1, size = 24 },
 ]
