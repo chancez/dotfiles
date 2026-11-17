@@ -1,12 +1,11 @@
 groups = ["work", "tools"]
 
 spaces = [
+  "~/.dotfiles",
   { path = "~/projects/gr", group = "tools" },
   { path = "~/projects/cm", group = "tools" },
   { path = "~/projects/kspaces", group = "tools" },
   { path = "~/projects/kitty", group = "tools" },
-
-  "~/.dotfiles",
 ]
 
 # Open every window kspaces opens through cm, like cmd+t does: a worktree's first tab, and
