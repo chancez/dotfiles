@@ -159,6 +159,24 @@ vim.api.nvim_create_user_command('YankFilePath', function()
   print('Yanked file path: ' .. file_path)
 end, { desc = "Yank the current file's absolute path to the clipboard." })
 
+-- Yank current file to clipboard as a file (like Finder cmd+c), so apps paste it as an attachment
+vim.api.nvim_create_user_command('YankFileObject', function()
+  local file_path = vim.fn.expand('%:p')
+  if file_path == '' then return end
+  local res = vim.system({
+    'osascript',
+    '-e', 'on run argv',
+    '-e', 'set the clipboard to POSIX file (item 1 of argv)',
+    '-e', 'end run',
+    file_path,
+  }, { text = true }):wait()
+  if res.code ~= 0 then
+    vim.notify('YankFileObject failed: ' .. res.stderr, vim.log.levels.ERROR)
+    return
+  end
+  print('Yanked file object: ' .. file_path)
+end, { desc = "Yank the current file as a file object to the clipboard" })
+
 -- Yank YAML value at cursor with its full key path
 vim.api.nvim_create_user_command('YankYAMLText', function()
   require('config.yaml').yank_yaml_text('+')
