@@ -37,6 +37,12 @@
 #
 # --in-shell types the command into the session's shell rather than running it in place of the shell, which
 # is how launch_wrapper.py keeps a window after its command for kitty's launch --hold.
+#
+# KITTY_SI_RUN_COMMAND_AT_STARTUP is how kitty restores a window saved while its shell ran a program: kitty's
+# shell integration runs it at the shell's first prompt. kitty learns that program from the shell's own
+# reports, which cm passes on, so a saved cm window got it too, and a revived session's shell ran it on top
+# of what cm brings back: vim twice, the second typed into the first. cm restores what ran, so it is unset.
+unset KITTY_SI_RUN_COMMAND_AT_STARTUP
 shell=
 in_shell=
 dir=
