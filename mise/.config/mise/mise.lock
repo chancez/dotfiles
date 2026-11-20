@@ -547,45 +547,44 @@ url = "https://github.com/chancez/cm/releases/download/v0.4.2/cm_v0.4.2_darwin_a
 url_api = "https://api.github.com/repos/chancez/cm/releases/assets/575500551"
 
 [[tools."github:chancez/kspaces"]]
-version = "0.1.0"
+version = "0.5.0"
 backend = "github:chancez/kspaces"
 specifiers = ["latest"]
 
 [tools."github:chancez/kspaces"."platforms.linux-arm64"]
-checksum = "sha256:7995abcfe4fb4fea6ef64aeb00e69cc57f40152b232858341bdd586a1bda1cdb"
+checksum = "sha256:7401eb8432996516b5702d8e788b97cbb3f76d00325fedf3c1b7d0d5ce041af3"
 checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327835"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921889"
 
 [tools."github:chancez/kspaces"."platforms.linux-arm64-musl"]
-checksum = "sha256:7995abcfe4fb4fea6ef64aeb00e69cc57f40152b232858341bdd586a1bda1cdb"
+checksum = "sha256:7401eb8432996516b5702d8e788b97cbb3f76d00325fedf3c1b7d0d5ce041af3"
 checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327835"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921889"
 
 [tools."github:chancez/kspaces"."platforms.linux-x64"]
-checksum = "sha256:214926a5fe9bbd01dc7c622bb148736d1049819d700242ccac2ebd9ba7e88693"
+checksum = "sha256:29c59a313209099f50fda56396bad7a8f50bf097df5d2ed71d0ace4c1c46fb24"
 checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327834"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921888"
 
 [tools."github:chancez/kspaces"."platforms.linux-x64-musl"]
-checksum = "sha256:214926a5fe9bbd01dc7c622bb148736d1049819d700242ccac2ebd9ba7e88693"
+checksum = "sha256:29c59a313209099f50fda56396bad7a8f50bf097df5d2ed71d0ace4c1c46fb24"
 checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327834"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921888"
 
 [tools."github:chancez/kspaces"."platforms.macos-arm64"]
-checksum = "sha256:07271245ce3a7cae62f28d1ff06160915b41f83c3d82098645515614ba2d8a3d"
-checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327832"
+checksum = "sha256:66517ed82dad71a23098deaca62e49aa661bd4692a6f287265b79deaf64edfbd"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921892"
 
 [tools."github:chancez/kspaces"."platforms.macos-x64"]
-checksum = "sha256:a97b014316976c88dc3d6c53e687fea0510f7827f8ec56822ed1c5adf5dce4fb"
+checksum = "sha256:eea8984b3c459602bcfeec0c9fe2bee276a8e534bcdc8aa01324550056bbf8eb"
 checksum_source = "mise-versions"
-url = "https://github.com/chancez/kspaces/releases/download/v0.1.0/kspaces_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/733327829"
+url = "https://github.com/chancez/kspaces/releases/download/v0.5.0/kspaces_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/chancez/kspaces/releases/assets/769921890"
 
 [[tools."github:clangd/clangd"]]
 version = "23.1.0"
@@ -666,86 +665,6 @@ url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/ass
 checksum = "sha256:4fe7d71d087b307c7869036171bd9d8c6a4284cd7c25b89098b0a24eb2d9b6d2"
 url = "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip"
 url_api = "https://api.github.com/repos/fwcd/kotlin-language-server/releases/assets/221467839"
-
-[[tools."github:isovalent/cilium-cli-releases"]]
-version = "0.20.0-cee.2"
-backend = "github:isovalent/cilium-cli-releases"
-specifiers = ["latest"]
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.linux-arm64"]
-checksum = "sha256:c7fcf36688d057d8454911eee7f279aa8204fd47a140901cd56222c02a4b2bb8"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782354"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.linux-arm64-musl"]
-checksum = "sha256:c7fcf36688d057d8454911eee7f279aa8204fd47a140901cd56222c02a4b2bb8"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782354"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.linux-x64"]
-checksum = "sha256:3c706a327f20f5dfca382b4dd24bc785ccf39e7fb6b4436c58cb43233495d106"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782373"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.linux-x64-musl"]
-checksum = "sha256:3c706a327f20f5dfca382b4dd24bc785ccf39e7fb6b4436c58cb43233495d106"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782373"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.macos-arm64"]
-checksum = "sha256:814d4ce9bf916bf9a0dd0f097003b33e42736de37ff601acd4f64c7997a6a19d"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782360"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.macos-x64"]
-checksum = "sha256:81db659c651cb2b748d69553baf4e6fd35a4533eabc0cb81a2eec61899c80336"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-darwin-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782358"
-
-[tools."github:isovalent/cilium-cli-releases"."platforms.windows-x64"]
-checksum = "sha256:a3abfe274d7074ab3d8704d4987691643f9f7ffd00adaeb94d6934a51ac852bf"
-url = "https://github.com/isovalent/cilium-cli-releases/releases/download/v0.20.0-cee.2/cilium-windows-amd64.zip"
-url_api = "https://api.github.com/repos/isovalent/cilium-cli-releases/releases/assets/563782359"
-
-[[tools."github:isovalent/hubble-releases"]]
-version = "1.17.18-cee.1"
-backend = "github:isovalent/hubble-releases"
-specifiers = ["v1.17.18-cee.1"]
-
-[tools."github:isovalent/hubble-releases"."platforms.linux-arm64"]
-checksum = "sha256:223daf394eed197ca417d1480cbb7cb58a5d555a1091d8cc50090940916dd51d"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425188"
-
-[tools."github:isovalent/hubble-releases"."platforms.linux-arm64-musl"]
-checksum = "sha256:223daf394eed197ca417d1480cbb7cb58a5d555a1091d8cc50090940916dd51d"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425188"
-
-[tools."github:isovalent/hubble-releases"."platforms.linux-x64"]
-checksum = "sha256:08b2d6e5d8a7edc4d598d23b6e2cfc0291d155b91aa8ea65d3aaf97914a8c4b2"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425193"
-
-[tools."github:isovalent/hubble-releases"."platforms.linux-x64-musl"]
-checksum = "sha256:08b2d6e5d8a7edc4d598d23b6e2cfc0291d155b91aa8ea65d3aaf97914a8c4b2"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425193"
-
-[tools."github:isovalent/hubble-releases"."platforms.macos-arm64"]
-checksum = "sha256:8c333dda233629bf4d3df5b78da594f7f78fd402eea97e108bbef305d14dbe62"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425190"
-
-[tools."github:isovalent/hubble-releases"."platforms.macos-x64"]
-checksum = "sha256:e4ca0fd46ac90ff394965fe175c91c5b3cff4e8951b476cb260caeccf6a90ea6"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-darwin-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425196"
-
-[tools."github:isovalent/hubble-releases"."platforms.windows-x64"]
-checksum = "sha256:998e39e5c6b8425db0595bdcaf141401de2cd6c29241ece450ac6e260d30a344"
-url = "https://github.com/isovalent/hubble-releases/releases/download/v1.17.18-cee.1/hubble-windows-amd64.tar.gz"
-url_api = "https://api.github.com/repos/isovalent/hubble-releases/releases/assets/531425194"
 
 [[tools."github:skardyy/mcat"]]
 version = "0.6.8"
