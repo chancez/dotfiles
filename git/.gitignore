@@ -130,6 +130,7 @@ kls_database.db
 config.local.json
 ci-state.json
 .nvim.lua
+.lazy.lua
 *.cast
 .claude/settings.local.json
 .claude/CLAUDE.local.md
