@@ -65,6 +65,18 @@ mise bootstrap packages apply           # install brew/cask/mas system packages 
 mise install                            # install [tools]
 ```
 
+### Per-machine tools
+
+Keep machine-specific tools (e.g. work) out of the repo and the shared `mise.lock`:
+
+```sh
+echo 'env = ["work"]' > ~/.config/mise/miserc.local.toml   # load config.work.toml on this machine
+$EDITOR ~/.config/mise/config.work.toml                     # [tools] for this machine, untracked
+cd ~ && mise lock --global                                  # locks them in ~/.config/mise/mise.work.lock
+```
+
+Don't use `conf.d/`: its tools share `mise.lock` and get pruned on other machines.
+
 ## Residual Homebrew
 
 A small `brew/Brewfile` holds the few things mise's built-in Homebrew support can't do
