@@ -46,37 +46,55 @@ def prefix_for_launch(ctx):
         return None
     name = ctx.user_vars.get(SESSION_VAR) or next_session_name()
     remember(ctx.window_id, name)
-    if remote := remote_prefix(ctx, name):
+    source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
+    info = session_info(session_of(source))
+    if remote := remote_prefix(ctx, name, info):
         return remote
+    # In the window's directory, so that the cm attach client starts there too: kitty takes the directory of
+    # a cm window from that client while a program runs in it, see window_dir.
+    dir_prefix = ['--dir', window_dir(ctx, source, info)]
     if not ctx.is_default_shell:
         # Typed into the session's shell at its first prompt (cm attach --in-shell) rather than run in place
         # of it: run before any zsh existed, .zshrc never ran, so omp and claude had no AWS or Bedrock
         # environment, no preexec hook reported the command, and cm list showed nothing running. The
         # session's shell also outlives the command, as kitty's --hold, which this cannot see, would keep
         # it (kovidgoyal/kitty#10901).
-        prefix = [CM_ATTACH, '--in-shell', name]
+        prefix = [CM_ATTACH] + dir_prefix + ['--in-shell', name]
         _log('wrap %s window=%d cwd=%r argv=%r -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
         return prefix
     # What kitty puts after the prefix, on macOS its run-shell kitten and the shell, becomes the session's
     # program: run-shell changes to the window's directory, as /usr/bin/login starts in the home one, and
     # execs the shell.
-    prefix = [CM_ATTACH, name]
+    prefix = [CM_ATTACH] + dir_prefix + [name]
     _log('wrap %s window=%d cwd=%r shell -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, prefix))
     return prefix
 
 
-# remote_prefix reconnects a window opened from one whose session has ssh'd elsewhere, as kitty does on its
-# own for a window running `kitten ssh`: kitty sees only `cm attach` in a cm window. As there, a shell is
-# the far side's login shell, and a command runs on the far side. Only when the new window takes that
-# window's directory, which is then the remote one, not a local directory chosen for it, as kspaces
+# window_dir is where the new window starts: the directory kitty chose, but for one opened with the
+# directory of a cm window that runs a program. kitty takes a window's directory from its shell's report
+# (OSC 7) while it is at a prompt, else from its foreground process, which in a cm window is the cm attach
+# client, still where it started, as for nvim run in a shell that has since changed directory. Then it is
+# the session's directory, which cm has from the same reports.
+def window_dir(ctx, source, info):
+    cwd = info.get('cwd') if info and info.get('cwd_is_local') else ''
+    if source is None or not cwd or source.at_prompt:
+        return ctx.cwd
+    client = source.get_cwd_of_child() or ''
+    if client and os.path.realpath(client) == os.path.realpath(ctx.cwd):
+        return cwd
+    return ctx.cwd
+
+
+# remote_prefix reconnects a window opened from one whose session, info, has ssh'd elsewhere, as kitty does
+# on its own for a window running `kitten ssh`: kitty sees only `cm attach` in a cm window. As there, a
+# shell is the far side's login shell, and a command runs on the far side. Only when the new window takes
+# that window's directory, which is then the remote one, not a local directory chosen for it, as kspaces
 # chooses a worktree's.
 #
 # `kitten ssh` rather than `ssh`: the kitten installs kitty's shell integration on the remote, so the new
 # session reports its own remote OSC 7 and splitting again from *it* works the same way. Plain ssh would
 # reconnect once and then the chain would stop.
-def remote_prefix(ctx, name):
-    source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
-    info = session_info(session_of(source))
+def remote_prefix(ctx, name, info):
     host = session_ssh_host(info)
     if not host:
         return None

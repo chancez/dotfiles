@@ -11,6 +11,8 @@ from kitty.fast_data_types import get_options
 # a mise shim.
 CM_ATTACH = 'cm-attach'
 CM = 'cm'
+# cm-attach's options that take a value, as the next argument.
+CM_ATTACH_VALUED = frozenset({'--dir', '--ssh', '--ssh-cwd'})
 
 # The user variable naming the cm session a window shows, set by launch_wrapper.py. kitty saves user vars
 # in session files, so a restored window reattaches to its session by it.
@@ -124,12 +126,15 @@ def session_in_argv(argv):
         return None
 
     prog = os.path.basename(argv[0])
-    # The wrapper: cm-attach [--in-shell] NAME [COMMAND...]. The name is the first argument that is not a
-    # flag: since --hold types the command into the shell, argv[1] can be --in-shell, and taking it as the
-    # name made cm_reap.py run `cm kill --in-shell`, leaving the session running with nothing attached.
+    # The wrapper: cm-attach [OPTIONS] NAME [COMMAND...]. The name is the first argument that is neither an
+    # option nor the value of one: taking --in-shell as the name made cm_reap.py run `cm kill --in-shell`,
+    # leaving the session running with nothing attached.
     if prog == 'cm-attach':
-        for arg in argv[1:]:
-            if not arg.startswith('-'):
+        args = iter(argv[1:])
+        for arg in args:
+            if arg in CM_ATTACH_VALUED:
+                next(args, None)
+            elif not arg.startswith('-'):
                 return arg
         return None
     # cm itself: cm attach NAME. Guarded on the subcommand so `cm list` in a window is not mistaken for a

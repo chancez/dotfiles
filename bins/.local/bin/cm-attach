@@ -4,8 +4,14 @@
 # Exists so a window's command line names `cm-attach` rather than wherever cm resolved to: kitty's
 # save_as_session recorded a window's argv with argv[0] resolved to an absolute path, and this looks cm
 # up again on every restore.
-# Usage: cm-attach [--in-shell] NAME [command...]
+# Usage: cm-attach [--dir DIR] [--in-shell] NAME [command...]
 #        cm-attach --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
+#
+# --dir starts the cm attach client, and so a new session, in DIR, and so does kitty's run-shell kitten
+# when it is the command, for a shell on macOS, in place of the directory kitty passed it with --cwd:
+# launch_wrapper.py passes the window's directory, which can differ from kitty's, see window_dir there.
+# kitty runs a shell on macOS through /usr/bin/login, which starts in the home directory, so without it
+# the client stayed there, and kitty took that for the window's directory while a program ran in it.
 #
 # --ssh runs `kitten ssh HOST` in the session, in PATH on the far side: launch_wrapper.py passes it when
 # the window a new one is opened from has ssh'd elsewhere, so the new session reconnects instead of
@@ -28,12 +34,14 @@
 # --in-shell types the command into the session's shell rather than running it in place of the shell, which
 # is how launch_wrapper.py keeps a window after its command for kitty's launch --hold.
 in_shell=
+dir=
 ssh_host=
 ssh_cwd=
 ssh_command=
 while :; do
   case $1 in
     --in-shell) in_shell=--in-shell; shift ;;
+    --dir) dir=$2; shift 2 ;;
     --ssh) ssh_host=$2; shift 2 ;;
     --ssh-cwd) ssh_cwd=$2; shift 2 ;;
     --ssh-command) ssh_command=1; shift ;;
@@ -57,6 +65,20 @@ if [ -n "$ssh_host" ]; then
     exec cm attach --if-running=attach "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
   fi
   exec cm attach --if-running=attach "$name" -- kitten ssh $tty "$ssh_host" "$@"
+fi
+if [ -n "$dir" ]; then
+  cd "$dir" 2>/dev/null
+  case $1 in
+    kitten | */kitten)
+      if [ "$2" = run-shell ]; then
+        for word; do
+          shift
+          case $word in --cwd=*) word=--cwd=$dir ;; esac
+          set -- "$@" "$word"
+        done
+      fi
+      ;;
+  esac
 fi
 if [ "$#" -gt 0 ]; then
   exec cm attach --if-running=attach $in_shell "$name" -- "$@"
