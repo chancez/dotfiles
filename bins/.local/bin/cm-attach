@@ -61,10 +61,13 @@ if [ -n "$ssh_host" ]; then
   fi
   set --
   [ -n "$remote" ] && set -- "$remote"
+  # --on-restore=command, for this session alone: a revive after a reboot or a wake runs its command again,
+  # `kitten ssh HOST`, so the window reconnects rather than coming back as a local shell. Allowlisting
+  # kitten in safe_commands instead would match every kitten.
   if [ -n "$ssh_cwd" ]; then
-    exec cm attach --if-running=attach "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
+    exec cm attach --if-running=attach --on-restore=command "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
   fi
-  exec cm attach --if-running=attach "$name" -- kitten ssh $tty "$ssh_host" "$@"
+  exec cm attach --if-running=attach --on-restore=command "$name" -- kitten ssh $tty "$ssh_host" "$@"
 fi
 if [ -n "$dir" ]; then
   cd "$dir" 2>/dev/null
