@@ -62,10 +62,11 @@ def prefix_for_launch(ctx):
         prefix = [CM_ATTACH] + dir_prefix + ['--in-shell', name]
         _log('wrap %s window=%d cwd=%r argv=%r -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
         return prefix
-    # What kitty puts after the prefix, on macOS its run-shell kitten and the shell, becomes the session's
-    # program: run-shell changes to the window's directory, as /usr/bin/login starts in the home one, and
-    # execs the shell.
-    prefix = [CM_ATTACH] + dir_prefix + [name]
+    # A shell: cm-attach --shell leaves out the command kitty puts after the prefix, on macOS its run-shell
+    # kitten and the shell, and has cm start the shell itself in the window's directory. Run in the session,
+    # that command would be its program rather than a shell, and cm would bring that command line back on a
+    # restore instead of what was running in the shell.
+    prefix = [CM_ATTACH] + dir_prefix + ['--shell', name]
     _log('wrap %s window=%d cwd=%r shell -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, prefix))
     return prefix
 
