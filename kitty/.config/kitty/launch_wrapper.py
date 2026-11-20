@@ -1,0 +1,100 @@
+# Run every window kitty opens at the user's request in a cm session of its own, so it survives kitty
+# quitting. kitty calls prefix_for_launch() for each one (kitty 0.51, see "Wrapping the programs run in new
+# windows" in kitty's launch docs): new tabs, windows and OS windows by any action, mapping, menu or the tab
+# bar, `kitten @ launch`, kspaces, session files and the first window.
+#
+# kitty keeps the window's own command as its argv and in saved sessions, not this prefix, so the session's
+# name goes in the window's SESSION_VAR, which kitty saves too: a restored window comes back with it and
+# reattaches to its session.
+
+import os
+import sys
+
+# Loaded with runpy, so this file's directory is not on the import path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from kitty.fast_data_types import add_timer, get_boss  # noqa: E402
+
+from cm_common import (  # noqa: E402
+    CM_ATTACH,
+    SESSION_VAR,
+    _log,
+    next_session_name,
+    session_in_argv,
+    session_info,
+    session_of,
+    session_remote_path,
+    session_ssh_host,
+)
+
+# Not in cm: an overlay closes back to the window it covers, and docks are kspaces' sidebar and the like.
+UNWRAPPED_TYPES = frozenset({'overlay', 'overlay-main', 'window-dock', 'tab-dock', 'os-window-dock', 'os-panel'})
+# A window launched with this user variable, as in `launch --var=no_cm=1`, is left out of cm.
+NO_CM_VAR = 'no_cm'
+
+
+def prefix_for_launch(ctx):
+    if (
+        ctx.launch_type in UNWRAPPED_TYPES
+        or NO_CM_VAR in ctx.user_vars
+        # kspaces' own windows: its forms, panels and picker.
+        or any(k.startswith('kspaces') for k in ctx.user_vars)
+        # Already attaching, as windows restored from session files saved before this wrapper, or saved
+        # with their foreground process, `cm attach NAME`.
+        or session_in_argv(list(ctx.argv))
+    ):
+        return None
+    name = ctx.user_vars.get(SESSION_VAR) or next_session_name()
+    remember(ctx.window_id, name)
+    if remote := remote_prefix(ctx, name):
+        return remote
+    if not ctx.is_default_shell:
+        # Typed into the session's shell at its first prompt (cm attach --in-shell) rather than run in place
+        # of it: run before any zsh existed, .zshrc never ran, so omp and claude had no AWS or Bedrock
+        # environment, no preexec hook reported the command, and cm list showed nothing running. The
+        # session's shell also outlives the command, as kitty's --hold, which this cannot see, would keep
+        # it (kovidgoyal/kitty#10901).
+        prefix = [CM_ATTACH, '--in-shell', name]
+        _log('wrap %s window=%d cwd=%r argv=%r -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
+        return prefix
+    # What kitty puts after the prefix, on macOS its run-shell kitten and the shell, becomes the session's
+    # program: run-shell changes to the window's directory, as /usr/bin/login starts in the home one, and
+    # execs the shell.
+    prefix = [CM_ATTACH, name]
+    _log('wrap %s window=%d cwd=%r shell -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, prefix))
+    return prefix
+
+
+# remote_prefix reconnects a window opened from one whose session has ssh'd elsewhere, as kitty does on its
+# own for a window running `kitten ssh`: kitty sees only `cm attach` in a cm window. As there, a shell is
+# the far side's login shell, and a command runs on the far side. Only when the new window takes that
+# window's directory, which is then the remote one, not a local directory chosen for it, as kspaces
+# chooses a worktree's.
+#
+# `kitten ssh` rather than `ssh`: the kitten installs kitty's shell integration on the remote, so the new
+# session reports its own remote OSC 7 and splitting again from *it* works the same way. Plain ssh would
+# reconnect once and then the chain would stop.
+def remote_prefix(ctx, name):
+    source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
+    info = session_info(session_of(source))
+    host = session_ssh_host(info)
+    if not host:
+        return None
+    path = session_remote_path(info)
+    if os.path.isdir(ctx.cwd) and ctx.cwd != path:
+        return None
+    prefix = [CM_ATTACH, '--ssh', host] + (['--ssh-cwd', path] if path else [])
+    prefix += ([] if ctx.is_default_shell else ['--ssh-command']) + [name]
+    _log('wrap %s window=%d cwd=%r argv=%r remote -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
+    return prefix
+
+
+# remember sets the window's SESSION_VAR once it exists: kitty calls the wrapper before the window is
+# created.
+def remember(window_id, name):
+    def set_var(timer_id):
+        w = get_boss().window_id_map.get(window_id)
+        if w is not None and w.user_vars.get(SESSION_VAR) != name:
+            w.set_user_var(SESSION_VAR, name)
+
+    add_timer(set_var, 0, False)

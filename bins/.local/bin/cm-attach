@@ -1,13 +1,21 @@
 #!/bin/sh
 # Attach to a cm session, creating it if needed.
 #
-# Exists for kitty's save_as_session, which records a window's launch argv with argv[0] resolved to an
-# absolute path. Launching `cm` directly would freeze wherever cm resolved to at save time into the
-# session file; this wrapper's path is recorded instead, and it looks cm up again on every restore.
+# Exists so a window's command line names `cm-attach` rather than wherever cm resolved to: kitty's
+# save_as_session recorded a window's argv with argv[0] resolved to an absolute path, and this looks cm
+# up again on every restore.
 # Usage: cm-attach [--in-shell] NAME [command...]
+#        cm-attach --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
 #
-# A command may follow the name: cm_launch.py passes `kitten ssh <host>` when the window it is splitting
-# from has ssh'd elsewhere, so the new session reconnects instead of opening a local shell.
+# --ssh runs `kitten ssh HOST` in the session, in PATH on the far side: launch_wrapper.py passes it when
+# the window a new one is opened from has ssh'd elsewhere, so the new session reconnects instead of
+# running locally, as kitty does for a window running `kitten ssh`. Without --ssh-command what follows
+# the name, the local shell kitty puts there, is ignored and the far side starts its login shell; with
+# it, the command runs on the far side, with a terminal (ssh -t). ssh joins its arguments with spaces
+# for the far side's shell, so the command goes as one argument, each word quoted, or `sh -c 'a b'`
+# would arrive as `sh -c a b`. PATH travels as KITTY_LOGIN_CWD, which the ssh kitten's bootstrap reads
+# on the far side and ssh.conf copies across, set for this one process so it cannot leak into a later
+# `kitten ssh` typed by hand.
 #
 # The `--` cm needs is added here rather than by the caller, deliberately. Passing it through kitty would
 # put a `--` in the middle of a `launch` command line, where kitty's own option parser sees it first, and
@@ -18,14 +26,38 @@
 # cm refuses that attach and the window shows only an error.
 #
 # --in-shell types the command into the session's shell rather than running it in place of the shell, which
-# is how cm_launch.py keeps a window after its command for kitty's launch --hold.
+# is how launch_wrapper.py keeps a window after its command for kitty's launch --hold.
 in_shell=
-if [ "$1" = --in-shell ]; then
-  in_shell=--in-shell
-  shift
-fi
+ssh_host=
+ssh_cwd=
+ssh_command=
+while :; do
+  case $1 in
+    --in-shell) in_shell=--in-shell; shift ;;
+    --ssh) ssh_host=$2; shift 2 ;;
+    --ssh-cwd) ssh_cwd=$2; shift 2 ;;
+    --ssh-command) ssh_command=1; shift ;;
+    *) break ;;
+  esac
+done
 name=$1
 shift
+if [ -n "$ssh_host" ]; then
+  tty=
+  remote=
+  if [ -n "$ssh_command" ]; then
+    tty=-t
+    for word; do
+      remote="$remote '$(printf '%s' "$word" | sed "s/'/'\\\\''/g")'"
+    done
+  fi
+  set --
+  [ -n "$remote" ] && set -- "$remote"
+  if [ -n "$ssh_cwd" ]; then
+    exec cm attach --if-running=attach "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
+  fi
+  exec cm attach --if-running=attach "$name" -- kitten ssh $tty "$ssh_host" "$@"
+fi
 if [ "$#" -gt 0 ]; then
   exec cm attach --if-running=attach $in_shell "$name" -- "$@"
 fi

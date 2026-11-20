@@ -6,16 +6,19 @@ import time
 from urllib.parse import unquote, urlparse
 
 from kitty.fast_data_types import get_options
-from kittens.tui.handler import result_handler
 
 # Names, not paths: where cm lives differs per host, since it can be installed under ~/.local/bin or as
 # a mise shim.
 CM_ATTACH = 'cm-attach'
 CM = 'cm'
 
+# The user variable naming the cm session a window shows, set by launch_wrapper.py. kitty saves user vars
+# in session files, so a restored window reattaches to its session by it.
+SESSION_VAR = 'cm_session'
+
 COUNTER = os.path.expanduser('~/.local/state/kitty-cm/counter')
 
-# Where a launch records what it decided, for the same reason cm_reap.py has a log: a kitten's stderr goes
+# Where launch_wrapper.py records what it decided, for the same reason cm_reap.py has a log: its errors go
 # to kitty's own log, which is not somewhere anyone looks, and the failures here are silent by nature. A
 # split that opened the wrong kind of window looks exactly like a split that opened the right one.
 LOG = os.path.expanduser('~/.local/state/kitty-cm/launch.log')
@@ -49,10 +52,8 @@ def cm_env():
 
 # Names are allocated here rather than by cm, even though cm can allocate them.
 #
-# kitty's save_as_session records a window's launch argv, so the session name has to be *in* the argv
-# for a restored window to reattach rather than create a new session. That means the name must exist
-# before the window is launched, and `cm attach` with no name only reports the one it allocated after
-# the fact.
+# A restored window reattaches by the name in its SESSION_VAR, so the name must exist when the window is
+# launched, and `cm attach` with no name only reports the one it allocated after the fact.
 #
 # kitty window ids are reused across restarts, which is why this counts rather than using the window
 # id: a reused name would let a window reattach to a different session than it expected. The lock
@@ -92,7 +93,7 @@ def sessions():
     return {s['name']: s for s in listing}
 
 
-# The window's launch argv is authoritative, unlike under zmx.
+# A window's session is its SESSION_VAR, else the name in its launch argv, unlike under zmx.
 #
 # zmx needed lsof here, and it was not paranoia: `zmx attach` from a shell that already has ZMX_SESSION
 # set retargets that shell's existing client rather than attaching a new one, so a window could end up
@@ -100,17 +101,25 @@ def sessions():
 # session. cm never retargets -- it only ever exports CM_SESSION and never reads it -- so the name the
 # window was launched with is the name it is showing.
 #
-# Both spellings are accepted, and the second is not hypothetical. Windows launched through cm_launch.py
-# run the cm-attach wrapper, so their argv is ('cm-attach', NAME), but a window started by hand can be
-# running `cm attach NAME` directly -- every live window on this machine was, which made this return None
-# for all of them.
+# launch_wrapper.py puts cm-attach before the window's command, but kitty keeps the command alone as the
+# window's argv, so those windows are known by the var. The argv covers windows from before the wrapper,
+# restored from session files that run `cm-attach NAME` or `cm attach NAME`, and ones started by hand.
+# Both spellings are accepted: a window started by hand can be running `cm attach NAME` directly --
+# every live window on this machine once was, which made this return None for all of them.
 #
 # The consequence was silent and is the reason to be lenient here: cm_reap.py returns early on None, so
 # closing a window killed nothing and the session sat as exited until cm's own five-minute sweep collected
-# it. Nothing logged, nothing failed, sessions just accumulated. The wrapper is an implementation detail of
-# how a window was launched; the reaper only needs the name.
+# it. Nothing logged, nothing failed, sessions just accumulated.
 def session_of(window):
-    argv = list(window.child.argv) if window is not None else []
+    if window is None:
+        return None
+    if name := window.user_vars.get(SESSION_VAR):
+        return name
+    return session_in_argv(list(window.child.argv))
+
+
+# session_in_argv is the cm session argv attaches to, None when it runs no cm-attach or cm attach.
+def session_in_argv(argv):
     if not argv:
         return None
 
@@ -134,26 +143,13 @@ def session_of(window):
     return None
 
 
-# The session's own idea of its directory, which cm tracks from OSC 7.
-#
-# Needed because cm owns the window's pty, so the shell's cwd never reaches kitty and --cwd=current
-# would always resolve to wherever the session was first started. zmx got this by asking lsof for the
-# shell's cwd; cm reports it directly, and reports whether it is even local: a session that has ssh'd
-# elsewhere has a path that does not exist here, and opening a new window there would fail or land
-# somewhere wrong.
+# What cm knows of a session, from its shell's OSC 7: its directory, and whether that is on this machine.
+# A session that has ssh'd elsewhere has a path that does not exist here.
 def session_info(name):
     """What cm knows about a session, or None. One call: each one costs about 23ms."""
     if name is None:
         return None
     return cm_json(['info', name, '--json'])
-
-
-def session_cwd(info):
-    if not info:
-        return None
-    if not info.get('cwd_is_local'):
-        return None
-    return info.get('cwd') or None
 
 
 # The host a session has ssh'd to, or None when it is still local.
@@ -191,106 +187,3 @@ def session_remote_path(info):
     path = unquote(urlparse(uri).path or '')
     return path or None
 
-
-# split_command splits a launch's arguments into its options, the command after them, and whether --hold
-# was among the options. kspaces passes a command to run one of its commands in a worktree. Options are taken
-# to be in --name=value form, as every caller's are; the first argument that is not one starts the command.
-def split_command(args):
-    for i, a in enumerate(args):
-        if not a.startswith('-'):
-            opts = list(args[:i])
-            return [o for o in opts if o != '--hold'], list(args[i:]), '--hold' in opts
-    return list(args), [], False
-
-
-# attach is what the window runs: cm-attach NAME, with the command, if any, run in the cm session. With
-# --hold the command is typed into the session's shell at its first prompt (cm attach --in-shell), so the
-# window and its session outlive it as with a plain launch --hold; without, the session ends with the
-# command, as an overlay that closes back to its window wants. --hold itself is never passed on: kitty would
-# hold the window once cm-attach exits, at a shell of its own outside cm.
-#
-# Typed rather than `sh -c '"$@"; exec $SHELL -l'`, which ran the command before any zsh existed: .zshrc
-# never ran, so omp and claude had no AWS or Bedrock environment, no preexec hook reported the command, and
-# cm list showed nothing running.
-def attach(name, command, hold):
-    if not command:
-        return [CM_ATTACH, name]
-    if not hold:
-        return [CM_ATTACH, name] + list(command)
-    return [CM_ATTACH, '--in-shell', name] + list(command)
-
-
-def main(args):
-    return ''
-
-
-@result_handler(no_ui=True)
-def handle_result(args, answer, target_window_id, boss):
-    window = boss.window_id_map.get(target_window_id)
-    name = session_of(window)
-    info = session_info(name)
-
-    # Every field the decision below rests on, so a wrong decision can be read back rather than guessed at.
-    _log('name=%r argv=%r info=%s cwd_is_local=%r cwd_uri=%r cwd=%r' % (
-        name,
-        list(window.child.argv) if window is not None else None,
-        'yes' if info else 'MISSING',
-        (info or {}).get('cwd_is_local'),
-        (info or {}).get('cwd_uri'),
-        (info or {}).get('cwd'),
-    ))
-
-    opts, command, hold = split_command(args[1:])
-    # --self: remote control's launch otherwise uses kitty's active tab, the focused OS window's, so
-    # `kitten @ action --match=id:N kitten cm_launch.py` from another OS window, such as a kspaces panel, put
-    # the new tab or window there rather than by window N. kitty's own launch action uses the window it runs
-    # on; --self makes this match it.
-    cmd = ['launch', '--self']
-    cmd.extend(opts)
-
-    # A caller that chose the directory, such as kspaces opening a worktree, gets a local window there. The
-    # current window's session says nothing about where that window belongs, so neither its host nor its cwd
-    # applies.
-    if any(a.startswith('--cwd') for a in opts):
-        cmd.extend(attach(next_session_name(), command, hold))
-        _log('  -> explicit cwd cmd=%r' % (cmd,))
-        boss.call_remote_control(window, tuple(cmd))
-        return
-
-    # A session that has ssh'd elsewhere is reconnected rather than opened locally, which is what kitty
-    # does on its own for a window running `kitten ssh`: the new window *is* the connection, and it closes
-    # when ssh exits.
-    #
-    # No --cwd, because the directory the session reports belongs to the remote host and would either fail
-    # here or, worse, resolve to an unrelated local path of the same name. Landing in the remote home is
-    # the accepted limit of this; the remote cwd would need a command on the far side to cd with.
-    #
-    # `kitten ssh` rather than `ssh`, and not only to match how the connection was probably made: the
-    # kitten installs kitty's shell integration on the remote, so the new session reports its own remote
-    # OSC 7 and splitting again from *it* works the same way. Plain ssh would reconnect once and then the
-    # chain would stop.
-    # No `--` here: the wrapper adds the one cm needs, so kitty's launch parser never sees it.
-    #
-    # The remote directory travels as KITTY_LOGIN_CWD, which is what the ssh kitten's bootstrap reads on the
-    # far side and which ssh.conf copies across. Set with `env` for this one process rather than in the
-    # session's environment, so it cannot leak into a later `kitten ssh` typed by hand in the same window and
-    # send that one to a path belonging to another host.
-    host = session_ssh_host(info)
-    if host:
-        cmd.extend([CM_ATTACH, next_session_name()])
-        path = session_remote_path(info)
-        if path:
-            cmd.extend(['env', 'KITTY_LOGIN_CWD={}'.format(path)])
-        cmd.extend(['kitten', 'ssh', host])
-        _log('  -> remote host=%r path=%r cmd=%r' % (host, path, cmd))
-        boss.call_remote_control(window, tuple(cmd))
-        return
-
-    cwd = session_cwd(info)
-    if cwd is None and window is not None:
-        cwd = window.cwd_of_child
-    if cwd:
-        cmd.append('--cwd={}'.format(cwd))
-    cmd.extend(attach(next_session_name(), command, hold))
-    _log('  -> local cmd=%r' % (cmd,))
-    boss.call_remote_control(window, tuple(cmd))

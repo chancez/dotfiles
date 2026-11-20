@@ -2,7 +2,7 @@ import subprocess
 
 from kittens.tui.handler import result_handler
 
-from cm_launch import CM, cm_env, session_of, sessions
+from cm_common import CM, cm_env, session_of, sessions
 
 
 def main(args):

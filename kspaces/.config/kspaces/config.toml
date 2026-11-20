@@ -8,11 +8,6 @@ spaces = [
   { path = "~/projects/kitty", group = "tools" },
 ]
 
-# Open every window kspaces opens through cm, like cmd+t does: a worktree's first tab, and
-# the tabs and splits commands run in. kspaces appends where it opens, --cwd and
-# --add-to-session, and the command.
-launch = ["kitten", "cm_launch.py"]
-
 # Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
 sessions = "~/.local/share/kitty/sessions"
 

@@ -5,11 +5,14 @@ branch.
 
 ## What runs what
 
-- `kitty.conf` maps window/tab creation to `cm_launch.py` and closing to `cm_close.py`, and registers
-  `cm_reap.py` as a watcher.
-- `cm_launch.py` allocates a session name and launches `cm-attach <name>` in the new window.
-- `cm-attach` is a two-line wrapper. It exists so the session name is in the window's launch argv, which
-  is what `save_as_session` records and therefore what a restored window reattaches to.
+- `launch_wrapper.py` puts every window kitty opens at the user's request in a cm session of its own
+  (kitty 0.51's launch wrapper): a shell as `cm-attach <name>`, a command typed into its session's
+  shell with `cm-attach --in-shell <name>`. It skips overlays, docks, kspaces' own windows and windows
+  launched with `--var=no_cm=1`. The name is in the window's `cm_session` user var, which kitty saves
+  in sessions, so a restored window reattaches to its session.
+- `kitty.conf` maps closing to `cm_close.py` and registers `cm_reap.py` as a watcher.
+- `cm_common.py` has what they share: session names, `cm` calls, and finding a window's session.
+- `cm-attach` is a short wrapper around `cm attach`, so `cm` is looked up again each time.
 - `cm_close.py` asks before killing a session that is running something.
 - `cm_reap.py` kills the session behind a window closed on purpose, whichever way it was closed.
 - `cm-reap` is a manual sweep for sessions no window is showing, dry-run by default.
@@ -39,9 +42,9 @@ themselves busy.
 zmx has no other way to know either. It also had to mangle values into `[a-zA-Z0-9-_.]`, which is why a
 path lost its separators and a command arrived lossy. cm derives both from the shell's own output.
 
-Two `lsof` calls are gone from `cm_launch.py`. zmx needed them because `zmx attach` can retarget an
-existing client, so a window could show a session its argv never named, and killing by that name would
-destroy an unrelated session. cm only ever exports `CM_SESSION` and never reads it, so the argv is
+Two `lsof` calls are gone. zmx needed them because `zmx attach` can retarget an existing client, so a
+window could show a session its argv never named, and killing by that name would destroy an unrelated
+session. cm only ever exports `CM_SESSION` and never reads it, so the name a window was attached with is
 authoritative.
 
 `cm-reap` no longer searches multiple socket directories. zmx sessions could land in `/tmp/zmx-501` or a

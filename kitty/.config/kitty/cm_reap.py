@@ -4,10 +4,10 @@ import sys
 import time
 
 # Watchers are executed with runpy rather than imported as modules the way kittens are, so this file's
-# directory is not on the import path and a plain `from cm_launch import ...` fails at load time.
+# directory is not on the import path and a plain `from cm_common import ...` fails at load time.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cm_launch import CM, cm_env, session_of  # noqa: E402
+from cm_common import CM, cm_env, session_of  # noqa: E402
 
 # Where this watcher records what it did, since a watcher has nowhere else to report.
 #
@@ -27,28 +27,16 @@ def _log(message):
     except OSError:
         pass
 
-# Set once kitty has been asked to terminate. on_quit arrives before the on_close calls that teardown
-# generates, so this distinguishes "the user closed this window" from "every window is closing because
-# kitty is going away" -- the whole point of running windows inside cm is that the second case must not
-# kill anything.
-_quitting = False
-
-
-def on_quit(boss, window, data):
-    global _quitting
-    _quitting = True
-
 
 # A window closing on its own means the user is done with it, so the session it was showing should stop
 # rather than linger with no terminal attached. Closing paths are many (cmd+w, the titlebar button, the
-# macOS menu, `exit`), and a watcher covers all of them, whereas a keybinding only covers the keys it
-# maps.
+# macOS menu, `exit`, closing its tab or OS window), and a watcher covers all of them, whereas a keybinding
+# only covers the keys it maps.
 #
-# on_quit does not fire when kitty is killed rather than asked to exit, so the window map is checked as
-# well: during teardown kitty has already emptied it, while a deliberate close still reports the windows
-# that remain, including the case where the one being closed is the last.
+# Not when kitty quits, which closes every window: the whole point of running windows inside cm is that
+# they survive it. kitty says which it is in data['reason'] (kitty 0.51).
 def on_close(boss, window, data):
-    if _quitting or not boss.os_window_map:
+    if data.get('reason') == 'quit':
         return
 
     name = session_of(window)
