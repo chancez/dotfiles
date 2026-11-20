@@ -11,6 +11,9 @@ spaces = [
 # Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
 sessions = "~/.local/share/kitty/sessions"
 
+# Close and Suspend keep each window's cm session (cm shelve), so reopening the session restores them.
+keeper = ["kspaces-keeper-cm"]
+
 # The layouts the new worktree form's Pull request and Issue tabs start on.
 pr_layout = "claude PR review"
 issue_layout = "claude implement issue"
