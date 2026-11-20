@@ -35,8 +35,13 @@ def _log(message):
 #
 # Not when kitty quits, which closes every window: the whole point of running windows inside cm is that
 # they survive it. kitty says which it is in data['reason'] (kitty 0.51).
+#
+# A window kspaces closes to open again later carries kspaces_keep: kspaces has already ended its session
+# with `cm kill --keep`, and killing it here would forget what was kept, its scrollback and resume command.
 def on_close(boss, window, data):
     if data.get('reason') == 'quit':
+        return
+    if window is not None and window.user_vars.get('kspaces_keep'):
         return
 
     name = session_of(window)
