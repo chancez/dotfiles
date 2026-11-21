@@ -49,7 +49,7 @@ def prefix_for_launch(ctx):
     remember(ctx.window_id, name)
     source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
     info = session_info(session_of(source))
-    if remote := remote_prefix(ctx, name, info):
+    if remote := remote_prefix(ctx, name, info, source):
         return remote
     # In the window's directory, so that the cm attach client starts there too: kitty takes the directory of
     # a cm window from that client while a program runs in it, see window_dir.
@@ -93,29 +93,37 @@ def typed_name(argv):
 # the session's directory, which cm has from the same reports.
 def window_dir(ctx, source, info):
     cwd = info.get('cwd') if info and info.get('cwd_is_local') else ''
-    if source is None or not cwd or source.at_prompt:
-        return ctx.cwd
-    client = source.get_cwd_of_child() or ''
-    if client and os.path.realpath(client) == os.path.realpath(ctx.cwd):
+    if cwd and took_client_dir(ctx, source):
         return cwd
     return ctx.cwd
+
+
+# took_client_dir is whether kitty gave the new window the directory of source's cm attach client, which it
+# does while source runs a program, rather than one its shell reported.
+def took_client_dir(ctx, source):
+    if source is None or source.at_prompt:
+        return False
+    client = source.get_cwd_of_child() or ''
+    return bool(client) and os.path.realpath(client) == os.path.realpath(ctx.cwd)
 
 
 # remote_prefix reconnects a window opened from one whose session, info, has ssh'd elsewhere, as kitty does
 # on its own for a window running `kitten ssh`: kitty sees only `cm attach` in a cm window. As there, a
 # shell is the far side's login shell, and a command runs on the far side. Only when the new window takes
 # that window's directory, which is then the remote one, not a local directory chosen for it, as kspaces
-# chooses a worktree's.
+# chooses a worktree's. While that window runs a program, as nvim on the far side, kitty gives the new
+# window the local directory of its cm attach client instead, which exists here, so that counts as taking
+# its directory too: without it, a split from a remote nvim opened a local shell.
 #
 # `kitten ssh` rather than `ssh`: the kitten installs kitty's shell integration on the remote, so the new
 # session reports its own remote OSC 7 and splitting again from *it* works the same way. Plain ssh would
 # reconnect once and then the chain would stop.
-def remote_prefix(ctx, name, info):
+def remote_prefix(ctx, name, info, source):
     host = session_ssh_host(info)
     if not host:
         return None
     path = session_remote_path(info)
-    if os.path.isdir(ctx.cwd) and ctx.cwd != path:
+    if os.path.isdir(ctx.cwd) and ctx.cwd != path and not took_client_dir(ctx, source):
         return None
     prefix = [CM_ATTACH, '--ssh', host] + (['--ssh-cwd', path] if path else [])
     prefix += ([] if ctx.is_default_shell else ['--ssh-command']) + [name]
