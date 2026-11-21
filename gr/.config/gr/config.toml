@@ -1,0 +1,9 @@
+[ui]
+theme = "default"
+glyphs = "nerd"
+scrolloff = 5
+sidebar_width = 35
+auto_advance = true
+
+[editor]
+vim = true
