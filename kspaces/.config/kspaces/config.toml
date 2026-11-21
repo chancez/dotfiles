@@ -42,7 +42,7 @@ inputs = [{ name = "prompt", label = "Prompt" }]
 
 [[commands]]
 name = "omp"
-run = ["omp", "{prompt}"]
+run = ["omp", "{prompt?}"]
 inputs = [{ name = "prompt", label = "Prompt" }]
 
 [[commands]]
