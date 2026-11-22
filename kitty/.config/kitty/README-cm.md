@@ -10,11 +10,13 @@ branch.
   shell with `cm-attach --in-shell <name>`. It skips overlays, docks, kspaces' own windows and windows
   launched with `--var=no_cm=1`. The name is in the window's `cm_session` user var, which kitty saves
   in sessions, so a restored window reattaches to its session.
-- `kitty.conf` maps closing to `cm_close.py` and registers `cm_reap.py` as a watcher.
+- `kitty.conf` maps cmd+w and cmd+shift+w to kitty's own close, cmd+alt+w and cmd+alt+shift+w to
+  `cm_close.py`, and registers `cm_reap.py` as a watcher.
 - `cm_common.py` has what they share: session names, `cm` calls, and finding a window's session.
 - `cm-attach` is a short wrapper around `cm attach`, so `cm` is looked up again each time.
-- `cm_close.py` asks before killing a session that is running something.
-- `cm_reap.py` kills the session behind a window closed on purpose, whichever way it was closed.
+- `cm_close.py` kills a tab's or window's sessions outright, asking first when one is running something.
+- `cm_reap.py` reports a window closed on purpose, whichever way it was closed, to `cm close`, which keeps a
+  session running a command and ends an idle one. It falls back to `cm kill --force` on a cm without close.
 - `cm-reap` is a manual sweep for sessions no window is showing, dry-run by default.
 
 ## Installing cm
