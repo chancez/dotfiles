@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import threading
 import time
 
 # Watchers are executed with runpy rather than imported as modules the way kittens are, so this file's
@@ -28,16 +29,21 @@ def _log(message):
         pass
 
 
-# A window closing on its own means the user is done with it, so the session it was showing should stop
-# rather than linger with no terminal attached. Closing paths are many (cmd+w, the titlebar button, the
-# macOS menu, `exit`, closing its tab or OS window), and a watcher covers all of them, whereas a keybinding
-# only covers the keys it maps.
+# A window closing on its own is reported to cm with `cm close`, which decides what that means for the
+# session it showed: left alone while another window shows it, left running when a command runs in it, and
+# shelved or ended when its shell is idle at a prompt. Closing paths are many (cmd+w, the titlebar button,
+# the macOS menu, `exit`, closing its tab or OS window), and a watcher covers all of them, whereas a
+# keybinding only covers the keys it maps.
+#
+# This killed the session, `cm kill --force`, which ended a long job whose window was closed to be found
+# again in its space, and a session another window still showed. The window's client pid goes with the
+# close, so cm detaches that client alone and can tell a last window from one of two.
 #
 # Not when kitty quits, which closes every window: the whole point of running windows inside cm is that
 # they survive it. kitty says which it is in data['reason'] (kitty 0.51).
 #
 # A window kspaces closes to open again later carries kspaces_keep: kspaces has already ended its session
-# with `cm kill --keep`, and killing it here would forget what was kept, its scrollback and resume command.
+# with `cm kill --keep`, and ending it here would forget what was kept, its scrollback and resume command.
 def on_close(boss, window, data):
     if data.get('reason') == 'quit':
         return
@@ -53,12 +59,27 @@ def on_close(boss, window, data):
         _log('no session for closing window, argv=%r' % (argv,))
         return
 
+    pid = window.child.pid if window is not None else None
+    # On a thread, since a watcher runs on kitty's main thread and shelving an idle session waits up to 3s
+    # for its shell to exit: every window close would freeze kitty for that long.
+    threading.Thread(target=close, args=(name, pid), daemon=True).start()
+
+
+def close(name, pid):
+    r = run([CM, 'close', name] + (['--client-pid', str(pid)] if pid else []), 10)
+    if r is not None and r.returncode != 0 and 'unknown command' in (r.stderr or ''):
+        # A cm that predates close, until the new build is installed: what this did before.
+        r = run([CM, 'kill', name, '--force'], 5)
+    if r is not None and r.returncode != 0:
+        _log('%s failed: %s' % (' '.join(r.args[1:3]), (r.stderr or '').strip()))
+    elif r is not None and r.stdout.strip():
+        # What cm decided, `kitty.7: shelved`, since that is the question when a session is missing later.
+        _log(r.stdout.strip())
+
+
+def run(argv, timeout):
     try:
-        r = subprocess.run(
-            [CM, 'kill', name, '--force'],
-            capture_output=True, text=True, timeout=5, env=cm_env(),
-        )
-        if r.returncode != 0:
-            _log('kill %s failed: %s' % (name, (r.stderr or '').strip()))
+        return subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=cm_env())
     except (OSError, subprocess.SubprocessError) as e:
-        _log('kill %s errored: %s' % (name, e))
+        _log('%s errored: %s' % (' '.join(argv[1:3]), e))
+        return None
