@@ -44,8 +44,13 @@ def _log(message):
 #
 # A window kspaces closes to open again later carries kspaces_keep: kspaces has already ended its session
 # with `cm kill --keep`, and ending it here would forget what was kept, its scrollback and resume command.
+#
+# Nor when the window's program exited on its own, cause program_exit, rather than the window being closed.
+# The program is the cm attach client, and it exits on the detach key, which says keep the session: closing
+# it then shelved or killed an idle shell the moment it was detached. A shell that exited has ended its
+# session already, so nothing is left for a close to do.
 def on_close(boss, window, data):
-    if data.get('reason') == 'quit':
+    if data.get('reason') == 'quit' or data.get('cause') == 'program_exit':
         return
     if window is not None and window.user_vars.get('kspaces_keep'):
         return
