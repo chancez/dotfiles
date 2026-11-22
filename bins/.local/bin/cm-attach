@@ -4,8 +4,8 @@
 # Exists so a window's command line names `cm-attach` rather than wherever cm resolved to: kitty's
 # save_as_session recorded a window's argv with argv[0] resolved to an absolute path, and this looks cm
 # up again on every restore.
-# Usage: cm-attach [--dir DIR] [--argv0 NAME] [--shell | --in-shell] NAME [command...]
-#        cm-attach --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
+# Usage: cm-attach [--space SPACE] [--worktree W] [--dir DIR] [--argv0 NAME] [--shell | --in-shell] NAME [command...]
+#        cm-attach [--space SPACE] [--worktree W] --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
 #
 # --dir starts the cm attach client, and so a new session, in DIR: launch_wrapper.py passes the window's
 # directory, which can differ from kitty's, see window_dir there. kitty runs a shell on macOS through
@@ -42,6 +42,13 @@
 # kitty resolved it to, see typed_name in launch_wrapper.py.
 # TODO: remove once kitty gives the wrapper the unresolved argv (kovidgoyal/kitty#10914).
 #
+# --space and --worktree say where a session this creates belongs, from the kitty session the window is in:
+# its cm space, and a worktree tag kspaces uses to pick a kitty session when it opens the session again. Both
+# are ignored when the session exists. The space goes as CM_SPACE, which cm attach reads as --space, rather
+# than as the flag, so a cm too old to know spaces ignores it instead of refusing every window; cm keeps it
+# out of the session's environment. launch_wrapper.py passes only names cm accepts, since one it refused
+# would end the window.
+#
 # KITTY_SI_RUN_COMMAND_AT_STARTUP is how kitty restores a window saved while its shell ran a program: kitty's
 # shell integration runs it at the shell's first prompt. kitty learns that program from the shell's own
 # reports, which cm passes on, so a saved cm window got it too, and a revived session's shell ran it on top
@@ -54,8 +61,11 @@ argv0=
 ssh_host=
 ssh_cwd=
 ssh_command=
+tag=
 while :; do
   case $1 in
+    --space) export CM_SPACE="$2"; shift 2 ;;
+    --worktree) tag="--tag worktree=$2"; shift 2 ;;
     --shell) shell=1; shift ;;
     --in-shell) in_shell=--in-shell; shift ;;
     --dir) dir=$2; shift 2 ;;
@@ -83,9 +93,9 @@ if [ -n "$ssh_host" ]; then
   # `kitten ssh HOST`, so the window reconnects rather than coming back as a local shell. Allowlisting
   # kitten in safe_commands instead would match every kitten.
   if [ -n "$ssh_cwd" ]; then
-    exec cm attach --if-running=attach --on-restore=command "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
+    exec cm attach --if-running=attach --on-restore=command $tag "$name" -- env "KITTY_LOGIN_CWD=$ssh_cwd" kitten ssh $tty "$ssh_host" "$@"
   fi
-  exec cm attach --if-running=attach --on-restore=command "$name" -- kitten ssh $tty "$ssh_host" "$@"
+  exec cm attach --if-running=attach --on-restore=command $tag "$name" -- kitten ssh $tty "$ssh_host" "$@"
 fi
 if [ -n "$shell" ]; then
   set --
@@ -98,6 +108,6 @@ if [ -n "$argv0" ] && [ "$#" -gt 0 ]; then
   set -- "$argv0" "$@"
 fi
 if [ "$#" -gt 0 ]; then
-  exec cm attach --if-running=attach $in_shell "$name" -- "$@"
+  exec cm attach --if-running=attach $in_shell $tag "$name" -- "$@"
 fi
-exec cm attach "$name"
+exec cm attach $tag "$name"

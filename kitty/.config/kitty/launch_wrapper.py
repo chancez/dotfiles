@@ -8,6 +8,7 @@
 # reattaches to its session.
 
 import os
+import re
 import sys
 
 # Loaded with runpy, so this file's directory is not on the import path.
@@ -32,6 +33,15 @@ from cm_common import (  # noqa: E402
 UNWRAPPED_TYPES = frozenset({'overlay', 'overlay-main', 'window-dock', 'tab-dock', 'os-window-dock', 'os-panel'})
 # A window launched with this user variable, as in `launch --var=no_cm=1`, is left out of cm.
 NO_CM_VAR = 'no_cm'
+# The cm space and worktree a window's session belongs to, which kspaces passes with `launch --var` since
+# kitty gives the wrapper no way to see which kitty session a new window is going into. Not kspaces* names,
+# which mark kspaces' own windows and are left out of cm above.
+SPACE_VAR = 'cm_space'
+WORKTREE_VAR = 'cm_worktree'
+# What cm accepts as a space name and as a tag value. A name it refused would end the window: cm attach
+# exits on a bad --space before attaching to anything.
+SPACE_NAME = re.compile(r'[A-Za-z0-9_-][A-Za-z0-9._-]{0,63}')
+TAG_VALUE = re.compile(r'[A-Za-z0-9._/-]{1,63}')
 
 
 def prefix_for_launch(ctx):
@@ -49,11 +59,12 @@ def prefix_for_launch(ctx):
     remember(ctx.window_id, name)
     source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
     info = session_info(session_of(source))
-    if remote := remote_prefix(ctx, name, info, source):
+    space = space_args(ctx, source)
+    if remote := remote_prefix(ctx, name, info, source, space):
         return remote
     # In the window's directory, so that the cm attach client starts there too: kitty takes the directory of
     # a cm window from that client while a program runs in it, see window_dir.
-    dir_prefix = ['--dir', window_dir(ctx, source, info)]
+    dir_prefix = space + ['--dir', window_dir(ctx, source, info)]
     if not ctx.is_default_shell:
         # Typed into the session's shell at its first prompt (cm attach --in-shell) rather than run in place
         # of it: run before any zsh existed, .zshrc never ran, so omp and claude had no AWS or Bedrock
@@ -118,17 +129,37 @@ def took_client_dir(ctx, source):
 # `kitten ssh` rather than `ssh`: the kitten installs kitty's shell integration on the remote, so the new
 # session reports its own remote OSC 7 and splitting again from *it* works the same way. Plain ssh would
 # reconnect once and then the chain would stop.
-def remote_prefix(ctx, name, info, source):
+def remote_prefix(ctx, name, info, source, space):
     host = session_ssh_host(info)
     if not host:
         return None
     path = session_remote_path(info)
     if os.path.isdir(ctx.cwd) and ctx.cwd != path and not took_client_dir(ctx, source):
         return None
-    prefix = [CM_ATTACH, '--ssh', host] + (['--ssh-cwd', path] if path else [])
+    prefix = [CM_ATTACH] + space + ['--ssh', host] + (['--ssh-cwd', path] if path else [])
     prefix += ([] if ctx.is_default_shell else ['--ssh-command']) + [name]
     _log('wrap %s window=%d cwd=%r argv=%r remote -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
     return prefix
+
+
+# space_args says which cm space, and which worktree, a session this window creates belongs to.
+#
+# From kspaces' launch vars when it opened the window, else from the kitty session of the window it was opened
+# from, else the session in focus, named `SPACE` or `SPACE@WORKTREE` as kspaces names them. Not from the new
+# window itself: kitty calls the wrapper before the window is in a tab, so it has no session yet. Nothing
+# when none says, which leaves cm to put the session in the space of the one it runs in, else default.
+def space_args(ctx, source):
+    space, worktree = ctx.user_vars.get(SPACE_VAR, ''), ctx.user_vars.get(WORKTREE_VAR, '')
+    if not space:
+        session = source.effective_session_name if source is not None else get_boss().active_session
+        space, _, worktree = (session or '').partition('@')
+    args = []
+    for flag, value, valid in (('--space', space, SPACE_NAME), ('--worktree', worktree, TAG_VALUE)):
+        if valid.fullmatch(value):
+            args += [flag, value]
+        elif value:
+            _log('%s %r not passed to cm, which would refuse it' % (flag, value))
+    return args
 
 
 # remember sets the window's SESSION_VAR once it exists: kitty calls the wrapper before the window is
