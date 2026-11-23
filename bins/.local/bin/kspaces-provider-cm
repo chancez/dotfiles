@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+# kspaces' session provider for cm, for windows that launch_wrapper.py runs each in a cm session of its own.
+# See "Session providers" in kspaces' docs/kitty.md for the protocol: a verb, a JSON request on stdin, JSON
+# on stdout, and a failure as a non-zero exit with the error on stderr.
+#
+#   capabilities  what this can do, from the cm server's own capabilities
+#   keep          shelves the cm sessions a kitty session's windows attach to, prints them as the handles
+#   forget        has cm forget the kept ones that have not come back
+#   list          cm's spaces and sessions, each with the windows showing it
+#   open          the command a new tab runs to attach to one
+#   kill, shelve, remove, move
+#                 cm kill, cm shelve, cm forget and cm space move, on a session by its @ID
+#
+# A window shows a session when one of the session's clients is the window's own process: launch_wrapper.py
+# runs each window as cm-attach, which execs cm attach, so the window's pid is its client's. That follows
+# `cm switch`, which moves a client to another session in place, under the same pid. A client that reports
+# no pid, from an older cm, is matched by the window's cm_session user variable or its program instead.
+#
+# Standalone rather than importing cm_common.py, which imports kitty and so only loads inside kitty.
+
+import json
+import os
+import subprocess
+import sys
+
+SESSION_VAR = 'cm_session'
+CLOSED_RETENTION = '168h'
+# cm-attach's options that take a value, which is not the session's name. As cm_common.py's.
+CM_ATTACH_VALUED = frozenset({'--dir', '--ssh', '--ssh-cwd', '--space', '--worktree'})
+
+
+def session_in_argv(argv):
+    """The cm session argv attaches to, None when it runs no cm-attach or cm attach. As cm_common.py's."""
+    if not argv:
+        return None
+    prog = os.path.basename(argv[0])
+    if prog == 'cm-attach':
+        args = iter(argv[1:])
+        for arg in args:
+            if arg in CM_ATTACH_VALUED:
+                next(args, None)
+            elif not arg.startswith('-'):
+                return arg
+        return None
+    if prog == 'cm' and len(argv) >= 3 and argv[1] in ('attach', 'a'):
+        for arg in argv[2:]:
+            if arg == '--':
+                break
+            if not arg.startswith('-'):
+                return arg
+    return None
+
+
+def session_of(window):
+    if name := (window.get('user_vars') or {}).get(SESSION_VAR):
+        return name
+    for argv in [window.get('cmdline')] + (window.get('foreground') or []):
+        if name := session_in_argv(argv):
+            return name
+    return None
+
+
+def cm(*args):
+    r = subprocess.run(['cm', *args], capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit('cm %s: %s' % (args[0], (r.stderr or r.stdout).strip()))
+    return r.stdout
+
+
+def sessions():
+    return json.loads(cm('list', '--json'))
+
+
+def refs(s):
+    """Every reference that finds s: its names and its @ID."""
+    return [s['name'], '@' + s['id']] + (s.get('names') or [])
+
+
+def states():
+    """Each cm session's state, by each of its references."""
+    return {r: s.get('state', '') for s in sessions() for r in refs(s)}
+
+
+def capabilities(_req):
+    caps = ['keep', 'list', 'open', 'kill', 'remove']
+    server = json.loads(cm('version', '--json')).get('server_capabilities') or []
+    if 'shelve' in server:
+        caps.append('shelve')
+    if 'spaces' in server:
+        caps.append('move')
+    json.dump({'capabilities': caps}, sys.stdout)
+
+
+def keep(req):
+    names = []
+    for w in req.get('windows') or []:
+        name = session_of(w)
+        if name and name not in names:
+            names.append(name)
+    if names:
+        state = states()
+        names = [n for n in names if state.get(n) == 'running']
+    if names:
+        args = ['shelve']
+        if req.get('mode') == 'close':
+            args += ['--expire-after', CLOSED_RETENTION]
+        cm(*args, *names)
+    json.dump({'kept': names}, sys.stdout)
+
+
+def forget(req):
+    kept = req.get('kept') or []
+    if not kept:
+        return
+    state = states()
+    ended = [n for n in kept if n in state and state[n] != 'running']
+    if ended:
+        cm('forget', *ended)
+
+
+def showing(s, windows):
+    """The ids of the windows that show s."""
+    clients = s.get('attached_clients') or []
+    pids = {c.get('pid') for c in clients if c.get('pid')}
+    by_name = any(not c.get('pid') for c in clients)
+    names = set(refs(s))
+    out = []
+    for w in windows:
+        if w.get('pid') in pids or (by_name and session_of(w) in names):
+            out.append(w['id'])
+    return out
+
+
+def list_(req):
+    windows = req.get('windows') or []
+    out = []
+    for s in sessions():
+        out.append({
+            'id': '@' + s['id'],
+            'name': s['name'],
+            'space': s.get('space') or '',
+            'host': '',
+            'state': s.get('state', ''),
+            'busy': bool(s.get('busy')),
+            'title': s.get('title') or '',
+            'command': s.get('command') or '',
+            'status': s.get('reported_state') or '',
+            'tags': s.get('tags') or {},
+            'windows': showing(s, windows),
+        })
+    try:
+        spaces = [sp['name'] for sp in json.loads(cm('space', 'list', '--json'))]
+    except SystemExit:
+        # A cm older than spaces: its sessions are all in none, which kspaces lists under default.
+        spaces = []
+    json.dump({'spaces': spaces, 'sessions': out}, sys.stdout)
+
+
+def open_(req):
+    ref = req['session']
+    cwd = next((s.get('cwd') or '' for s in sessions() if ref in refs(s)), '')
+    out = {'argv': ['cm', 'attach', ref]}
+    if cwd:
+        out['cwd'] = cwd
+    json.dump(out, sys.stdout)
+
+
+VERBS = {
+    'capabilities': capabilities,
+    'keep': keep,
+    'forget': forget,
+    'list': list_,
+    'open': open_,
+    'kill': lambda req: cm('kill', req['session']),
+    'shelve': lambda req: cm('shelve', req['session']),
+    'remove': lambda req: cm('forget', req['session']),
+    'move': lambda req: cm('space', 'move', req['space'], req['session']),
+}
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in VERBS:
+        sys.exit('usage: kspaces-provider-cm %s, with a JSON request on stdin' % '|'.join(VERBS))
+    raw = sys.stdin.read()
+    VERBS[sys.argv[1]](json.loads(raw) if raw.strip() else {})
+
+
+if __name__ == '__main__':
+    main()
