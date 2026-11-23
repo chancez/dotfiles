@@ -41,7 +41,8 @@ WORKTREE_VARS = ('kspaces_worktree', 'cm_worktree')
 PLACE_VARS = frozenset(SPACE_VARS[:1] + WORKTREE_VARS[:1])
 # What cm accepts as a space name and as a tag value. A name it refused would end the window: cm attach
 # exits on a bad --space before attaching to anything.
-SPACE_NAME = re.compile(r'[A-Za-z0-9_-][A-Za-z0-9._-]{0,63}')
+# A space may start with '.', as kspaces' .dotfiles does, but is not '.' or '..'.
+SPACE_NAME = re.compile(r'(?!\.\.?$)[A-Za-z0-9._-]{1,64}')
 TAG_VALUE = re.compile(r'[A-Za-z0-9._/-]{1,63}')
 
 
