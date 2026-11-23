@@ -10,6 +10,7 @@
 #   open          the command a new tab runs to attach to one
 #   kill, shelve, remove, move
 #                 cm kill, cm shelve, cm forget and cm space move, on a session by its @ID
+#   remove-space  cm space remove
 #
 # A window shows a session when one of the session's clients is the window's own process: launch_wrapper.py
 # runs each window as cm-attach, which execs cm attach, so the window's pid is its client's. That follows
@@ -87,7 +88,7 @@ def capabilities(_req):
     if 'shelve' in server:
         caps.append('shelve')
     if 'spaces' in server:
-        caps.append('move')
+        caps += ['move', 'remove-space']
     json.dump({'capabilities': caps}, sys.stdout)
 
 
@@ -178,6 +179,8 @@ VERBS = {
     'shelve': lambda req: cm('shelve', req['session']),
     'remove': lambda req: cm('forget', req['session']),
     'move': lambda req: cm('space', 'move', req['space'], req['session']),
+    # cm refuses a space that still holds a session, shelved or exited included, and default.
+    'remove-space': lambda req: cm('space', 'remove', req['space']),
 }
 
 
