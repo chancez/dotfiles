@@ -4,7 +4,7 @@
 # Exists so a window's command line names `cm-attach` rather than wherever cm resolved to: kitty's
 # save_as_session recorded a window's argv with argv[0] resolved to an absolute path, and this looks cm
 # up again on every restore.
-# Usage: cm-attach [--space SPACE] [--worktree W] [--dir DIR] [--argv0 NAME] [--shell | --in-shell] NAME [command...]
+# Usage: cm-attach [--space SPACE] [--worktree W] [--dir DIR] [--shell | --in-shell] NAME [command...]
 #        cm-attach [--space SPACE] [--worktree W] --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
 #
 # --dir starts the cm attach client, and so a new session, in DIR: launch_wrapper.py passes the window's
@@ -38,10 +38,6 @@
 # --in-shell types the command into the session's shell rather than running it in place of the shell, which
 # is how launch_wrapper.py keeps a window after its command for kitty's launch --hold.
 #
-# --argv0 NAME replaces the command's program with NAME, so the shell is typed `claude` rather than the path
-# kitty resolved it to, see typed_name in launch_wrapper.py.
-# TODO: remove once kitty gives the wrapper the unresolved argv (kovidgoyal/kitty#10914).
-#
 # --space and --worktree say where a session this creates belongs, from the kitty session the window is in:
 # its cm space, and a worktree tag kspaces uses to pick a kitty session when it opens the session again. Both
 # are ignored when the session exists. The space goes as CM_SPACE, which cm attach reads as --space, rather
@@ -57,7 +53,6 @@ unset KITTY_SI_RUN_COMMAND_AT_STARTUP
 shell=
 in_shell=
 dir=
-argv0=
 ssh_host=
 ssh_cwd=
 ssh_command=
@@ -69,7 +64,6 @@ while :; do
     --shell) shell=1; shift ;;
     --in-shell) in_shell=--in-shell; shift ;;
     --dir) dir=$2; shift 2 ;;
-    --argv0) argv0=$2; shift 2 ;;
     --ssh) ssh_host=$2; shift 2 ;;
     --ssh-cwd) ssh_cwd=$2; shift 2 ;;
     --ssh-command) ssh_command=1; shift ;;
@@ -102,10 +96,6 @@ if [ -n "$shell" ]; then
 fi
 if [ -n "$dir" ]; then
   cd "$dir" 2>/dev/null
-fi
-if [ -n "$argv0" ] && [ "$#" -gt 0 ]; then
-  shift
-  set -- "$argv0" "$@"
 fi
 if [ "$#" -gt 0 ]; then
   exec cm attach --if-running=attach $in_shell $tag "$name" -- "$@"

@@ -15,7 +15,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from kitty.fast_data_types import add_timer, get_boss  # noqa: E402
-from kitty.utils import which  # noqa: E402
 
 from cm_common import (  # noqa: E402
     CM_ATTACH,
@@ -74,7 +73,7 @@ def prefix_for_launch(ctx):
         # environment, no preexec hook reported the command, and cm list showed nothing running. The
         # session's shell also outlives the command, as kitty's --hold, which this cannot see, would keep
         # it (kovidgoyal/kitty#10901).
-        prefix = [CM_ATTACH] + dir_prefix + typed_name(ctx.argv) + ['--in-shell', name]
+        prefix = [CM_ATTACH] + dir_prefix + ['--in-shell', name]
         _log('wrap %s window=%d cwd=%r argv=%r -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
         return prefix
     # A shell: cm-attach --shell leaves out the command kitty puts after the prefix, on macOS its run-shell
@@ -84,20 +83,6 @@ def prefix_for_launch(ctx):
     prefix = [CM_ATTACH] + dir_prefix + ['--shell', name]
     _log('wrap %s window=%d cwd=%r shell -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, prefix))
     return prefix
-
-
-# typed_name has cm-attach type the command's program by the name it was given, `claude` rather than
-# kitty's lookup of it, /Users/.../mise/shims/claude: kitty's launch resolves argv[0] before this wrapper
-# sees it. Only when the name finds the same file, so a path given on purpose stays.
-# TODO: remove, with cm-attach's --argv0, once kitty gives the wrapper the unresolved argv
-# (kovidgoyal/kitty#10914).
-def typed_name(argv):
-    if not argv or not os.path.isabs(argv[0]):
-        return []
-    base = os.path.basename(argv[0])
-    if which(base) != argv[0]:
-        return []
-    return ['--argv0', base]
 
 
 # window_dir is where the new window starts: the directory kitty chose, but for one opened with the
