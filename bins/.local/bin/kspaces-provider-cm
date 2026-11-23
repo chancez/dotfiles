@@ -144,6 +144,9 @@ def list_(req):
             'busy': bool(s.get('busy')),
             'title': s.get('title') or '',
             'command': s.get('command') or '',
+            # Where a layout saved from a window showing it starts that pane. Only a local directory: cm
+            # reports a path on another host as not local, and a pane cannot start there.
+            'cwd': (s.get('cwd') or '') if s.get('cwd_is_local', True) else '',
             'status': s.get('reported_state') or '',
             'tags': s.get('tags') or {},
             'windows': showing(s, windows),
