@@ -1683,6 +1683,39 @@ checksum_source = "mise-versions"
 url = "https://github.com/can1357/oh-my-pi/releases/download/v18.16.0/omp-windows-x64.exe"
 url_api = "https://api.github.com/repos/can1357/oh-my-pi/releases/assets/702972270"
 
+[[tools.op]]
+version = "2.42.0"
+backend = "vfox:op"
+specifiers = ["latest"]
+
+[tools.op."platforms.linux-arm64"]
+checksum = "sha256:e56c379fabafb393ce699258e484694abe464870fb41f35ce1b5c3f17868ba61"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_linux_arm64_v2.42.0.zip"
+
+[tools.op."platforms.linux-arm64-musl"]
+checksum = "sha256:e56c379fabafb393ce699258e484694abe464870fb41f35ce1b5c3f17868ba61"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_linux_arm64_v2.42.0.zip"
+
+[tools.op."platforms.linux-x64"]
+checksum = "sha256:261fe3844a43e7e83a3d85e8a9f36411729436a1d3add1dc7dd46cbbceebe9e5"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_linux_amd64_v2.42.0.zip"
+
+[tools.op."platforms.linux-x64-musl"]
+checksum = "sha256:261fe3844a43e7e83a3d85e8a9f36411729436a1d3add1dc7dd46cbbceebe9e5"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_linux_amd64_v2.42.0.zip"
+
+[tools.op."platforms.macos-arm64"]
+checksum = "sha256:216e86c6db491c752ccb7819b3b1851cc8456ea015a1f7c8a58dd103ef0a474e"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_darwin_arm64_v2.42.0.zip"
+
+[tools.op."platforms.macos-x64"]
+checksum = "sha256:917b0d2b41de3d943bb6562331275c43c4b525af6b003eade06248905ddd62b0"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_darwin_amd64_v2.42.0.zip"
+
+[tools.op."platforms.windows-x64"]
+checksum = "sha256:8c457a0dc852c15beb35af77717ed32294345a300e15c444ed42c79ebc4330e9"
+url = "https://cache.agilebits.com/dist/1P/op2/pkg/v2.42.0/op_windows_amd64_v2.42.0.zip"
+
 [[tools.oras]]
 version = "1.3.5"
 backend = "aqua:oras-project/oras"

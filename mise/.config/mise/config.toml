@@ -150,6 +150,8 @@ jq = "latest"
 fzf = "latest"
 gh = "latest"
 aws-cli = "latest"
+# 1Password CLI. Linux only: macOS gets it from the 1password-cli cask in the Brewfile.
+op = { version = "latest", os = ["linux"] }
 
 # Render mermaidjs diagrams locally
 "npm:@mermaid-js/mermaid-cli" = "latest"
