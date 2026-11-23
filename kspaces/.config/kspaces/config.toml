@@ -12,9 +12,9 @@ spaces = [
 sessions = "~/.local/share/kitty/sessions"
 
 # The session provider: Close and Suspend keep each window's cm session (cm shelve), so reopening the
-# session restores them, and the sidebar lists and acts on the cm sessions no window shows. Spelled keeper,
-# the name a kspaces older than providers knows, which a newer one reads as provider.
-keeper = ["kspaces-provider-cm"]
+# session restores them, and the sidebar lists and acts on the cm sessions no window shows. Needs a kspaces
+# with session providers, which reads this key; an older one knows only keeper.
+provider = ["kspaces-provider-cm"]
 
 # The layouts the new worktree form's Pull request and Issue tabs start on.
 pr_layout = "claude PR review"
