@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -45,12 +46,14 @@ def _log(message):
 # A window kspaces closes to open again later carries kspaces_keep: kspaces has already ended its session
 # with `cm kill --keep`, and ending it here would forget what was kept, its scrollback and resume command.
 #
-# Nor when the window's program exited on its own, cause program_exit, rather than the window being closed.
-# The program is the cm attach client, and it exits on the detach key, which says keep the session: closing
-# it then shelved or killed an idle shell the moment it was detached. A shell that exited has ended its
-# session already, so nothing is left for a close to do.
+# A window whose program exited on its own, cause program_exit, rather than being closed, is not a close.
+# The program is the cm attach client, which exits for two reasons. The detach key says keep the session:
+# closing it then shelved or killed an idle shell the moment it was detached. And the session ending, a
+# shell's `exit`: its record would then stay for expire_after, a week, since these sessions persist, where
+# the kill this replaced forgot it. So the session is forgotten if it exited, and left as it is otherwise:
+# running after a detach, or shelved, from the shelved notice's Detach.
 def on_close(boss, window, data):
-    if data.get('reason') == 'quit' or data.get('cause') == 'program_exit':
+    if data.get('reason') == 'quit':
         return
     if window is not None and window.user_vars.get('kspaces_keep'):
         return
@@ -62,6 +65,10 @@ def on_close(boss, window, data):
         # instead of a growing session list.
         argv = list(window.child.argv) if window is not None else []
         _log('no session for closing window, argv=%r' % (argv,))
+        return
+
+    if data.get('cause') == 'program_exit':
+        threading.Thread(target=forget_if_exited, args=(name,), daemon=True).start()
         return
 
     pid = window.child.pid if window is not None else None
@@ -80,6 +87,28 @@ def close(name, pid):
     elif r is not None and r.stdout.strip():
         # What cm decided, `kitty.7: shelved`, since that is the question when a session is missing later.
         _log(r.stdout.strip())
+
+
+def forget_if_exited(name):
+    # Asked twice, a second apart, while it reads running: the client can exit on the session ending a moment
+    # before the server has recorded it, and a detached session reads running both times.
+    for attempt in range(2):
+        # JSON rather than --field, which prints the state as the table shows it, `exited(0)`.
+        r = run([CM, 'info', name, '--json'], 5)
+        try:
+            state = json.loads(r.stdout).get('state', '') if r is not None and r.returncode == 0 else ''
+        except ValueError:
+            state = ''
+        if state != 'running' or attempt:
+            break
+        time.sleep(1)
+    if state != 'exited':
+        return
+    r = run([CM, 'forget', name], 5)
+    if r is not None and r.returncode != 0:
+        _log('forget %s failed: %s' % (name, (r.stderr or '').strip()))
+    else:
+        _log('%s: exited, forgotten' % name)
 
 
 def run(argv, timeout):
