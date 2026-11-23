@@ -33,11 +33,12 @@ from cm_common import (  # noqa: E402
 UNWRAPPED_TYPES = frozenset({'overlay', 'overlay-main', 'window-dock', 'tab-dock', 'os-window-dock', 'os-panel'})
 # A window launched with this user variable, as in `launch --var=no_cm=1`, is left out of cm.
 NO_CM_VAR = 'no_cm'
-# The cm space and worktree a window's session belongs to, which kspaces passes with `launch --var` since
-# kitty gives the wrapper no way to see which kitty session a new window is going into. Not kspaces* names,
-# which mark kspaces' own windows and are left out of cm above.
-SPACE_VAR = 'cm_space'
-WORKTREE_VAR = 'cm_worktree'
+# The space and worktree a window's session belongs to, which kspaces passes with `launch --var` since kitty
+# gives the wrapper no way to see which kitty session a new window is going into (see "Spaces and sessions"
+# in kspaces' docs/kitty.md). cm_space and cm_worktree are what a kspaces before session providers passed.
+SPACE_VARS = ('kspaces_space', 'cm_space')
+WORKTREE_VARS = ('kspaces_worktree', 'cm_worktree')
+PLACE_VARS = frozenset(SPACE_VARS[:1] + WORKTREE_VARS[:1])
 # What cm accepts as a space name and as a tag value. A name it refused would end the window: cm attach
 # exits on a bad --space before attaching to anything.
 SPACE_NAME = re.compile(r'[A-Za-z0-9_-][A-Za-z0-9._-]{0,63}')
@@ -48,8 +49,9 @@ def prefix_for_launch(ctx):
     if (
         ctx.launch_type in UNWRAPPED_TYPES
         or NO_CM_VAR in ctx.user_vars
-        # kspaces' own windows: its forms, panels and picker.
-        or any(k.startswith('kspaces') for k in ctx.user_vars)
+        # kspaces' own windows: its forms, panels and picker. Every kspaces variable but the two that say
+        # where a window of the user's programs belongs marks one.
+        or any(k.startswith('kspaces') and k not in PLACE_VARS for k in ctx.user_vars)
         # Already attaching, as windows restored from session files saved before this wrapper, or saved
         # with their foreground process, `cm attach NAME`.
         or session_in_argv(list(ctx.argv))
@@ -149,7 +151,8 @@ def remote_prefix(ctx, name, info, source, space):
 # window itself: kitty calls the wrapper before the window is in a tab, so it has no session yet. Nothing
 # when none says, which leaves cm to put the session in the space of the one it runs in, else default.
 def space_args(ctx, source):
-    space, worktree = ctx.user_vars.get(SPACE_VAR, ''), ctx.user_vars.get(WORKTREE_VAR, '')
+    space = next((ctx.user_vars[v] for v in SPACE_VARS if ctx.user_vars.get(v)), '')
+    worktree = next((ctx.user_vars[v] for v in WORKTREE_VARS if ctx.user_vars.get(v)), '')
     if not space:
         session = source.effective_session_name if source is not None else get_boss().active_session
         space, _, worktree = (session or '').partition('@')
