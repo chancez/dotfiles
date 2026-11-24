@@ -57,7 +57,10 @@ return {
     ---@module "auto-session"
     ---@type AutoSession.Config
     opts = {
-      suppressed_dirs = { '~/', '~/projects', '~/Downloads/**', '/', '/tmp', '/private/tmp' },
+      suppressed_dirs = { '~/', '~/projects', '/', '/tmp', '/private/tmp' },
+      auto_create = function()
+        return not vim.startswith(vim.fn.getcwd(), vim.fn.expand('~/Downloads'))
+      end,
       close_filetypes_on_save = { "neotest-output", "neotest-output-panel", "neotest-summary", 'agent-session' },
       -- Don't close quickfix
       -- close_unsupported_windows = false,
