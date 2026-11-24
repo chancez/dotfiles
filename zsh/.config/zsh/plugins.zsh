@@ -27,6 +27,12 @@ zgenom refresh-tools
 # Check for plugin and zgenom updates every 7 days
 # This does not increase the startup time.
 zgenom autoupdate
+# The update runs as a background job, so an ssh passphrase or https credential prompt reading the
+# tty gets the job stopped by SIGTTIN, and it hangs forever holding the update lock. Fail instead.
+if (( $+functions[__zgenom_autoupdate_background] )); then
+  functions[__zgenom_autoupdate_background]="local -x GIT_SSH_COMMAND='ssh -o BatchMode=yes' GIT_TERMINAL_PROMPT=0
+${functions[__zgenom_autoupdate_background]}"
+fi
 
 if ! zgenom saved; then
   echo "Creating a zgenom save"
