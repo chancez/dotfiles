@@ -57,11 +57,12 @@ def prefix_for_launch(ctx):
         or session_in_argv(list(ctx.argv))
     ):
         return None
-    name = ctx.user_vars.get(SESSION_VAR) or next_session_name()
+    restored = ctx.user_vars.get(SESSION_VAR)
+    name = restored or next_session_name()
     remember(ctx.window_id, name)
     source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
     info = session_info(session_of(source))
-    space = space_args(ctx, source)
+    space = space_args(ctx, source, guess=not restored)
     if remote := remote_prefix(ctx, name, info, source, space):
         return remote
     # In the window's directory, so that the cm attach client starts there too: kitty takes the directory of
@@ -136,10 +137,15 @@ def remote_prefix(ctx, name, info, source, space):
 # from, else the session in focus, named `SPACE` or `SPACE@WORKTREE` as kspaces names them. Not from the new
 # window itself: kitty calls the wrapper before the window is in a tab, so it has no session yet. Nothing
 # when none says, which leaves cm to put the session in the space of the one it runs in, else default.
-def space_args(ctx, source):
+#
+# Not guessed for a window that already names its session, as one kitty restores: it has no source window, and
+# the session in focus is whichever kitty session finished loading first. Restored hubble-timescape windows were
+# filed under gr@filtering that way, and cm took the guess when it revived their sessions after a reboot, so
+# `kspaces remove` of that worktree killed them while their windows stayed open. The session keeps its own.
+def space_args(ctx, source, guess=True):
     space = next((ctx.user_vars[v] for v in SPACE_VARS if ctx.user_vars.get(v)), '')
     worktree = next((ctx.user_vars[v] for v in WORKTREE_VARS if ctx.user_vars.get(v)), '')
-    if not space:
+    if not space and guess:
         session = source.effective_session_name if source is not None else get_boss().active_session
         space, _, worktree = (session or '').partition('@')
     args = []
