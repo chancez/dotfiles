@@ -37,6 +37,9 @@ popup = "panel"
 auto_install = true
 save_sessions = true
 
+[editor]
+vim = true
+
 [[commands]]
 name = "claude"
 run = ["claude", "{prompt?}"]
