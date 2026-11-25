@@ -72,9 +72,26 @@ def sessions():
     return json.loads(cm('list', '--json'))
 
 
+def all_sessions():
+    """Every host's sessions, from cm ls --all-hosts, or this machine's from a cm older than it."""
+    r = subprocess.run(['cm', 'list', '--all-hosts', '--json'], capture_output=True, text=True)
+    if r.returncode != 0:
+        return sessions()
+    return json.loads(r.stdout)
+
+
+def local_name():
+    """This machine's name in a qualified reference, which a listing of every host gives its sessions."""
+    r = subprocess.run(['cm', 'config', '--json'], capture_output=True, text=True)
+    try:
+        return json.loads(r.stdout).get('remote_local_name') or ''
+    except ValueError:
+        return ''
+
+
 def refs(s):
-    """Every reference that finds s: its names and its @ID."""
-    return [s['name'], '@' + s['id']] + (s.get('names') or [])
+    """Every reference that finds s: its names and its @ID, and the names here that point at it on its host."""
+    return [s['name'], '@' + s['id']] + (s.get('names') or []) + (s.get('pointed_by') or [])
 
 
 def states():
@@ -134,20 +151,26 @@ def showing(s, windows):
 
 def list_(req):
     windows = req.get('windows') or []
+    local = local_name()
     out = []
-    for s in sessions():
+    for s in all_sessions():
+        # A session on another host is reached as host:@id, which every cm command routes there; one here
+        # keeps its plain @id and kspaces' empty host.
+        host = s.get('host') or ''
+        if host == local:
+            host = ''
         out.append({
-            'id': '@' + s['id'],
+            'id': (host + ':@' if host else '@') + s['id'],
             'name': s['name'],
             'space': s.get('space') or '',
-            'host': '',
+            'host': host,
             'state': s.get('state', ''),
             'busy': bool(s.get('busy')),
             'title': s.get('title') or '',
             'command': s.get('command') or '',
             # Where a layout saved from a window showing it starts that pane. Only a local directory: cm
             # reports a path on another host as not local, and a pane cannot start there.
-            'cwd': (s.get('cwd') or '') if s.get('cwd_is_local', True) else '',
+            'cwd': (s.get('cwd') or '') if s.get('cwd_is_local', True) and not host else '',
             'status': s.get('reported_state') or '',
             'tags': s.get('tags') or {},
             'windows': showing(s, windows),
@@ -157,6 +180,10 @@ def list_(req):
     except SystemExit:
         # A cm older than spaces: its sessions are all in none, which kspaces lists under default.
         spaces = []
+    # A space only another host has is still a space its sessions are found in.
+    for o in out:
+        if o['space'] and o['space'] not in spaces:
+            spaces.append(o['space'])
     json.dump({'spaces': spaces, 'sessions': out}, sys.stdout)
 
 
