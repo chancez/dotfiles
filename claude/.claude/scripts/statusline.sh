@@ -33,7 +33,10 @@ TERM_WIDTH=${COLUMNS:-$(stty size 2>/dev/null </dev/tty | awk '{print $2}' || tp
 ((TERM_WIDTH < 40)) && TERM_WIDTH=40
 
 # --- Git info (cached for performance) ---
-CACHE_FILE="/tmp/claude-statusline-git-cache"
+# One file per directory so concurrent sessions do not evict each other.
+CACHE_DIR="${TMPDIR:-/tmp}/claude-statusline"
+mkdir -p "$CACHE_DIR" 2>/dev/null || true
+CACHE_FILE="$CACHE_DIR/$(printf '%s' "$CWD" | cksum | cut -d' ' -f1)"
 CACHE_TTL=5
 GIT_BRANCH=""
 GIT_DETACHED=0
@@ -74,9 +77,9 @@ get_git_info() {
     GIT_DETACHED=1
   fi
 
-  # Write cache
+  # Write cache atomically so a concurrent reader never sees a partial file
   printf '%s\n%s\n%s\n%s' "$CWD" "$GIT_BRANCH" "$GIT_DETACHED" "$GIT_TOPLEVEL" \
-    >"$CACHE_FILE" 2>/dev/null || true
+    >"$CACHE_FILE.$$" 2>/dev/null && mv -f "$CACHE_FILE.$$" "$CACHE_FILE" 2>/dev/null || true
 }
 
 get_git_info
