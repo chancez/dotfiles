@@ -30,6 +30,7 @@ delete_branch = true
 [sidebar]
 width = 35
 popup = "panel"
+# trace = "/tmp/kspaces-tea.log"
 
 # kspaces kitty install's files, included from kitty.conf: rewrite them when another
 # kspaces is installed, and install the session saver.
