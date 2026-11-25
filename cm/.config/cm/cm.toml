@@ -7,6 +7,7 @@ log_level = "debug"
 # pprof = true
 # flight_recorder = true
 # flight_recorder_window = "10s"
+rebind_replaces = true
 
 [server]
 # Start the server through launchd on macOS, so a Force Quit of the terminal app cannot end sessions.
@@ -31,3 +32,6 @@ pager = "nvim --cmd 'let g:auto_session_enabled = v:false' -c 'setlocal nonumber
 [close]
 idle = "kill"
 busy = "kill"
+
+[remote.hosts.white]
+[remote.hosts.dune]
