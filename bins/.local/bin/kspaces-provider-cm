@@ -11,6 +11,8 @@
 #   kill, shelve, remove, move
 #                 cm kill, cm shelve, cm forget and cm space move, on a session by its @ID
 #   remove-space  cm space remove
+#   save-layout, load-layouts
+#                 a worktree's shared layout, as cm space meta's kspaces/layout/KEY on the sessions' host
 #
 # A window shows a session when one of the session's clients is the window's own process: launch_wrapper.py
 # runs each window as cm-attach, which execs cm attach, so the window's pid is its client's. That follows
@@ -19,6 +21,7 @@
 #
 # Standalone rather than importing cm_common.py, which imports kitty and so only loads inside kitty.
 
+import base64
 import json
 import os
 import subprocess
@@ -106,7 +109,96 @@ def capabilities(_req):
         caps.append('shelve')
     if 'spaces' in server:
         caps += ['move', 'remove-space']
+    if 'spaces.meta' in server:
+        caps.append('layouts')
     json.dump({'capabilities': caps}, sys.stdout)
+
+
+# LAYOUT_PREFIX is the cm space meta key a worktree's shared layout is under, its directory after a /, the
+# space's main worktree's at the prefix itself.
+LAYOUT_PREFIX = 'kspaces/layout'
+# cm space meta's exit status for a key not as asked: absent for get, at another revision for set.
+META_UNMET = 2
+
+
+def layout_key(key):
+    return LAYOUT_PREFIX + ('/' + key if key else '')
+
+
+def on_host(host, *args):
+    """cm args run against host's server, a named remote, this machine's for none."""
+    return ['cm', '--remote', host, *args] if host else ['cm', *args]
+
+
+def stored_sessions(layout, host):
+    """layout as host stores it: its sessions named as host does, without the remote name kspaces has them by."""
+    prefix = host + ':' if host else ''
+    out = dict(layout)
+    out['sessions'] = [s[len(prefix):] if prefix and s.startswith(prefix) else s for s in layout.get('sessions') or []]
+    return out
+
+
+def given_sessions(layout, host):
+    """layout as kspaces is given it: its sessions qualified with host's remote name, as list names them."""
+    out = dict(layout)
+    out['sessions'] = [host + ':' + s if host and ':' not in s else s for s in layout.get('sessions') or []]
+    return out
+
+
+def save_layout(req):
+    host = req.get('host') or ''
+    data = json.dumps(stored_sessions(req['layout'], host))
+    r = subprocess.run(on_host(host, 'space', 'meta', 'set', req['space'], layout_key(req.get('key') or ''),
+                               '--file', '-', '--if-revision', str(req.get('revision') or 0), '--json'),
+                       input=data, capture_output=True, text=True)
+    if r.returncode == META_UNMET:
+        json.dump({'conflict': True}, sys.stdout)
+        return
+    if r.returncode != 0:
+        sys.exit('cm space meta set: %s' % (r.stderr or r.stdout).strip())
+    json.dump({'revision': json.loads(r.stdout)['revision']}, sys.stdout)
+
+
+def load_layouts(req):
+    """The asked-for layouts at another revision than asked with: one list per space and host, and a get for
+    each that changed. A host that does not answer is left out, as one asked about again at the next."""
+    asks = req.get('layouts') or []
+    out = []
+    for space, host in sorted({(a['space'], a.get('host') or '') for a in asks}):
+        r = subprocess.run(on_host(host, 'space', 'meta', 'list', space, '--prefix', LAYOUT_PREFIX, '--json'),
+                           capture_output=True, text=True)
+        if r.returncode != 0 and 'space not found' not in r.stderr:
+            print('cm space meta list %s on %s: %s' % (space, host or 'this machine', (r.stderr or r.stdout).strip()),
+                  file=sys.stderr)
+            continue
+        # A space the host does not have yet has no layouts, and saving the first makes it.
+        revisions = {e['key']: e['revision'] for e in json.loads(r.stdout or '[]')} if r.returncode == 0 else {}
+        for a in asks:
+            if a['space'] != space or (a.get('host') or '') != host:
+                continue
+            key = layout_key(a.get('key') or '')
+            stored = revisions.get(key, 0)
+            if stored == a.get('revision'):
+                continue
+            ref = {'space': space, 'host': host, 'key': a.get('key') or ''}
+            if stored == 0:
+                out.append({**ref, 'revision': 0})
+                continue
+            g = subprocess.run(on_host(host, 'space', 'meta', 'get', space, key, '--json'), capture_output=True, text=True)
+            if g.returncode == META_UNMET:
+                out.append({**ref, 'revision': 0})
+                continue
+            if g.returncode != 0:
+                print('cm space meta get %s %s: %s' % (space, key, (g.stderr or g.stdout).strip()), file=sys.stderr)
+                continue
+            entry = json.loads(g.stdout)
+            try:
+                layout = json.loads(base64.b64decode(entry.get('value') or ''))
+            except ValueError:
+                print('%s in %s is not a layout' % (key, space), file=sys.stderr)
+                continue
+            out.append({**ref, 'revision': entry['revision'], 'layout': given_sessions(layout, host)})
+    json.dump({'layouts': out}, sys.stdout)
 
 
 def keep(req):
@@ -210,6 +302,8 @@ VERBS = {
     'move': lambda req: cm('space', 'move', req['space'], req['session']),
     # cm refuses a space that still holds a session, shelved or exited included, and default.
     'remove-space': lambda req: cm('space', 'remove', req['space']),
+    'save-layout': save_layout,
+    'load-layouts': load_layouts,
 }
 
 
