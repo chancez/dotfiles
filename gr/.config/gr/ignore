@@ -1,2 +1,5 @@
 vendor/
 *.pb.go
+*.pb.json.go
+*.connect.go
+*_pb.ts

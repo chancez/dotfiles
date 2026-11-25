@@ -2,7 +2,7 @@
 theme = "default"
 glyphs = "nerd"
 scrolloff = 5
-sidebar_width = 35
+sidebar_width = 50
 auto_advance = true
 
 [editor]
