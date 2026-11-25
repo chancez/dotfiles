@@ -36,11 +36,7 @@ TERM_WIDTH=${COLUMNS:-$(stty size 2>/dev/null </dev/tty | awk '{print $2}' || tp
 CACHE_FILE="/tmp/claude-statusline-git-cache"
 CACHE_TTL=5
 GIT_BRANCH=""
-GIT_STAGED=0
-GIT_MODIFIED=0
 GIT_DETACHED=0
-GIT_AHEAD=0
-GIT_BEHIND=0
 GIT_TOPLEVEL=""
 
 get_git_info() {
@@ -56,23 +52,17 @@ get_git_info() {
     local cache_age=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)))
     if [[ "$cache_dir" == "$CWD" && "$cache_age" -lt "$CACHE_TTL" ]]; then
       GIT_BRANCH="${lines[1]:-}"
-      GIT_STAGED="${lines[2]:-0}"
-      GIT_MODIFIED="${lines[3]:-0}"
-      GIT_DETACHED="${lines[4]:-0}"
-      GIT_AHEAD="${lines[5]:-0}"
-      GIT_BEHIND="${lines[6]:-0}"
-      GIT_TOPLEVEL="${lines[7]:-}"
+      GIT_DETACHED="${lines[2]:-0}"
+      GIT_TOPLEVEL="${lines[3]:-}"
       return
     fi
   fi
 
   # Get fresh git info
-  local branch staged modified
+  local branch
   if ! branch=$(git -C "$CWD" rev-parse --abbrev-ref HEAD 2>/dev/null); then
     return
   fi
-  staged=$(git -C "$CWD" diff --cached --numstat 2>/dev/null | wc -l || echo 0)
-  modified=$(git -C "$CWD" diff --numstat 2>/dev/null | wc -l || echo 0)
   local toplevel
   toplevel=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null) || true
   GIT_TOPLEVEL="${toplevel:-}"
@@ -83,21 +73,9 @@ get_git_info() {
     GIT_BRANCH=$(git -C "$CWD" rev-parse --short=8 HEAD 2>/dev/null || echo "HEAD")
     GIT_DETACHED=1
   fi
-  GIT_STAGED="$staged"
-  GIT_MODIFIED="$modified"
-
-  # Ahead/behind upstream
-  local ahead_behind
-  if ahead_behind=$(git -C "$CWD" rev-list --left-right --count HEAD...@{u} 2>/dev/null); then
-    GIT_AHEAD=$(echo "$ahead_behind" | awk '{print $1}')
-    GIT_BEHIND=$(echo "$ahead_behind" | awk '{print $2}')
-  else
-    GIT_AHEAD=0
-    GIT_BEHIND=0
-  fi
 
   # Write cache
-  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s' "$CWD" "$GIT_BRANCH" "$staged" "$modified" "$GIT_DETACHED" "$GIT_AHEAD" "$GIT_BEHIND" "$GIT_TOPLEVEL" \
+  printf '%s\n%s\n%s\n%s' "$CWD" "$GIT_BRANCH" "$GIT_DETACHED" "$GIT_TOPLEVEL" \
     >"$CACHE_FILE" 2>/dev/null || true
 }
 
@@ -226,25 +204,6 @@ build_line1() {
   local wt_w=0
   [[ -n "$WORKTREE_NAME" ]] && wt_w=$((1 + ${#WORKTREE_NAME})) # @name
 
-  # Git counts width
-  local counts_w=0 counts_ansi=""
-  if [[ $GIT_AHEAD -gt 0 ]]; then
-    ((counts_w += 2 + ${#GIT_AHEAD})) # " ↑N"
-    counts_ansi+=" \033[36m↑${GIT_AHEAD}\033[0m"
-  fi
-  if [[ $GIT_BEHIND -gt 0 ]]; then
-    ((counts_w += 2 + ${#GIT_BEHIND})) # " ↓N"
-    counts_ansi+=" \033[35m↓${GIT_BEHIND}\033[0m"
-  fi
-  if [[ $GIT_STAGED -gt 0 ]]; then
-    ((counts_w += 2 + ${#GIT_STAGED})) # " +N"
-    counts_ansi+=" \033[32m+${GIT_STAGED}\033[0m"
-  fi
-  if [[ $GIT_MODIFIED -gt 0 ]]; then
-    ((counts_w += 2 + ${#GIT_MODIFIED})) # " ~N"
-    counts_ansi+=" \033[33m~${GIT_MODIFIED}\033[0m"
-  fi
-
   local has_git=0
   [[ -n "$GIT_BRANCH" ]] && has_git=1
   local sep_w=3 # " | "
@@ -252,7 +211,7 @@ build_line1() {
   # Helper: compute total width for given path and branch strings
   calc_width() {
     local pw=${#1} bw=${#2} show_br=$3
-    local total=$((fixed + pw + wt_w + counts_w))
+    local total=$((fixed + pw + wt_w))
     ((show_br)) && ((total += sep_w + bw))
     printf '%d' "$total"
   }
@@ -289,7 +248,7 @@ build_line1() {
           :
         else
           # Level 4: project root + truncate branch (last resort)
-          local branch_budget=$((TERM_WIDTH - fixed - ${#display_path} - wt_w - sep_w - counts_w))
+          local branch_budget=$((TERM_WIDTH - fixed - ${#display_path} - wt_w - sep_w))
           if ((branch_budget >= 5)); then
             display_branch=$(truncate_mid "$display_branch" "$branch_budget")
           elif ((branch_budget >= 1)); then
@@ -329,7 +288,6 @@ build_line1() {
     [[ $GIT_DETACHED -eq 1 ]] && branch_color=31 # red
     LINE1+=" | \033[${branch_color}m${display_branch}\033[0m"
   fi
-  LINE1+="${counts_ansi}"
 }
 
 build_line1
