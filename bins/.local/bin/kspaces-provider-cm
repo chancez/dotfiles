@@ -161,15 +161,18 @@ def save_layout(req):
 
 def load_layouts(req):
     """The asked-for layouts at another revision than asked with: one list per space and host, and a get for
-    each that changed. A host that does not answer is left out, as one asked about again at the next."""
+    each that changed. A host that does not answer is unreachable, its layouts left out."""
     asks = req.get('layouts') or []
     out = []
+    unreachable = []
     for space, host in sorted({(a['space'], a.get('host') or '') for a in asks}):
         r = subprocess.run(on_host(host, 'space', 'meta', 'list', space, '--prefix', LAYOUT_PREFIX, '--json'),
                            capture_output=True, text=True)
         if r.returncode != 0 and 'space not found' not in r.stderr:
             print('cm space meta list %s on %s: %s' % (space, host or 'this machine', (r.stderr or r.stdout).strip()),
                   file=sys.stderr)
+            if host not in unreachable:
+                unreachable.append(host)
             continue
         # A space the host does not have yet has no layouts, and saving the first makes it.
         revisions = {e['key']: e['revision'] for e in json.loads(r.stdout or '[]')} if r.returncode == 0 else {}
@@ -190,6 +193,8 @@ def load_layouts(req):
                 continue
             if g.returncode != 0:
                 print('cm space meta get %s %s: %s' % (space, key, (g.stderr or g.stdout).strip()), file=sys.stderr)
+                if host not in unreachable:
+                    unreachable.append(host)
                 continue
             entry = json.loads(g.stdout)
             try:
@@ -198,7 +203,7 @@ def load_layouts(req):
                 print('%s in %s is not a layout' % (key, space), file=sys.stderr)
                 continue
             out.append({**ref, 'revision': entry['revision'], 'layout': given_sessions(layout, host)})
-    json.dump({'layouts': out}, sys.stdout)
+    json.dump({'layouts': out, 'unreachable': unreachable}, sys.stdout)
 
 
 def keep(req):
