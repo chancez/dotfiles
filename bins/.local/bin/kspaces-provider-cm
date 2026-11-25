@@ -164,6 +164,8 @@ def list_(req):
             'name': s['name'],
             'space': s.get('space') or '',
             'host': host,
+            # Its host did not answer, so this is the last listing cm kept of it.
+            'stale': bool(s.get('stale_since')),
             'state': s.get('state', ''),
             'busy': bool(s.get('busy')),
             'title': s.get('title') or '',
