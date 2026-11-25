@@ -2,11 +2,15 @@
 
 log_level = "debug"
 
-[debug]
-# Enable pprof server for profiling. Off by default.
-pprof = true
-flight_recorder = true
-flight_recorder_window = "10s"
+# [debug]
+# # Enable pprof server for profiling. Off by default.
+# pprof = true
+# flight_recorder = true
+# flight_recorder_window = "10s"
+
+[server]
+# Start the server through launchd on macOS, so a Force Quit of the terminal app cannot end sessions.
+launchd = true
 
 [persist]
 # Let session content survive a reboot. Off by default.
