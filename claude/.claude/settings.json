@@ -6,7 +6,10 @@
   },
   "permissions": {
     "allow": [
-      "Bash(agora:*)"
+      "Bash(agora:*)",
+      "Bash(gr *)",
+      "Bash(kspaces new:*)",
+      "Bash(kspaces run:*)"
     ],
     "defaultMode": "auto"
   },
@@ -283,5 +286,11 @@
     "Read(./.env)",
     "Read(./.env.*)",
     "Read(./secrets/**)"
-  ]
+  ],
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "gr reviews: You are permitted to run all gr commands, comment, review, submit, etc. You can and should set GR_AUTHOR."
+    ]
+  }
 }

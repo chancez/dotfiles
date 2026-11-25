@@ -35,6 +35,9 @@
   exported in the shell that commits real work. Check `git log -1 --format='%an <%ae>'` after committing.
 - Git worktrees should be created in the `.worktrees` directory within the repository being modified.
 - Git worktrees should should be named after the `<topic>` in the branch name, e.g. `.worktrees/<topic>`.
+- When work you find belongs on another branch or in another repository, or I would want to watch a
+  command's output live, ask whether to use the kspaces skill rather than creating a worktree or
+  running it yourself.
 - Commit in small logical units, one concern per commit. Every commit must build and pass
   tests so history stays bisectable.
 - Commit periodically to save progress even when the work is incomplete. Squash fixups into

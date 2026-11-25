@@ -224,6 +224,10 @@ oh-my-pi = { version = "latest", rename_exe = "omp" }
 "~/.codex/skills/gr-review"  = { source = "~/projects/gr/skills/gr-review",     mode = "symlink" }
 "~/.agents/skills/gr-review" = { source = "~/projects/gr/skills/gr-review",     mode = "symlink" }
 
+"~/.claude/skills/kspaces"    = { source = "~/projects/kspaces/skills/kspaces",     mode = "symlink" }
+"~/.codex/skills/kspaces"     = { source = "~/projects/kspaces/skills/kspaces",     mode = "symlink" }
+"~/.agents/skills/kspaces"    = { source = "~/projects/kspaces/skills/kspaces",     mode = "symlink" }
+
 "~/.claude/CLAUDE.md"   = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Reuse AGENTS.md
 "~/.codex/AGENTS.md"    = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
 "~/.pi/agent/AGENTS.md" = { source = "~/.dotfiles/agents/.agents/AGENTS.md",  mode = "symlink" } # Share AGENTS.md
