@@ -8,7 +8,9 @@
 #        cm-attach [--space SPACE] [--worktree W] --ssh HOST [--ssh-cwd PATH] [--ssh-command] NAME [command...]
 #
 # --dir starts the cm attach client, and so a new session, in DIR: launch_wrapper.py passes the window's
-# directory, which can differ from kitty's, see window_dir there. kitty runs a shell on macOS through
+# directory, which can differ from kitty's, see window_dir there. For a session on another host, NAME
+# qualified as HOST:NAME, DIR is a directory there, so it goes to cm attach --dir instead: cm sends a remote
+# no directory of the client's, as one here would mean nothing there. kitty runs a shell on macOS through
 # /usr/bin/login, which starts in the home directory, so without it the client stayed there, and kitty took
 # that for the window's directory while a program ran in it.
 #
@@ -94,10 +96,12 @@ fi
 if [ -n "$shell" ]; then
   set --
 fi
-if [ -n "$dir" ]; then
-  cd "$dir" 2>/dev/null
-fi
+attach_dir=
+case $name in
+  *:*) attach_dir=$dir ;;
+  *) [ -n "$dir" ] && cd "$dir" 2>/dev/null ;;
+esac
 if [ "$#" -gt 0 ]; then
-  exec cm attach --if-running=attach $in_shell $tag "$name" -- "$@"
+  exec cm attach --if-running=attach $in_shell $tag ${attach_dir:+--dir "$attach_dir"} "$name" -- "$@"
 fi
-exec cm attach $tag "$name"
+exec cm attach $tag ${attach_dir:+--dir "$attach_dir"} "$name"

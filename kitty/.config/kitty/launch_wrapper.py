@@ -9,6 +9,7 @@
 
 import os
 import re
+import socket
 import sys
 
 # Loaded with runpy, so this file's directory is not on the import path.
@@ -63,6 +64,8 @@ def prefix_for_launch(ctx):
     source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
     info = session_info(session_of(source))
     space = space_args(ctx, source, guess=not restored)
+    if not restored and (on_host := host_prefix(ctx, source, info, space)):
+        return on_host
     if remote := remote_prefix(ctx, name, info, source, space):
         return remote
     # In the window's directory, so that the cm attach client starts there too: kitty takes the directory of
@@ -128,6 +131,29 @@ def remote_prefix(ctx, name, info, source, space):
     prefix = [CM_ATTACH] + space + ['--ssh', host] + (['--ssh-cwd', path] if path else [])
     prefix += ([] if ctx.is_default_shell else ['--ssh-command']) + [name]
     _log('wrap %s window=%d cwd=%r argv=%r remote -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, list(ctx.argv)[:3], prefix))
+    return prefix
+
+
+# host_prefix opens a shell from a window showing a session on another cm host, one attached as HOST:REF, in a
+# new session on that host, as remote_prefix does for one that has ssh'd elsewhere: the new pane is the host's,
+# so kspaces shares it in the host's layout, beside the pane it was split from. It starts where the source
+# session is on that host, which cm info reports as the host sees it, else in the host's home directory.
+#
+# Only a shell, and only one the user opened: a command kitty runs is a program on this machine, and a window
+# kspaces opens carries its place variables and starts where kspaces chose, a worktree here.
+#
+# The name has this machine's in it, as `kitty.laptop.5`: the counter is this machine's, and two machines
+# making `kitty.5` on one host would attach to each other's session.
+def host_prefix(ctx, source, info, space):
+    host, qualified, _ = (session_of(source) or '').partition(':')
+    if not qualified or not ctx.is_default_shell or any(v in ctx.user_vars for v in PLACE_VARS):
+        return None
+    local = socket.gethostname().split('.')[0].lower()
+    name = '%s:%s' % (host, next_session_name().replace('kitty.', 'kitty.%s.' % local, 1))
+    remember(ctx.window_id, name)
+    cwd = info.get('cwd') if info and info.get('cwd_is_local') else ''
+    prefix = [CM_ATTACH] + space + (['--dir', cwd] if cwd else []) + ['--shell', name]
+    _log('wrap %s window=%d cwd=%r on %s -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, host, prefix))
     return prefix
 
 
