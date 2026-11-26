@@ -64,9 +64,13 @@ _title_set() {
 # that cleared the environment, or a server that does not set SSH_TTY. This config is only ever the
 # shell sshd itself started, so the variables are there, and `who -m` on every prompt is not worth it.
 #
+# CM_CLIENT_HOST too: a shell cm's server starts for a client on another machine, as `cm attach white:NAME`
+# makes, has no ssh variables, since a server keeps none, and cm sets this one for that alone (cm's
+# sessionenv.ClientHostVar). Without it a session on white showed a title no different from a local one.
+#
 # The short host, matching kitty, because a fully qualified name eats the width the path needs.
 _title_host_prefix() {
-  [[ -n ${SSH_CONNECTION-}${SSH_TTY-} ]] || return 0
+  [[ -n ${SSH_CONNECTION-}${SSH_TTY-}${CM_CLIENT_HOST-} ]] || return 0
   print -rn -- "${${HOST-}%%.*}: "
 }
 
