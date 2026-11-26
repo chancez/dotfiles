@@ -1,0 +1,17 @@
+
+let mapleader=","
+
+set scrolloff=5
+
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set showmode
+set visualbell
+set history=1000
+set number
+set wrapscan
+
+" Don't use Ex mode, use Q for formatting.
+map Q gq
