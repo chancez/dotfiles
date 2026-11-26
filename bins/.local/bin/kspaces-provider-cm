@@ -233,12 +233,17 @@ def forget(req):
         cm('forget', *ended)
 
 
-def showing(s, windows):
-    """The ids of the windows that show s."""
+def showing(s, windows, host=''):
+    """The ids of the windows that show s, a session on host, empty for this machine. A window attached to one
+    on another host names it qualified, as host:@ID or host:NAME, or by a name here that points at it: its
+    plain name would be a session of this machine's."""
     clients = s.get('attached_clients') or []
     pids = {c.get('pid') for c in clients if c.get('pid')}
     by_name = any(not c.get('pid') for c in clients)
     names = set(refs(s))
+    if host:
+        own = [s['name'], '@' + s['id']] + (s.get('names') or [])
+        names = {host + ':' + r for r in own} | set(s.get('pointed_by') or [])
     out = []
     for w in windows:
         if w.get('pid') in pids or (by_name and session_of(w) in names):
@@ -272,7 +277,7 @@ def list_(req):
             'cwd': (s.get('cwd') or '') if s.get('cwd_is_local', True) and not host else '',
             'status': s.get('reported_state') or '',
             'tags': s.get('tags') or {},
-            'windows': showing(s, windows),
+            'windows': showing(s, windows, host),
         })
     try:
         spaces = [sp['name'] for sp in json.loads(cm('space', 'list', '--json'))]
