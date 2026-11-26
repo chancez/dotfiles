@@ -11,7 +11,8 @@ branch.
   launched with `--var=no_cm=1`. The name is in the window's `cm_session` user var, which kitty saves
   in sessions, so a restored window reattaches to its session. A shell opened from a window showing a
   session on another cm host, attached as `HOST:REF`, gets a new session on that host, named
-  `HOST:kitty.<this machine>.<n>`, in the source session's directory there.
+  `HOST:kitty.<this machine>.<n>`, in the source session's directory, space and worktree there. A window
+  moved with `cm attach --rebind`, whose name points there, counts too, as `cm info` names its host.
 - `kitty.conf` maps cmd+w and cmd+shift+w to kitty's own close, cmd+alt+w and cmd+alt+shift+w to
   `cm_close.py`, and registers `cm_reap.py` as a watcher.
 - `cm_common.py` has what they share: session names, `cm` calls, and finding a window's session.

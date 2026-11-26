@@ -134,10 +134,12 @@ def remote_prefix(ctx, name, info, source, space):
     return prefix
 
 
-# host_prefix opens a shell from a window showing a session on another cm host, one attached as HOST:REF, in a
-# new session on that host, as remote_prefix does for one that has ssh'd elsewhere: the new pane is the host's,
-# so kspaces shares it in the host's layout, beside the pane it was split from. It starts where the source
-# session is on that host, which cm info reports as the host sees it, else in the host's home directory.
+# host_prefix opens a shell from a window showing a session on another cm host, attached as HOST:REF or by a
+# name here that points there, as `cm attach --rebind` leaves one, in a new session on that host, as
+# remote_prefix does for one that has ssh'd elsewhere: the new pane is the host's, so kspaces shares it in the
+# host's layout, beside the pane it was split from. It starts where the source session is on that host, which
+# cm info reports as the host sees it, else in the host's home directory, so the split feels local, as one of
+# a `kitten ssh` window does.
 #
 # Only a shell, and only one the user opened: a command kitty runs is a program on this machine, and a window
 # kspaces opens carries its place variables and starts where kspaces chose, a worktree here.
@@ -146,15 +148,33 @@ def remote_prefix(ctx, name, info, source, space):
 # making `kitty.5` on one host would attach to each other's session.
 def host_prefix(ctx, source, info, space):
     host, qualified, _ = (session_of(source) or '').partition(':')
-    if not qualified or not ctx.is_default_shell or any(v in ctx.user_vars for v in PLACE_VARS):
+    # A name here pointing elsewhere is followed by cm info, which then names the host it reached.
+    host = host if qualified else (info or {}).get('host') or ''
+    if not host or not ctx.is_default_shell or any(v in ctx.user_vars for v in PLACE_VARS):
         return None
     local = socket.gethostname().split('.')[0].lower()
     name = '%s:%s' % (host, next_session_name().replace('kitty.', 'kitty.%s.' % local, 1))
     remember(ctx.window_id, name)
     cwd = info.get('cwd') if info and info.get('cwd_is_local') else ''
+    # In the source session's space and worktree, as the host has them, so the split belongs with the pane it
+    # came from rather than with whatever this kitty session's name says.
+    space = session_space_args(info) or space
     prefix = [CM_ATTACH] + space + (['--dir', cwd] if cwd else []) + ['--shell', name]
     _log('wrap %s window=%d cwd=%r on %s -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, host, prefix))
     return prefix
+
+
+# session_space_args are the --space and --worktree of the session info describes, nothing when it is in no
+# space but default.
+def session_space_args(info):
+    space = (info or {}).get('space') or ''
+    if space in ('', 'default') or not SPACE_NAME.fullmatch(space):
+        return []
+    args = ['--space', space]
+    worktree = ((info or {}).get('tags') or {}).get('worktree') or ''
+    if TAG_VALUE.fullmatch(worktree):
+        args += ['--worktree', worktree]
+    return args
 
 
 # space_args says which cm space, and which worktree, a session this window creates belongs to.
