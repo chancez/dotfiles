@@ -52,6 +52,35 @@
 # reports, which cm passes on, so a saved cm window got it too, and a revived session's shell ran it on top
 # of what cm brings back: vim twice, the second typed into the first. cm restores what ran, so it is unset.
 unset KITTY_SI_RUN_COMMAND_AT_STARTUP
+
+# ship_integration has `kitten ssh` install kitty's shell integration on HOST, where kitty.zsh loads it for a
+# session there: such a session's shell is started by HOST's cm server, which neither kitty nor `kitten ssh`
+# reaches, and the client's KITTY_INSTALLATION_DIR names the Mac's app bundle. `kitten ssh HOST true` copies
+# the integration into ~/.local/share/kitty-ssh-kitten on HOST, as every `kitten ssh` does, and runs nothing
+# else. Once per host and kitty version, recorded here, so a split normally costs reading one file; only
+# inside a kitty window, whose terminal the kitten sends the files through. A failure is left for the next
+# session to retry: the session still opens, without the integration.
+ship_integration() {
+  [ -n "${KITTY_WINDOW_ID:-}" ] || return 0
+  kitten=$(command -v kitten 2>/dev/null)
+  if [ -z "$kitten" ] && [ -n "${KITTY_INSTALLATION_DIR:-}" ]; then
+    kitten="$KITTY_INSTALLATION_DIR/../../MacOS/kitten"
+  fi
+  [ -n "$kitten" ] && [ -x "$kitten" ] || return 0
+  version=$("$kitten" --version 2>/dev/null | head -n 1)
+  stamp="$HOME/.local/state/kitty-cm/integration/$1"
+  [ -n "$version" ] && [ "$(cat "$stamp" 2>/dev/null)" = "$version" ] && return 0
+  # The host as cm reaches it: ssh://[user@]host[:port][/path] in `cm config`, the name itself for none.
+  address=$(cm config 2>/dev/null | sed -n "s|^remote\.hosts\.$1 ssh://\([^/ ]*\).*|\1|p")
+  dest=${address:-$1}
+  port=
+  case $dest in
+    *:*) port=${dest##*:}; dest=${dest%:*} ;;
+  esac
+  if "$kitten" ssh ${port:+-p "$port"} "$dest" true; then
+    mkdir -p "${stamp%/*}" && printf '%s\n' "$version" > "$stamp"
+  fi
+}
 shell=
 in_shell=
 dir=
@@ -98,7 +127,7 @@ if [ -n "$shell" ]; then
 fi
 attach_dir=
 case $name in
-  *:*) attach_dir=$dir ;;
+  *:*) attach_dir=$dir; ship_integration "${name%%:*}" ;;
   *) [ -n "$dir" ] && cd "$dir" 2>/dev/null ;;
 esac
 if [ "$#" -gt 0 ]; then

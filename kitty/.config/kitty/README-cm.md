@@ -13,6 +13,9 @@ branch.
   session on another cm host, attached as `HOST:REF`, gets a new session on that host, named
   `HOST:kitty.<this machine>.<n>`, in the source session's directory, space and worktree there. A window
   moved with `cm attach --rebind`, whose name points there, counts too, as `cm info` names its host.
+  Before creating a session on another host, `cm-attach` has `kitten ssh HOST true` install kitty's shell
+  integration there, once per host and kitty version, and `kitty.zsh` loads it from that cache, since the
+  session's shell is started by the host's cm server and the client's `KITTY_INSTALLATION_DIR` is a Mac path.
 - `kitty.conf` maps cmd+w and cmd+shift+w to kitty's own close, cmd+alt+w and cmd+alt+shift+w to
   `cm_close.py`, and registers `cm_reap.py` as a watcher.
 - `cm_common.py` has what they share: session names, `cm` calls, and finding a window's session.
