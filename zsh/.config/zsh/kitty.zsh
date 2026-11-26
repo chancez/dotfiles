@@ -20,12 +20,25 @@
 # and a new split opens in the right place; and OSC 133, so cm knows whether a
 # command is running, which is what makes the close confirmation meaningful.
 # Without this block both silently degrade rather than fail.
-if [[ -n $KITTY_INSTALLATION_DIR ]]; then
+#
+# From the app bundle when this machine has it, else from where `kitten ssh` installs the integration on a host
+# it reaches. A cm session on another host, as `cm attach white:NAME` makes, is given the client's
+# KITTY_INSTALLATION_DIR, a path on the Mac that white does not have, so the bundle is not there; cm-attach has
+# `kitten ssh` fill its cache on white before creating such a session, and this loads it from there.
+_kitty_integration=
+for _d in ${KITTY_INSTALLATION_DIR:+$KITTY_INSTALLATION_DIR/shell-integration} $HOME/.local/share/kitty-ssh-kitten/shell-integration; do
+  if [[ -r $_d/zsh/kitty-integration ]]; then
+    _kitty_integration=$_d
+    break
+  fi
+done
+if [[ -n $_kitty_integration && -n ${KITTY_INSTALLATION_DIR-}${CM_SESSION-} ]]; then
   export KITTY_SHELL_INTEGRATION="enabled no-title"
-  autoload -Uz -- "$KITTY_INSTALLATION_DIR"/shell-integration/zsh/kitty-integration
+  autoload -Uz -- "$_kitty_integration"/zsh/kitty-integration
   kitty-integration
   unfunction kitty-integration
 fi
+unset _d _kitty_integration
 
 # Apply the refresh the comment above describes, rather than only naming it.
 #
