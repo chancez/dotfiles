@@ -38,7 +38,10 @@ NO_CM_VAR = 'no_cm'
 # in kspaces' docs/kitty.md). cm_space and cm_worktree are what a kspaces before session providers passed.
 SPACE_VARS = ('kspaces_space', 'cm_space')
 WORKTREE_VARS = ('kspaces_worktree', 'cm_worktree')
-PLACE_VARS = frozenset(SPACE_VARS[:1] + WORKTREE_VARS[:1])
+# A window of another host's copy of a space also says the host, as cm names its remote, and its directory
+# there (see "Other hosts" in kspaces' docs/kitty.md).
+HOST_VAR, DIR_VAR = 'kspaces_host', 'kspaces_dir'
+PLACE_VARS = frozenset(SPACE_VARS[:1] + WORKTREE_VARS[:1] + (HOST_VAR, DIR_VAR))
 # What cm accepts as a space name and as a tag value. A name it refused would end the window: cm attach
 # exits on a bad --space before attaching to anything.
 # A space may start with '.', as kspaces' .dotfiles does, but is not '.' or '..'.
@@ -64,6 +67,8 @@ def prefix_for_launch(ctx):
     source = get_boss().window_id_map.get(ctx.source_window_id) if ctx.source_window_id else None
     info = session_info(session_of(source))
     space = space_args(ctx, source, guess=not restored)
+    if not restored and (on_copy := copy_prefix(ctx, space)):
+        return on_copy
     if not restored and (on_host := host_prefix(ctx, source, info, space)):
         return on_host
     if remote := remote_prefix(ctx, name, info, source, space):
@@ -142,19 +147,15 @@ def remote_prefix(ctx, name, info, source, space):
 # a `kitten ssh` window does.
 #
 # Only a shell, and only one the user opened: a command kitty runs is a program on this machine, and a window
-# kspaces opens carries its place variables and starts where kspaces chose, a worktree here.
-#
-# The name has this machine's in it, as `kitty.laptop.5`: the counter is this machine's, and two machines
-# making `kitty.5` on one host would attach to each other's session.
+# kspaces opens carries its place variables and starts where kspaces chose, a worktree here, or another
+# host's copy's, see copy_prefix. Its name is host_session_name's.
 def host_prefix(ctx, source, info, space):
     host, qualified, _ = (session_of(source) or '').partition(':')
     # A name here pointing elsewhere is followed by cm info, which then names the host it reached.
     host = host if qualified else (info or {}).get('host') or ''
     if not host or not ctx.is_default_shell or any(v in ctx.user_vars for v in PLACE_VARS):
         return None
-    local = socket.gethostname().split('.')[0].lower()
-    name = '%s:%s' % (host, next_session_name().replace('kitty.', 'kitty.%s.' % local, 1))
-    remember(ctx.window_id, name)
+    name = host_session_name(ctx, host)
     cwd = info.get('cwd') if info and info.get('cwd_is_local') else ''
     # In the source session's space and worktree, as the host has them, so the split belongs with the pane it
     # came from rather than with whatever this kitty session's name says.
@@ -162,6 +163,31 @@ def host_prefix(ctx, source, info, space):
     prefix = [CM_ATTACH] + space + (['--dir', cwd] if cwd else []) + ['--shell', name]
     _log('wrap %s window=%d cwd=%r on %s -> %r' % (ctx.launch_type, ctx.window_id, ctx.cwd, host, prefix))
     return prefix
+
+
+# copy_prefix opens a shell kspaces opened for another host's copy of a space, which carries kspaces_host, in
+# a new session on that host, in the copy's directory there, kspaces_dir, and in its space and worktree as
+# the host names them, as kspaces passes them: the copy's panes are all the host's, see kspaces'
+# docs/stories.md. kitty starts the window here in the home directory, as the directory is the host's.
+def copy_prefix(ctx, space):
+    host = ctx.user_vars.get(HOST_VAR) or ''
+    if not host or not ctx.is_default_shell:
+        return None
+    name = host_session_name(ctx, host)
+    cwd = ctx.user_vars.get(DIR_VAR) or ''
+    prefix = [CM_ATTACH] + space + (['--dir', cwd] if cwd else []) + ['--shell', name]
+    _log('wrap %s window=%d copy on %s -> %r' % (ctx.launch_type, ctx.window_id, host, prefix))
+    return prefix
+
+
+# host_session_name is the name of a new session on host for the window ctx opens, remembered in it. It has
+# this machine's name in it, as `kitty.laptop.5`: the counter is this machine's, and two machines making
+# `kitty.5` on one host would attach to each other's session.
+def host_session_name(ctx, host):
+    local = socket.gethostname().split('.')[0].lower()
+    name = '%s:%s' % (host, next_session_name().replace('kitty.', 'kitty.%s.' % local, 1))
+    remember(ctx.window_id, name)
+    return name
 
 
 # session_space_args are the --space and --worktree of the session info describes, nothing when it is in no
