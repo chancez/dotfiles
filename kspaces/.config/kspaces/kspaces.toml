@@ -41,6 +41,8 @@ save_sessions = true
 [editor]
 vim = true
 
+[hosts.white]
+
 [[commands]]
 name = "claude"
 run = ["claude", "{prompt?}"]
