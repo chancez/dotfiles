@@ -112,6 +112,12 @@ confirm() {
     esac
 }
 
+osc52() {
+  local data
+  data=$(base64 | tr -d '\n')
+  printf "\033]52;c;%s\a" "$data" > /dev/tty
+}
+
 # Fix run-help for zsh. zsh aliases it to `man` by default; drop that so the autoloaded
 # function is used instead. -m treats the argument as a pattern, which unlike plain `unalias`
 # stays quiet when there is nothing to remove: Debian's /etc/zsh/zshrc already unaliases it,
