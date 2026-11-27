@@ -189,6 +189,9 @@ bashrc       = false
 bash_profile = false
 fish         = false
 
+[bootstrap.user]
+login_shell = "zsh"
+
 [bootstrap.repos]
 "~/.dotfiles" = { url = "https://github.com/chancez/dotfiles.git", ref = "master" }
 "~/projects/cm" = { url = "https://github.com/chancez/cm.git" }
