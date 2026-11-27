@@ -179,6 +179,23 @@ dyff = "latest"
 oh-my-pi = { version = "latest", rename_exe = "omp" }
 "github:skardyy/mcat" = "latest"
 
+# Shell activation is intentionally omitted: shims are on $PATH via zsh/.config/zsh/paths.zsh
+# (mise activate breaks kitten ssh). Disable every target explicitly so a future default can't
+# start writing into rc files.
+[bootstrap.mise_shell_activate]
+zprofile     = false
+zshrc        = false
+bashrc       = false
+bash_profile = false
+fish         = false
+
+[bootstrap.repos]
+"~/.dotfiles" = { url = "https://github.com/chancez/dotfiles.git", ref = "master" }
+"~/projects/cm" = { url = "https://github.com/chancez/cm.git" }
+"~/projects/agora" = { url = "https://github.com/chancez/agora.git" }
+"~/projects/gr" = { url = "https://github.com/chancez/gr.git" }
+"~/projects/kspaces" = { url = "https://github.com/chancez/kspaces.git" }
+
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into
 # their config dir. Whole-file `symlink` is used for single-file dotfiles at $HOME.
@@ -258,13 +275,3 @@ oh-my-pi = { version = "latest", rename_exe = "omp" }
 # first shell, which is what sets ZDOTDIR in the first place.
 "~/.config/zsh/.zshenv"       = { source = "~/.dotfiles/zsh/.zshenv",                     mode = "symlink" }
 "~/.inputrc"                  = { source = "~/.dotfiles/zsh/.inputrc",                    mode = "symlink" }
-
-# Shell activation is intentionally omitted: shims are on $PATH via zsh/.config/zsh/paths.zsh
-# (mise activate breaks kitten ssh). Disable every target explicitly so a future default can't
-# start writing into rc files.
-[bootstrap.mise_shell_activate]
-zprofile     = false
-zshrc        = false
-bashrc       = false
-bash_profile = false
-fish         = false
