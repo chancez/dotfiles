@@ -183,15 +183,13 @@ def list_(req):
             'tags': s.get('tags') or {},
             'windows': showing(s, windows, host),
         })
+    # This machine's spaces only: kspaces lists another host's sessions under that host, and a space only
+    # another host has is none here to open or remove.
     try:
         spaces = [sp['name'] for sp in json.loads(cm('space', 'list', '--json'))]
     except SystemExit:
         # A cm older than spaces: its sessions are all in none, which kspaces lists under default.
         spaces = []
-    # A space only another host has is still a space its sessions are found in.
-    for o in out:
-        if o['space'] and o['space'] not in spaces:
-            spaces.append(o['space'])
     json.dump({'spaces': spaces, 'sessions': out}, sys.stdout)
 
 
