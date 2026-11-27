@@ -196,6 +196,14 @@ fish         = false
 "~/projects/gr" = { url = "https://github.com/chancez/gr.git" }
 "~/projects/kspaces" = { url = "https://github.com/chancez/kspaces.git" }
 
+[tasks.bootstrap]
+run = [
+  "cd ~/projects/cm && mise run install",
+  "cd ~/projects/agora && mise run install",
+  "cd ~/projects/gr && mise run install",
+  "cd ~/projects/kspaces && mise run install",
+]
+
 # Dotfiles: replaces GNU Stow (setup.sh). `symlink-each` mirrors `stow --no-folding`
 # (real target dir, per-file symlinks) so apps can still write generated files into
 # their config dir. Whole-file `symlink` is used for single-file dotfiles at $HOME.
