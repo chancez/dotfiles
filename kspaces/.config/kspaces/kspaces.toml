@@ -1,12 +1,3 @@
-groups = ["work", "tools"]
-
-spaces = [
-  "~/.dotfiles",
-  { path = "~/projects/gr", group = "tools" },
-  { path = "~/projects/cm", group = "tools" },
-  { path = "~/projects/kspaces", group = "tools" },
-]
-
 # Saved sessions (save_sessions.py), restored when a worktree with no windows is opened.
 sessions = "~/.local/share/kitty/sessions"
 
